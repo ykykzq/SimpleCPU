@@ -1,0 +1,4 @@
+使用memory initialization file(.mif)，默认为../func/obj/inst_ram.mif。
+更换mif可直接替换项目中mif文件，若更改文件名还需修改soc_lite_top.v中INST_COE的定义。
+
+全部SOC为单周期，CPI=1，用于快速进行仿真。
