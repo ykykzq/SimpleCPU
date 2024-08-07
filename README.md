@@ -8,6 +8,12 @@
 
 工程使用的综合工具为Vivado 2024.1，尽管如此，仍然可以使用低版本Vivado工具，通过新建一个工程并添加Verilog源代码的方式进行综合。
 
+## 系统结构
+
+系统的总体架构如下所示。
+
+<img src="./images/project.png" alt="project" style="zoom:48%;" />
+
 ## 项目结构
 
 ```
@@ -43,8 +49,6 @@
 └── README.md
 
 ```
-
-
 
 ## 推荐书籍
 
