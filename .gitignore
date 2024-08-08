@@ -14,9 +14,11 @@ ipshared/
 */thinpad_top.hw/
 */thinpad_top.ip_user_files/
 */thinpad_top.runs/
+*/thinpad_top.gen/
 */thinpad_top.sim/sim_1/behav/xsim/
 .Xil/
 *.jou
 *.log
+*.str
 *.dcp
 /.lint/
