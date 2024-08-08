@@ -1,3 +1,4 @@
+`include"./include/myCPU.h"
 module myCPU_top(
 	input         clk,
     input         reset,
