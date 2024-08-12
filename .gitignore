@@ -16,6 +16,16 @@ ipshared/
 */thinpad_top.runs/
 */thinpad_top.gen/
 */thinpad_top.sim/sim_1/behav/xsim/
+
+*/*/gettrace.tmp/
+*/*/gettrace.cache/
+*/*/gettrace.hw/
+*/*/gettrace.ip_user_files/
+*/*/gettrace.runs/
+*/*/gettrace.gen/
+*/*/gettrace.sim/sim_1/behav/xsim/
+
+test/soc_verify/soc_bram/run_vivado/project
 .Xil/
 *.jou
 *.log
