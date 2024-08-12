@@ -15,17 +15,22 @@ module IPreD_top(
 	input  wire[`IF_TO_IPD_BUS_WD-1:0]	IF_to_IPD_bus,
 	output wire[`ID_TO_EXE_BUS_WD-1:0]	IPD_to_ID_bus,
     input  wire[`ID_TO_IPD_BUS_WD-1:0]  ID_to_IPD_bus,
+    //inst RAM
+    input  wire[31:0]					inst_ram_r_data,
 	
 	//流水线控制
 	input  wire							ID_allow_in,
 	input  wire							IF_to_IPD_valid,
 	output wire							IPD_allow_in,
 	output wire							IPD_to_ID_valid
-    );
+);
 
     // 流水线控制信号
     wire						IPD_ready_go;
 	reg							IPD_valid;
+
+    // IF/IPD REG
+    reg [`IF_TO_IPD_BUS_WD-1:0] IF_to_IPD_reg;
 
     ////////////////////////////////////////
     ///流水线控制
@@ -47,8 +52,179 @@ module IPreD_top(
     end
 
     ////////////////////////////////////////
+    /// 判断指令类型
+
+    assign rk=inst[14:10];
+    assign rj=inst[ 9: 5];
+    assign rd=inst[ 4: 0];
+    assign opcode_22b=inst[31:10];
+    assign opcode_17b=inst[31:15];
+    assign opcode_10b=inst[31:22];
+    assign opcode_08b=inst[31:24];
+    assign opcode_07b=inst[31:25];
+    assign opcode_06b=inst[31:26];
+
+    //算数逻辑运算
+    assign inst_addi_w      = opcode_10b==10'b000_0000_1010;
+    assign inst_add_w       = opcode_17b==17'b0_0000_0000_0010_0000;
+    assign inst_sub_w       = opcode_17b==17'b0_0000_0000_0010_0010;
+    assign inst_or          = opcode_17b==17'b0_0000_0000_0010_1010;
+    assign inst_ori         = opcode_10b==10'b00_0000_1110;
+    assign inst_nor         = opcode_17b==17'b0_0000_0000_0010_1000;
+    assign inst_andi        = opcode_10b==10'b00_0000_1101;
+    assign inst_and         = opcode_17b==17'b0_0000_0000_0010_1001;
+    assign inst_xor         = opcode_17b==17'b0_0000_0000_0010_1011;
+    assign inst_srli_w      = opcode_17b==17'b0_0000_0000_1000_1001;
+    assign inst_slli_w      = opcode_17b==17'b0_0000_0000_1000_0001;
+    assign inst_srai_w      = opcode_17b==17'b0_0000_0000_1001_0001;
+    assign inst_lu12i_w     = opcode_07b==6'b000_1010;
+    assign inst_pcaddu12i   = opcode_07b==6'b000_1110;
+    assign inst_slt         = opcode_17b==17'b0_0000_0000_0010_0100;
+    assign inst_sltu        = opcode_17b==17'b0_0000_0000_0010_0101;
+    //乘除             
+    assign inst_mul_w       = opcode_17b==17'b0_0000_0000_0011_1000;
+    //分支跳转                
+    assign inst_jirl        = opcode_06b==6'b01_0011;
+    assign inst_b           = opcode_06b==6'b01_0100;
+    assign inst_beq         = opcode_06b==6'b01_0110;
+    assign inst_bne         = opcode_06b==6'b01_0111;
+    assign inst_bl          = opcode_06b==6'b01_0101;
+    //访存
+    assign inst_st_w        = opcode_10b==10'b00_1010_0110;
+    assign inst_ld_w        = opcode_10b==10'b00_1010_0010;
+    assign inst_st_b        = opcode_10b==10'b00_1010_0100;
+    assign inst_ld_b        = opcode_10b==10'b00_1010_0000;
+
+
+    assign inst_type        ={
+            //加减
+            inst_addi_w     ,
+            inst_add_w      ,
+            inst_sub_w      ,
+            inst_or         ,
+            inst_ori        ,
+            inst_nor        ,
+            inst_andi       ,
+            inst_and        ,
+            inst_xor        ,
+            inst_srli_w     ,
+            inst_slli_w     ,
+            inst_srai_w     ,
+            inst_lu12i_w    ,
+            inst_pcaddu12i  ,
+            inst_slt        ,
+            inst_sltu       ,
+            // 乘除
+            inst_mul_w      ,
+            // 跳转   
+            inst_jirl       ,
+            inst_b          ,
+            inst_beq        ,
+            inst_bne        ,
+            inst_bl         ,
+            // 访存
+            inst_st_w       ,
+            inst_ld_w       ,
+            inst_st_b       ,
+            inst_ld_b       
+    };
+    ///////////////////////////////////////////
+    /// 决定读写寄存器号
+
+    /*
+    指令与用到的寄存器列表
+        +------------+----+----+----+
+        | inst       | rk | rj | rd |
+        +------------+----+----+----+
+        | addi.w     |    | R  | W  |
+        | add.w      | R  | R  | W  |
+        | sub.w      | R  | R  | W  |
+        | mul.w      | R  | R  | W  |
+        | or         | R  | R  | W  |
+        | ori        |    | R  | W  |
+        | nor        | R  | R  | W  |
+        | andi       |    | R  | W  |
+        | and        | R  | R  | W  |
+        | xor        | R  | R  | W  |
+        | srli.w     |    | R  | W  |
+        | slli.w     |    | R  | W  |
+        | srai.w     |    | R  | W  |
+        | lu12i.w    |    |    | W  |
+        | pcaddu12i  |    |    | W  |
+        | slt        | R  | R  | W  |
+        | sltu       | R  | R  | W  |
+        | jirl       |    | R  | W  |
+        | b          |    |    |    |
+        | beq        |    | R  | R  |
+        | bne        |    | R  | R  |
+        | bl         |    |    |    |
+        | st.w       |    | R  | R  |
+        | ld.w       |    | R  | W  |
+        | st.b       |    | R  | R  |
+        | ld.b       |    | R  | W  |
+        +------------+----+----+----+
+
+    */
+
+    //如果读rk、rj，则分别为1、2。如果读rj、rd，则这俩为1、2。
+    assign RegFile_R_addr1=(inst_add_w | inst_sub_w | inst_mul_w | inst_or | inst_nor | inst_and 
+                                | inst_xor | inst_slt | inst_sltu)?rk:
+                            (    inst_addi_w | inst_ori | inst_andi | inst_srli_w | inst_slli_w | inst_srai_w
+                                | inst_jirl | inst_beq | inst_bne | inst_st_w | inst_ld_w | inst_st_b | inst_ld_b)?rj:5'b0;
+    assign RegFile_R_addr2=(inst_add_w | inst_sub_w | inst_mul_w | inst_or | inst_nor | inst_and 
+                                | inst_xor | inst_slt | inst_sltu)?rj:
+                            (inst_beq | inst_bne | inst_st_w)?rd:5'b0;
+    assign RegFile_W_addr=(inst_addi_w | inst_add_w | inst_sub_w | inst_or | inst_ori | inst_nor      
+                                | inst_andi | inst_and | inst_xor | inst_srli_w | inst_slli_w | inst_srai_w   
+                                | inst_lu12i_w | inst_pcaddu12i | inst_slt | inst_sltu | inst_mul_w | inst_jirl     
+                                | inst_ld_w | inst_ld_b)?rd
+                                    :5'b0;
+    ///////////////////////////////////////////
+    /// 决定立即数
+
+    /*
+        立即数扩展方式依次是：
+        SignExtend(si12, 32)
+        ZeroExtend(ui12, 32)
+        ZeroExtend(ui5, 32)
+        {si20, 12'b0}
+        SignExtend({offs16, 2'b0}, 32)
+        SignExtend({offs26, 2'b0}, 32)
+    */
+    assign immediate =  (inst_addi_w | inst_st_w | inst_ld_w | inst_st_b | inst_ld_b)?{{20{inst[21]}},inst[21:10]}:
+                        (inst_ori | inst_andi )?{20'b0,inst[21:10]}:
+                        (inst_srli_w | inst_slli_w | inst_srai_w)?{27'b0,inst[14:10]}:
+                        (inst_lu12i_w | inst_pcaddu12i)?{inst[24:0],12'b0}:
+                        (inst_jirl | inst_beq | inst_bne)?{{14{inst[25]}},inst[25:10],2'b0}:
+                        (inst_b | inst_bl)?{{4{inst[25]}},inst[25: 0],2'b0}:32'b0;
+
+
+    ////////////////////////////////////////
     /// 流水级间数据交互
 
     // 接收
-    assign {PC_plus_4,inst}=
+    always@(posedge clk)
+	begin
+		if(IF_to_IPD_valid & IPD_allow_in)
+			IF_to_IPD_reg<=IF_to_IPD_bus;
+		else
+			IF_to_IPD_reg<=IF_to_IPD_reg;
+	end
+    assign {PC_plus_4}=IF_to_IPD_reg[63:32];
+
+    assign inst=inst_ram_r_data;
+
+    assign {
+		br_taken_cancel	,//32
+		PC_fromID		 //31:0			
+					}=ID_to_IPD_bus;
+
+    // 发送
+    assign IPD_to_ID_bus={
+            inst_type           ,//xx:47
+            immediate           ,//46:15
+            RegFile_W_addr      ,//14:10
+            RegFile_R_addr2     ,//9:5
+            RegFile_R_addr1      //4:0
+    };
 endmodule

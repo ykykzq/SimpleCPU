@@ -18,7 +18,7 @@ module BranchUnit(
     output wire                     br_taken_cancel
 );
 
-    // to do
+    // to do: 完成PC的计算
     assign next_PC=32'b0;
 
     assign br_taken_cancel=~(pred_PC==next_PC);

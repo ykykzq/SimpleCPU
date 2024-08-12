@@ -1,7 +1,8 @@
 /**
  * @file IF_stage.v
  * @author ykykzq
- * @brief 流水线第一级，主要完成PC的维护与Inst RAM取指
+ * @brief 流水线第一级，主要完成PC的维护与Inst RAM取指。
+ * @brief 分支预测：静态分支预测，预测不跳转
  * @version 0.1
  * @date 2024-08-12
  *
@@ -19,14 +20,13 @@ module IF_stage(
 	//连接指令RAM
 	output wire							inst_ram_en,//(读)使能
 	output wire[31:0]					inst_ram_addr,
-	input  wire[31:0]					inst_ram_r_data,
 	output wire[3:0]					inst_ram_w_en,
 	output wire[31:0]					inst_ram_w_data,//实际上用不到指令RAM的写
     
 	//流水线控制
 	input  wire							ID_allow_in,
 	output wire							IF_to_IPD_valid
-	);
+);
 
 
 	//////////////////////////////////////////////
@@ -82,6 +82,9 @@ module IF_stage(
 		PC_fromID		 //31:0			
 					}=ID_to_IF_bus;
 
-	assign IF_to_IPD_bus={PC_plus_4,inst};
+	assign IF_to_IPD_bus={
+			PC_plus_4	,//63:32
+			32'b0		 //31:0 预占据inst的位置
+		};
 
 endmodule
