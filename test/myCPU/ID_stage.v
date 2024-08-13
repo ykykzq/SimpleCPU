@@ -26,6 +26,200 @@ module ID_stage(
 	output wire							ID_allow_in,
 	output wire							ID_to_EXE_valid
 );
+	// ALU控制信号与源操作数
+	wire op_lui;   //Load Upper Immediate
+	wire op_sra;   //arithmetic right shift
+	wire op_srl;   //logic right shift
+	wire op_sll;   //logic left shift
+	wire op_xor;   //bitwise xor
+	wire op_or;    //bitwise or
+	wire op_nor;   //bitwise nor
+	wire op_and;   //bitwise and
+	wire op_sltu;  //unsigned compared and set less than
+	wire op_slt;   //signed compared and set less than
+	wire op_sub;   //sub operation
+	wire op_add;   //add operation
+
+	///////////////////////////////////////////////////////////
+	/// 流水线行为控制
+
+	// 认为一周期内必能完成decode
+    assign ID_ready_go=1'b1;
+	assign ID_allow_in=(~ID_valid)|(ID_ready_go & EXE_allow_in);
+	assign IPD_to_ID_valid=IPD_ready_go&IPD_valid;
+    always@(posedge clk)
+    begin
+        if(reset)
+            IPD_valid<=1'b0;
+        else if(IPD_allow_in)
+            IPD_valid<=IF_to_IPD_valid;
+        else if(br_taken_cancel)
+            // 分支预测失败，flush
+            IPD_valid<=1'b0;
+        else 
+            IPD_valid<=IPD_valid;
+    end
+
+	////////////////////////////////////////////////////////////
+	/// 寄存器访问
+	Reg_File RF(
+		.clk		(				clk),
+		.r_addr1	(	RegFile_R_addr1),
+		.r_addr2	(	RegFile_R_addr2),
+		.r_data1	(	RegFile_R_data1),
+		.r_data2	(	RegFile_R_data2),
+		//写信号
+		.w_data		(),
+		.w_addr		(),
+		.w_en 		()
+    );
+
+	//////////////////////////////////////////////////////////
+	/// ALU源操作数决定（立即数、寄存器值、旁路网络）
+
+	// 计算类型
+	assign op_lui  = (inst_lu12i_w | inst_pcaddu12i);
+	assign op_sra  = (inst_srai_w);
+	assign op_srl  = (inst_srli_w);
+	assign op_sll  = (inst_slli_w);
+	assign op_xor  = (inst_xor);
+	assign op_or   = (inst_or | inst_ori);
+	assign op_nor  = (inst_nor);
+	assign op_and  = (inst_and | inst_andi);
+	assign op_sltu = (inst_sltu); 
+	assign op_slt  = (inst_slt);
+	assign op_sub  = (inst_sub_w);
+	assign op_add  = (inst_add_w | inst_add_w | inst_jirl | inst_st_w | inst_ld_w | inst_st_b | inst_ld_b);
+
+	assign alu_op  = {
+		op_lui	,
+		op_sra	,
+		op_srl	,
+		op_sll	,
+		op_xor	,
+		op_or 	,
+		op_nor	,
+		op_and	,
+		op_slt	,
+		op_slt	,
+		op_sub	,
+		op_add	
+	};
+
+	/*
+		// 决定源操作数
+		+--------------+-----------------+
+		| sel_alu_src1 | alu_src1        |
+		+--------------+-----------------+
+		| 1            | RegFile_R_data1 |
+		| 0            | 32'b0           |
+		+--------------+-----------------+
+
+		+--------------+-----------------+
+		| sel_alu_src2 | alu_src2        |
+		+--------------+-----------------+
+		| 1            | RegFile_R_data2 |
+		| 0            | immediate       |
+		+--------------+-----------------+
+
+	*/
+	assign sel_alu_src1 = (inst_addi_w | inst_add_w | inst_sub_w | inst_mul_w
+							| inst_or | inst_ori | inst_nor | inst_andi | inst_and | inst_xor 
+							| inst_srli_w | inst_slli_w | inst_srai_w
+							| inst_slt | inst_sltu
+							| inst_jirl
+							| inst_st_w | inst_ld_w | inst_st_b | inst_ld_b);
+	assign sel_alu_src2 = (inst_add_w | inst_sub_w | inst_mul_w
+							| inst_or | inst_nor | inst_and | inst_xor
+							| inst_slt | inst_sltu); 
+
+	assign alu_src1 = sel_alu_src1?RegFile_R_data1:32'b0;
+	assign alu_src2 = sel_alu_src2?RegFile_R_data2:immediate;
+
+	///////////////////////////////////////////////////////////
+	/// 数据RAM的相关控制信号生成
+
+	// 写使能
+	assign sel_data_ram_we=(inst_st_b | inst_st_w);
+	// 写数据。当写有效时为数据，否则全0
+	assign data_ram_wdata=data_sram_we?RegFile_R_data2:32'b0;
+
+	// Data RAM使能信号
+	assign sel_data_ram_en=(inst_st_b | inst_st_w
+							| inst_ld_b | inst_ld_w);
+
+	// 字节使能
+	/*
+		+-----------------+-------------+
+		| sel_data_ram_be | 长度        |
+		+-----------------+-------------+
+		| 1               | byte(8bit)  |
+		| 0               | word(32bit) |
+		+-----------------+-------------+
+
+	*/
+	assign sel_data_ram_be=(inst_st_b | inst_ld_b);
+	
+	//////////////////////////////////////////////////////////
+	/// 检验分支预测正确性
+
+	assign BranchUnit_src1=(inst_jirl | inst_beq | inst_bne)?RegFile_R_data1:
+							(inst_b | inst_bl)?immediate:32'b0;
+	assign BranchUnit_src2=(inst_jirl)?immediate:
+							(inst_beq | inst_bne)?RegFile_R_data2:
+							(inst_b | inst_bl)?32'b0:32'b0;
+	BranchUnit BU(
+		.inst_type			(inst_type		),
+    	.pred_PC			(pred_PC		),
+    	// 用于计算PC的值
+    	.src1				(BranchUnit_src1),
+    	.src2				(BranchUnit_src2),
+	
+    	.next_PC			(PC_fromID		),
+    	.br_taken_cancel	(br_taken_cancel)
+	);
+
+	//////////////////////////////////////////////////////////
+	/// 流水级数据交互
+
+	// 接收
+	always@(posedge clk)
+	begin
+		if(IPD_to_ID_valid & ID_allow_in)
+			IPD_to_ID_reg<=IPD_to_ID_bus;
+		else
+			IPD_to_ID_reg<=IPD_to_ID_reg;
+	end
+	assign{
+            inst_type           ,// xx:111
+            pred_PC             ,//110: 79
+            inst_PC             ,// 78: 47
+            immediate           ,// 46: 15
+            RegFile_W_addr      ,// 14: 10
+            RegFile_R_addr2     ,//  9:  5
+            RegFile_R_addr1      //  4:  0
+    } = IPD_to_ID_reg;
+
+	// 发送
+	assign ID_to_IF_bus={
+			br_taken_cancel	,//32
+			PC_fromID		 //31:0			
+	};
+
+	assign ID_to_IPD_bus = {
+			br_taken_cancel	,//32
+			PC_fromID		 //31:0			
+	};
+
+	assign ID_to_EXE_bus ={
+		sel_data_ram_be	,//110
+		sel_data_ram_we	,//109
+		sel_data_ram_en	,//108
+		data_ram_wdata	,//107:76
+		alu_op			,//75:64
+		alu_src2		,//63:32
+		alu_src1		 //31::0
+	};
 
 	
 endmodule

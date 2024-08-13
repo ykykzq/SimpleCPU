@@ -27,12 +27,23 @@ module IF_stage(
 	input  wire							ID_allow_in,
 	output wire							IF_to_IPD_valid
 );
+	// PC相关
+	wire [31: 0]		PC_plus_4		;
+	reg  [31: 0]		PC				;
+	wire [31: 0]		next_PC			;
+	wire				br_taken_cancel	;
+	wire [31: 0]		PC_fromID		;
+	//分支预测的PC
+	wire [31: 0]		pred_PC			;
 
+	// 流水线行为控制
+	wire				IF_ready_go		;
+	reg 				IF_valid		;
 
 	//////////////////////////////////////////////
 	///维护与流水线控制有关的信号
 	
-	//IF_valid
+	// IF_valid
 	always@(posedge clk)//异步复位
 	begin
 		if(reset)
@@ -43,19 +54,24 @@ module IF_stage(
 			IF_valid<=IF_valid;
 	end
 	
-	//控制流水线行为
+	// 控制流水线行为
 	assign IF_ready_go=1'b1;//总认为一周期内能完成
 	assign IF_allow_in=(~IF_valid) | (IF_ready_go & ID_allow_in);//后者加上IF_valid=1,相当于IF可以向ID发送数据(只含“发送”，不含“接收”)
 	assign Pre_to_IF_valid=~reset;
 	assign IF_to_IPD_valid=IF_valid;//&IF_ready_go
 	
+	/////////////////////////////////////////////////
+	/// 分支预测
+
+	// 静态分支预测：始终预测分支不发生
+	assign pred_PC=PC_plus_4;
 
 	///////////////////////////////////////////////
 	/// 控制PC
 	always@(posedge clk)
 	begin
 		if(reset)
-			PC<=32'h1c000000;
+			PC<=32'h1c000000-3'b100;
 		else if(IF_allow_in & Pre_to_IF_valid)
 			PC<=next_PC;
 		else 
@@ -63,8 +79,8 @@ module IF_stage(
 	end
 
 	assign PC_plus_4=PC+3'b100;
-
-	assign next_PC=br_taken_cancel?PC_fromID:PC_plus_4;
+	// 若之前的指令预测失败，从正确的位置(PC_fromID)重新开始取指
+	assign next_PC=br_taken_cancel?PC_fromID:pred_PC;
 
 	///////////////////////////////////////////////
 	/// 取INST
@@ -83,6 +99,7 @@ module IF_stage(
 					}=ID_to_IF_bus;
 
 	assign IF_to_IPD_bus={
+			pred_PC		,//95:64
 			PC_plus_4	,//63:32
 			32'b0		 //31:0 预占据inst的位置
 		};

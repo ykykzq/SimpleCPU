@@ -26,19 +26,73 @@ module IPreD_top(
 );
 
     // 流水线控制信号
-    wire						IPD_ready_go;
-	reg							IPD_valid;
+    wire						IPD_ready_go    ;
+	reg							IPD_valid       ;
 
     // IF/IPD REG
-    reg [`IF_TO_IPD_BUS_WD-1:0] IF_to_IPD_reg;
+    reg [`IF_TO_IPD_BUS_WD-1:0] IF_to_IPD_reg   ;
+
+    // PC与分支预测相关
+    wire                        br_taken_cancel ;
+    wire [31: 0]                PC_fromID       ;
+    wire [31: 0]                PC_plus_4       ;
+
+    // 指令类型
+    //加减
+    wire                        inst_addi_w     ;
+    wire                        inst_add_w      ;
+    wire                        inst_sub_w      ;
+    wire                        inst_or         ;
+    wire                        inst_ori        ;
+    wire                        inst_nor        ;
+    wire                        inst_andi       ;
+    wire                        inst_and        ;
+    wire                        inst_xor        ;
+    wire                        inst_srli_w     ;
+    wire                        inst_slli_w     ;
+    wire                        inst_srai_w     ;
+    wire                        inst_lu12i_w    ;
+    wire                        inst_pcaddu12i  ;
+    wire                        inst_slt        ;
+    wire                        inst_sltu       ;
+    // 乘除
+    wire                        inst_mul_w      ;
+    // 跳转   
+    wire                        inst_jirl       ;
+    wire                        inst_b          ;
+    wire                        inst_beq        ;
+    wire                        inst_bne        ;
+    wire                        inst_bl         ;
+    // 访存
+    wire                        inst_st_w       ;
+    wire                        inst_ld_w       ;
+    wire                        inst_st_b       ;
+    wire                        inst_ld_b       ;
+
+    // 三寄存器号与立即数
+    wire [ 4: 0]                RegFile_R_addr1 ;
+    wire [ 4: 0]                RegFile_R_addr2 ;
+    wire [ 4: 0]                RegFile_W_addr  ;
+    wire [31: 0]                immediate       ;
+
+    // 指令字段
+    wire [ 4: 0]                rk              ;
+    wire [ 4: 0]                rj              ;
+    wire [ 4: 0]                rd              ;
+    wire [21: 0]                opcode_22b      ;
+    wire [16: 0]                opcode_17b      ;
+    wire [ 9: 0]                opcode_10b      ;
+    wire [ 7: 0]                opcode_08b      ;
+    wire [ 6: 0]                opcode_07b      ;
+    wire [ 5: 0]                opcode_06b      ;
 
     ////////////////////////////////////////
     ///流水线控制
 
     // 认为一周期内必能完成pre-decode
     assign IPD_ready_go=1'b1;
-	assign IPD_allow_in=(~IPD_valid)|(IPD_ready_go & EXE_allow_in);
-	assign IPD_to_EXE_valid=IPD_ready_go&IPD_valid;
+	assign IPD_allow_in=(~IPD_valid)|(IPD_ready_go & ID_allow_in);
+	assign IPD_to_ID_valid=IPD_ready_go&IPD_valid;
     always@(posedge clk)
     begin
         if(reset)
@@ -46,6 +100,7 @@ module IPreD_top(
         else if(IPD_allow_in)
             IPD_valid<=IF_to_IPD_valid;
         else if(br_taken_cancel)
+            // 分支预测失败，flush
             IPD_valid<=1'b0;
         else 
             IPD_valid<=IPD_valid;
@@ -165,7 +220,6 @@ module IPreD_top(
         +------------+----+----+----+
 
     */
-
     //如果读rk、rj，则分别为1、2。如果读rj、rd，则这俩为1、2。
     assign RegFile_R_addr1=(inst_add_w | inst_sub_w | inst_mul_w | inst_or | inst_nor | inst_and 
                                 | inst_xor | inst_slt | inst_sltu)?rk:
@@ -221,10 +275,12 @@ module IPreD_top(
 
     // 发送
     assign IPD_to_ID_bus={
-            inst_type           ,//xx:47
-            immediate           ,//46:15
-            RegFile_W_addr      ,//14:10
-            RegFile_R_addr2     ,//9:5
-            RegFile_R_addr1      //4:0
+            inst_type           ,// xx:111
+            pred_PC             ,//110: 79
+            inst_PC             ,// 78: 47
+            immediate           ,// 46: 15
+            RegFile_W_addr      ,// 14: 10
+            RegFile_R_addr2     ,//  9:  5
+            RegFile_R_addr1      //  4:  0
     };
 endmodule
