@@ -1,4 +1,4 @@
-module Reg_File(
+module RegFile(
 	input  wire			clk,
 	input  wire[4:0]	r_addr1,
 	input  wire[4:0]	r_addr2,

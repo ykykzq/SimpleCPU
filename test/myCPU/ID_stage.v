@@ -62,7 +62,7 @@ module ID_stage(
 
 	////////////////////////////////////////////////////////////
 	/// 寄存器访问
-	Reg_File RF(
+	RegFile RF(
 		.clk		(				clk),
 		.r_addr1	(	RegFile_R_addr1),
 		.r_addr2	(	RegFile_R_addr2),
@@ -78,7 +78,7 @@ module ID_stage(
 	/// ALU源操作数决定（立即数、寄存器值、旁路网络）
 
 	// 计算类型
-	assign op_lui  = (inst_lu12i_w | inst_pcaddu12i);
+	assign op_lui  = (inst_lu12i_w);
 	assign op_sra  = (inst_srai_w);
 	assign op_srl  = (inst_srli_w);
 	assign op_sll  = (inst_slli_w);
@@ -89,7 +89,10 @@ module ID_stage(
 	assign op_sltu = (inst_sltu); 
 	assign op_slt  = (inst_slt);
 	assign op_sub  = (inst_sub_w);
-	assign op_add  = (inst_add_w | inst_add_w | inst_jirl | inst_st_w | inst_ld_w | inst_st_b | inst_ld_b);
+	assign op_add  = (    inst_add_w | inst_add_w 
+						| inst_jirl 
+						| inst_st_w | inst_ld_w | inst_st_b | inst_ld_b 
+						| inst_pcaddu12i);
 
 	assign alu_op  = {
 		op_lui	,
@@ -107,34 +110,45 @@ module ID_stage(
 	};
 
 	/*
-		// 决定源操作数
+		// 决定源操作数 one-hot
 		+--------------+-----------------+
 		| sel_alu_src1 | alu_src1        |
 		+--------------+-----------------+
-		| 1            | RegFile_R_data1 |
+		| 2            | RegFile_R_data1 |
+		| 1            | inst_PC         |
 		| 0            | 32'b0           |
 		+--------------+-----------------+
 
-		+--------------+-----------------+
-		| sel_alu_src2 | alu_src2        |
-		+--------------+-----------------+
-		| 1            | RegFile_R_data2 |
-		| 0            | immediate       |
-		+--------------+-----------------+
-
 	*/
-	assign sel_alu_src1 = (inst_addi_w | inst_add_w | inst_sub_w | inst_mul_w
+	assign sel_alu_src1[1] =  inst_addi_w | inst_add_w | inst_sub_w | inst_mul_w
 							| inst_or | inst_ori | inst_nor | inst_andi | inst_and | inst_xor 
 							| inst_srli_w | inst_slli_w | inst_srai_w
 							| inst_slt | inst_sltu
 							| inst_jirl
-							| inst_st_w | inst_ld_w | inst_st_b | inst_ld_b);
-	assign sel_alu_src2 = (inst_add_w | inst_sub_w | inst_mul_w
-							| inst_or | inst_nor | inst_and | inst_xor
-							| inst_slt | inst_sltu); 
+							| inst_st_w | inst_ld_w | inst_st_b | inst_ld_b;
+	assign sel_alu_src1[0] = inst_pcaddu12i;
 
-	assign alu_src1 = sel_alu_src1?RegFile_R_data1:32'b0;
-	assign alu_src2 = sel_alu_src2?RegFile_R_data2:immediate;
+    /*
+		// 决定源操作数 one-hot
+		+--------------+-----------------+
+		| sel_alu_src2 | alu_src2        |
+		+--------------+-----------------+
+		| 2            | RegFile_R_data2 |
+		| 1            | immediate       |
+		| 0            | 32'b0		     |
+		+--------------+-----------------+
+	*/
+	assign sel_alu_src2[1] =  inst_add_w | inst_sub_w | inst_mul_w
+							| inst_or | inst_nor | inst_and | inst_xor
+							| inst_slt | inst_sltu; 
+	assign sel_alu_src2[0]=   inst_addi_w | inst_ori | inst_andi | inst_srli_w | inst_slli_w | inst_srai_w
+							| inst_lu12i_w | inst_pcaddu12i | inst_jirl
+							| inst_st_w | inst_ld_w | inst_st_b | inst_ld_b;
+
+	assign alu_src1 = sel_alu_src1[1]?RegFile_R_data1:
+						sel_alu_src1[0]?inst_PC:32'b0;
+	assign alu_src2 = sel_alu_src2[1]?RegFile_R_data2:
+						sel_alu_src2[0]?immediate:32'b0;
 
 	///////////////////////////////////////////////////////////
 	/// 数据RAM的相关控制信号生成
@@ -145,7 +159,7 @@ module ID_stage(
 	assign data_ram_wdata=data_sram_we?RegFile_R_data2:32'b0;
 
 	// Data RAM使能信号
-	assign sel_data_ram_en=(inst_st_b | inst_st_w
+	assign sel_data_ram_en=(  inst_st_b | inst_st_w
 							| inst_ld_b | inst_ld_w);
 
 	// 字节使能
@@ -159,6 +173,26 @@ module ID_stage(
 
 	*/
 	assign sel_data_ram_be=(inst_st_b | inst_ld_b);
+
+	///////////////////////////////////////////////////////////
+	/// 生成WB阶段控制信号
+
+	// 是否写回寄存器
+	assign sel_rf_w_en =      inst_addi_w | inst_add_w | inst_sub_w | inst_mul_w
+							| inst_or | inst_ori | inst_nor | inst_andi | inst_and | inst_xor
+							| inst_srli_w | inst_slli_w | inst_srai_w | 
+							| inst_lu12i_w | inst_pcaddu12i;
+
+	// 控制写入数据来源
+	/*
+		+---------------+----------+
+		| sel_rf_w_data | 数据来源 |
+		+---------------+----------+
+		| 1             | RAM      |
+		| 0             | ALU      |
+		+---------------+----------+
+	*/
+	assign sel_rf_w_data = inst_ld_w | inst_ld_b;
 	
 	//////////////////////////////////////////////////////////
 	/// 检验分支预测正确性
@@ -212,6 +246,8 @@ module ID_stage(
 	};
 
 	assign ID_to_EXE_bus ={
+		sel_rf_w_en		,//112
+		sel_rf_w_data	,//111
 		sel_data_ram_be	,//110
 		sel_data_ram_we	,//109
 		sel_data_ram_en	,//108
