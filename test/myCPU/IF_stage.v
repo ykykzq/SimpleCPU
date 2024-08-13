@@ -33,6 +33,7 @@ module IF_stage(
 	wire [31: 0]		next_PC			;
 	wire				br_taken_cancel	;
 	wire [31: 0]		PC_fromID		;
+	
 	//分支预测的PC
 	wire [31: 0]		pred_PC			;
 
@@ -100,8 +101,8 @@ module IF_stage(
 
 	assign IF_to_IPD_bus={
 			pred_PC		,//95:64
-			PC_plus_4	,//63:32
-			32'b0		 //31:0 预占据inst的位置
+			next_PC		 //63:32
+						 //31:0 预占据inst的位置
 		};
 
 endmodule

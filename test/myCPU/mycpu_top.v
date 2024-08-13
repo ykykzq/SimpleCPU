@@ -1,4 +1,11 @@
-
+/**
+ * @file mycpu_top.v
+ * @author ykykzq
+ * @brief CPU顶层模块，连接各个流水级
+ * @version 0.1
+ * @date 2024-08-13
+ *
+ */
 `include"./include/myCPU.h"
 module mycpu_top(
     input  wire        clk,
@@ -48,7 +55,7 @@ module mycpu_top(
     wire [`EXE_TO_MEM_BUS_WD-1:0]   EXE_to_MEM_bus  ;
     wire [`MEM_TO_WB_BUS_WD-1:0]    MEM_to_WB_bus   ;
     wire [`WB_to_ID_bus_WD-1:0]     WB_to_ID_bus    ;
-    
+
     wire [`ID_TO_IF_BUS_WD-1:0]     ID_to_IF_bus    ;
     wire [`ID_TO_IPD_BUS_WD-1:0]    ID_to_IPD_bus   ;
 

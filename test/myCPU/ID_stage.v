@@ -26,19 +26,96 @@ module ID_stage(
 	output wire							ID_allow_in,
 	output wire							ID_to_EXE_valid
 );
+	// 当前指令的PC
+	wire [31: 0]	inst_PC;
+	
+	// 流水线控制信号
+	wire ID_ready_go;
+	reg  ID_valid;
+
+	// IPD/ID REG
+	reg [`IPD_TO_ID_BUS_WD-1:0]	IPD_to_ID_reg;
+
+	// 寄存器访问相关
+	wire [ 4: 0]	RegFile_R_addr2;
+	wire [ 4: 0]	RegFile_R_addr1;
+	wire 			w_en;
+	wire [31: 0]	w_data;
+	wire [ 4: 0]	w_addr;
+
+	wire [ 4: 0]	RegFile_W_addr;//注意此值代表当前流水级（ID）正在处理的指令的目的寄存器，不代表这拍要写入(WB)的寄存器
+	
+	// 立即数
+	wire [31: 0]	immediate;
+
 	// ALU控制信号与源操作数
-	wire op_lui;   //Load Upper Immediate
-	wire op_sra;   //arithmetic right shift
-	wire op_srl;   //logic right shift
-	wire op_sll;   //logic left shift
-	wire op_xor;   //bitwise xor
-	wire op_or;    //bitwise or
-	wire op_nor;   //bitwise nor
-	wire op_and;   //bitwise and
-	wire op_sltu;  //unsigned compared and set less than
-	wire op_slt;   //signed compared and set less than
-	wire op_sub;   //sub operation
-	wire op_add;   //add operation
+	wire [ 1: 0]	sel_alu_src1;
+	wire [ 1: 0]	sel_alu_src2;
+	wire [31: 0]	alu_src1;
+	wire [31: 0]	alu_src2;
+	wire [11: 0]	alu_op;
+	wire 		op_lui;   //Load Upper Immediate
+	wire 		op_sra;   //arithmetic right shift
+	wire 		op_srl;   //logic right shift
+	wire 		op_sll;   //logic left shift
+	wire 		op_xor;   //bitwise xor
+	wire 		op_or;    //bitwise or
+	wire 		op_nor;   //bitwise nor
+	wire 		op_and;   //bitwise and
+	wire 		op_sltu;  //unsigned compared and set less than
+	wire 		op_slt;   //signed compared and set less than
+	wire 		op_sub;   //sub operation
+	wire 		op_add;   //add operation
+
+	// 数据RAM的相关控制信号
+	wire		sel_data_ram_en;
+	wire 		sel_data_ram_we;
+	wire 		sel_data_ram_wd;
+	wire [31:0]	data_ram_wdata;
+
+	// WB阶段的控制信号
+	wire 		sel_rf_w_en;
+	wire		sel_rf_w_data;
+
+	// 分支处理单元（BU）的控制信号
+	wire [`INST_TYPE_WD-1: 0]	inst_type;
+	wire [31: 0]	BranchUnit_src1;
+	wire [31: 0] 	BranchUnit_src2;
+	wire [31: 0] 	pred_PC;
+	wire [31: 0]	PC_fromID;
+	wire 	br_taken_cancel;
+
+	// 指令类型
+	//加减
+    wire                        inst_addi_w     ;
+    wire                        inst_add_w      ;
+    wire                        inst_sub_w      ;
+    wire                        inst_or         ;
+    wire                        inst_ori        ;
+    wire                        inst_nor        ;
+    wire                        inst_andi       ;
+    wire                        inst_and        ;
+    wire                        inst_xor        ;
+    wire                        inst_srli_w     ;
+    wire                        inst_slli_w     ;
+    wire                        inst_srai_w     ;
+    wire                        inst_lu12i_w    ;
+    wire                        inst_pcaddu12i  ;
+    wire                        inst_slt        ;
+    wire                        inst_sltu       ;
+    // 乘除
+    wire                        inst_mul_w      ;
+    // 跳转   
+    wire                        inst_jirl       ;
+    wire                        inst_b          ;
+    wire                        inst_beq        ;
+    wire                        inst_bne        ;
+    wire                        inst_bl         ;
+    // 访存
+    wire                        inst_st_w       ;
+    wire                        inst_ld_w       ;
+    wire                        inst_st_b       ;
+    wire                        inst_ld_b       ;
 
 	///////////////////////////////////////////////////////////
 	/// 流水线行为控制
@@ -76,6 +153,40 @@ module ID_stage(
 
 	//////////////////////////////////////////////////////////
 	/// ALU源操作数决定（立即数、寄存器值、旁路网络）
+
+	// 判断指令类型
+	assign{
+            //加减
+            inst_addi_w     ,
+            inst_add_w      ,
+            inst_sub_w      ,
+            inst_or         ,
+            inst_ori        ,
+            inst_nor        ,
+            inst_andi       ,
+            inst_and        ,
+            inst_xor        ,
+            inst_srli_w     ,
+            inst_slli_w     ,
+            inst_srai_w     ,
+            inst_lu12i_w    ,
+            inst_pcaddu12i  ,
+            inst_slt        ,
+            inst_sltu       ,
+            // 乘除
+            inst_mul_w      ,
+            // 跳转   
+            inst_jirl       ,
+            inst_b          ,
+            inst_beq        ,
+            inst_bne        ,
+            inst_bl         ,
+            // 访存
+            inst_st_w       ,
+            inst_ld_w       ,
+            inst_st_b       ,
+            inst_ld_b       
+    }=inst_type;
 
 	// 计算类型
 	assign op_lui  = (inst_lu12i_w);
@@ -156,7 +267,7 @@ module ID_stage(
 	// 写使能
 	assign sel_data_ram_we=(inst_st_b | inst_st_w);
 	// 写数据。当写有效时为数据，否则全0
-	assign data_ram_wdata=data_sram_we?RegFile_R_data2:32'b0;
+	assign data_ram_wdata=sel_data_ram_we?RegFile_R_data2:32'b0;
 
 	// Data RAM使能信号
 	assign sel_data_ram_en=(  inst_st_b | inst_st_w
@@ -253,17 +364,17 @@ module ID_stage(
 	};
 
 	assign ID_to_EXE_bus ={
-		sel_rf_w_en		,
-		sel_rf_w_data	,
-		sel_data_ram_wd	,
-		sel_data_ram_we	,
-		sel_data_ram_en	,
-		data_ram_wdata	,
-		RegFile_W_addr	,
-		alu_op			,
-		alu_src2		,
-		alu_src1		, 
-		inst_PC			 //31:0
+		sel_rf_w_en		,//1
+		sel_rf_w_data	,//1
+		sel_data_ram_wd	,//1
+		sel_data_ram_we	,//1
+		sel_data_ram_en	,//1
+		data_ram_wdata	,//32
+		RegFile_W_addr	,//5
+		alu_op			,//11
+		alu_src2		,//32
+		alu_src1		,//32
+		inst_PC			 //32
 	};
 
 	

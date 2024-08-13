@@ -28,6 +28,38 @@ module EXE_stage(
 	output wire[31:0]					data_ram_w_data
     );
 	
+	// 当前指令的PC
+	wire [31: 0]	inst_PC;
+
+	// 流水线控制
+	wire EXE_ready_go;
+	reg  EXE_valid;
+
+	// ID/EXE REG
+	reg [`ID_TO_EXE_BUS_WD-1:0]	ID_to_EXE_reg;
+
+	// ALU操作数与运算类型
+	wire [11: 0]	alu_op;
+	wire [31: 0]	alu_src1;
+	wire [31: 0]	alu_src2;
+	wire [31: 0]	alu_result;
+
+	// Data RAM控制信号
+	wire sel_data_ram_en;
+	wire sel_data_ram_we;
+	wire sel_data_ram_wd;
+	wire data_ram_en;
+	reg  [ 3: 0]	data_ram_b_en;
+	wire [ 3: 0]	data_ram_w_en;
+	wire [31: 0]	data_ram_addr;
+	wire [31: 0]	data_ram_wdata;
+
+	// 写回（WB）阶段用到的控制信号
+	wire [ 4: 0]	RegFile_W_addr;
+	wire	sel_rf_w_data;
+	wire 	sel_rf_w_en;
+
+
 	////////////////////////////////////////////////////////
 	/// 流水线控制
 
@@ -39,7 +71,7 @@ module EXE_stage(
     begin
         if(reset)
             EXE_valid<=1'b0;
-        else if(IPD_allow_in)
+        else if(EXE_allow_in)
             EXE_valid<=ID_to_EXE_valid;
         else 
             EXE_valid<=EXE_valid;
@@ -110,13 +142,13 @@ module EXE_stage(
 	
 	// 发送
 	assign EXE_to_MEM_bus = {
-		sel_rf_w_en		,
-		sel_rf_w_data	,
-		sel_data_ram_wd	,
-		data_ram_b_en	,
-		RegFile_W_addr	,
-		alu_result		,
-		inst_PC			 //31:0
+		sel_rf_w_en		,//1
+		sel_rf_w_data	,//1
+		sel_data_ram_wd	,//1
+		data_ram_b_en	,//4
+		RegFile_W_addr	,//5
+		alu_result		,//32
+		inst_PC			 //32
 	};
 	
 endmodule

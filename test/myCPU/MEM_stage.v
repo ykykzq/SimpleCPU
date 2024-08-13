@@ -24,6 +24,23 @@ module MEM_stage(
 	input  wire							WB_allow_in,
 	output wire							MEM_to_WB_valid
     );
+    // 当前指令的PC
+	wire [31: 0]	inst_PC;
+
+    // 流水线控制
+	wire MEM_ready_go;
+	reg  MEM_valid;
+
+    // EXE/MEM REG
+    reg [`EXE_TO_MEM_BUS_WD-1:0]    EXE_to_MEM_reg;
+
+    // 写回阶段的数据与控制信号
+    wire [31: 0]    alu_result;
+    wire [ 4: 0]    RegFile_W_addr;
+    wire [ 3: 0]	data_ram_b_en;
+    wire    sel_data_ram_wd;
+    wire    sel_rf_w_data;
+    wire    sel_rf_w_en;
 
     //////////////////////////////////////////////
     /// 流水线控制
@@ -70,14 +87,14 @@ module MEM_stage(
 
     // 发送
     assign MEM_to_WB_bus = {
-        sel_rf_w_en		,
-		sel_rf_w_data	,
-        sel_data_ram_wd ,
-		data_ram_b_en	,
-        data_ram_r_data ,
-        RegFile_W_addr  ,
-		alu_result		,
-        inst_PC          //31:0
+        sel_rf_w_en		,//1
+		sel_rf_w_data	,//1
+        sel_data_ram_wd ,//1
+		data_ram_b_en	,//4
+        data_ram_r_data ,//32
+        RegFile_W_addr  ,//5
+		alu_result		,//32
+        inst_PC          //32
     };
 
 endmodule

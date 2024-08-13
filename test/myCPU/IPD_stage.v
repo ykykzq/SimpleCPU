@@ -24,6 +24,8 @@ module IPreD_stage(
 	output wire							IPD_allow_in,
 	output wire							IPD_to_ID_valid
 );
+    // 当前指令的PC
+	wire [31: 0]	inst_PC;
 
     // 流水线控制信号
     wire						IPD_ready_go    ;
@@ -35,39 +37,40 @@ module IPreD_stage(
     // PC与分支预测相关
     wire                        br_taken_cancel ;
     wire [31: 0]                PC_fromID       ;
-    wire [31: 0]                PC_plus_4       ;
+    wire [31: 0]                pred_PC       ;
 
     // 指令类型
+    wire [`INST_TYPE_WD-1: 0]	inst_type;
     //加减
-    wire                        inst_addi_w     ;
-    wire                        inst_add_w      ;
-    wire                        inst_sub_w      ;
-    wire                        inst_or         ;
-    wire                        inst_ori        ;
-    wire                        inst_nor        ;
-    wire                        inst_andi       ;
-    wire                        inst_and        ;
-    wire                        inst_xor        ;
-    wire                        inst_srli_w     ;
-    wire                        inst_slli_w     ;
-    wire                        inst_srai_w     ;
-    wire                        inst_lu12i_w    ;
-    wire                        inst_pcaddu12i  ;
-    wire                        inst_slt        ;
-    wire                        inst_sltu       ;
+    wire    inst_addi_w     ;
+    wire    inst_add_w      ;
+    wire    inst_sub_w      ;
+    wire    inst_or         ;
+    wire    inst_ori        ;
+    wire    inst_nor        ;
+    wire    inst_andi       ;
+    wire    inst_and        ;
+    wire    inst_xor        ;
+    wire    inst_srli_w     ;
+    wire    inst_slli_w     ;
+    wire    inst_srai_w     ;
+    wire    inst_lu12i_w    ;
+    wire    inst_pcaddu12i  ;
+    wire    inst_slt        ;
+    wire    inst_sltu       ;
     // 乘除
-    wire                        inst_mul_w      ;
+    wire    inst_mul_w      ;
     // 跳转   
-    wire                        inst_jirl       ;
-    wire                        inst_b          ;
-    wire                        inst_beq        ;
-    wire                        inst_bne        ;
-    wire                        inst_bl         ;
+    wire    inst_jirl       ;
+    wire    inst_b          ;
+    wire    inst_beq        ;
+    wire    inst_bne        ;
+    wire    inst_bl         ;
     // 访存
-    wire                        inst_st_w       ;
-    wire                        inst_ld_w       ;
-    wire                        inst_st_b       ;
-    wire                        inst_ld_b       ;
+    wire    inst_st_w       ;
+    wire    inst_ld_w       ;
+    wire    inst_st_b       ;
+    wire    inst_ld_b       ;
 
     // 三寄存器号与立即数
     wire [ 4: 0]                RegFile_R_addr1 ;
@@ -75,7 +78,8 @@ module IPreD_stage(
     wire [ 4: 0]                RegFile_W_addr  ;
     wire [31: 0]                immediate       ;
 
-    // 指令字段
+    // 指令与指令字段
+    wire [31: 0]                inst            ;
     wire [ 4: 0]                rk              ;
     wire [ 4: 0]                rj              ;
     wire [ 4: 0]                rd              ;
@@ -108,6 +112,8 @@ module IPreD_stage(
 
     ////////////////////////////////////////
     /// 判断指令类型
+
+    assign inst=inst_ram_r_data;
 
     assign rk=inst[14:10];
     assign rj=inst[ 9: 5];
@@ -264,7 +270,11 @@ module IPreD_stage(
 		else
 			IF_to_IPD_reg<=IF_to_IPD_reg;
 	end
-    assign {PC_plus_4}=IF_to_IPD_reg[63:32];
+    assign {
+        pred_PC		,//95:64
+		inst_PC 	 //63:32
+		    		 //31:0 预占据inst的位置
+    } = IF_to_IPD_reg;
 
     assign inst=inst_ram_r_data;
 

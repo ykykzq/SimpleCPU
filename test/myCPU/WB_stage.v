@@ -26,7 +26,28 @@ module WB_stage(
 	input  wire							MEM_to_WB_valid,
 	output wire							WB_allow_in
     );
+    // 当前指令的PC
+	wire [31: 0]	inst_PC;
 
+    // 流水线控制
+	wire WB_ready_go;
+	reg  WB_valid;
+
+    // MEM/WB REG
+    reg [`MEM_TO_WB_BUS_WD-1:0] MEM_to_WB_reg;
+
+    // 写回数据与目的寄存器号
+    wire [31: 0]	RF_w_data_From_ALU;
+    reg  [31: 0]	RF_w_data_From_RAM;
+    wire [31: 0]	data_ram_r_data;
+    wire [31: 0]	alu_result;
+    wire [ 4: 0]	RegFile_w_addr;
+    wire [ 3: 0]    data_ram_b_en;
+    wire    sel_rf_w_data;
+    wire    sel_data_ram_wd;
+
+    // 写回使能信号
+    wire sel_rf_w_en;
 
     //////////////////////////////////////////////
     /// 流水线控制
@@ -88,7 +109,7 @@ module WB_stage(
         sel_data_ram_wd ,
 		data_ram_b_en	,
         data_ram_r_data ,
-        RegFile_W_addr  ,
+        RegFile_w_addr  ,
 		alu_result		,
         inst_PC          //31:0
     }=MEM_to_WB_reg;
