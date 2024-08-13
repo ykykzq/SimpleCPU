@@ -7,7 +7,7 @@
  *
  */
 `include"./include/myCPU.h"
-module IPreD_top(
+module IPreD_stage(
     input								clk,
 	input								reset,
 

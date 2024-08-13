@@ -18,11 +18,11 @@ module ID_stage(
 	output wire[`ID_TO_IF_BUS_WD-1:0]	ID_to_IF_bus,
     output wire[`ID_TO_IPD_BUS_WD-1:0]  ID_to_IPD_bus,
 
-	input  wire[`WB_TO_RF_BUS_WD-1:0]	WB_to_RF_bus,
+	input  wire[`WB_to_ID_bus_WD-1:0]	WB_to_ID_bus,
 
 	//流水线控制
 	input  wire							EXE_allow_in,
-	input  wire							IF_to_ID_valid,
+	input  wire							IPD_to_ID_valid,
 	output wire							ID_allow_in,
 	output wire							ID_to_EXE_valid
 );
@@ -46,18 +46,18 @@ module ID_stage(
 	// 认为一周期内必能完成decode
     assign ID_ready_go=1'b1;
 	assign ID_allow_in=(~ID_valid)|(ID_ready_go & EXE_allow_in);
-	assign IPD_to_ID_valid=IPD_ready_go&IPD_valid;
+	assign ID_to_EXE_valid=ID_ready_go&ID_valid;
     always@(posedge clk)
     begin
         if(reset)
-            IPD_valid<=1'b0;
-        else if(IPD_allow_in)
-            IPD_valid<=IF_to_IPD_valid;
+            ID_valid<=1'b0;
+        else if(ID_allow_in)
+            ID_valid<=IPD_to_ID_valid;
         else if(br_taken_cancel)
             // 分支预测失败，flush
-            IPD_valid<=1'b0;
+            ID_valid<=1'b0;
         else 
-            IPD_valid<=IPD_valid;
+            ID_valid<=ID_valid;
     end
 
 	////////////////////////////////////////////////////////////
@@ -69,9 +69,9 @@ module ID_stage(
 		.r_data1	(	RegFile_R_data1),
 		.r_data2	(	RegFile_R_data2),
 		//写信号
-		.w_data		(),
-		.w_addr		(),
-		.w_en 		()
+		.w_data		(w_data),
+		.w_addr		(w_addr),
+		.w_en 		(w_en)
     );
 
 	//////////////////////////////////////////////////////////
@@ -165,14 +165,14 @@ module ID_stage(
 	// 字节使能
 	/*
 		+-----------------+-------------+
-		| sel_data_ram_be | 长度        |
+		| sel_data_ram_wd | 长度        |
 		+-----------------+-------------+
 		| 1               | byte(8bit)  |
 		| 0               | word(32bit) |
 		+-----------------+-------------+
 
 	*/
-	assign sel_data_ram_be=(inst_st_b | inst_ld_b);
+	assign sel_data_ram_wd=(inst_st_b | inst_ld_b);
 
 	///////////////////////////////////////////////////////////
 	/// 生成WB阶段控制信号
@@ -183,8 +183,8 @@ module ID_stage(
 							| inst_srli_w | inst_slli_w | inst_srai_w | 
 							| inst_lu12i_w | inst_pcaddu12i;
 
-	// 控制写入数据来源
-	/*
+	/* 
+		控制写入数据来源
 		+---------------+----------+
 		| sel_rf_w_data | 数据来源 |
 		+---------------+----------+
@@ -234,6 +234,13 @@ module ID_stage(
             RegFile_R_addr1      //  4:  0
     } = IPD_to_ID_reg;
 
+
+	assign {
+		w_en	    ,//37
+		w_data		,//36:5
+		w_addr	 	 //4:0
+	}=WB_to_ID_bus;
+
 	// 发送
 	assign ID_to_IF_bus={
 			br_taken_cancel	,//32
@@ -246,15 +253,17 @@ module ID_stage(
 	};
 
 	assign ID_to_EXE_bus ={
-		sel_rf_w_en		,//112
-		sel_rf_w_data	,//111
-		sel_data_ram_be	,//110
-		sel_data_ram_we	,//109
-		sel_data_ram_en	,//108
-		data_ram_wdata	,//107:76
-		alu_op			,//75:64
-		alu_src2		,//63:32
-		alu_src1		 //31::0
+		sel_rf_w_en		,
+		sel_rf_w_data	,
+		sel_data_ram_wd	,
+		sel_data_ram_we	,
+		sel_data_ram_en	,
+		data_ram_wdata	,
+		RegFile_W_addr	,
+		alu_op			,
+		alu_src2		,
+		alu_src1		, 
+		inst_PC			 //31:0
 	};
 
 	

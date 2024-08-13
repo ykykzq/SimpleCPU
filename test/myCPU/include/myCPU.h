@@ -7,11 +7,11 @@
     `define ID_TO_EXE_BUS_WD 	1
     `define EXE_TO_MEM_BUS_WD	1
     `define MEM_TO_WB_BUS_WD 	1
+	`define WB_to_ID_bus_WD 	1
 
 	`define ID_TO_IF_BUS_WD  	1
 	`define ID_TO_IPD_BUS_WD	1
-    `define WB_TO_RF_BUS_WD 	1
-	
+    
 	// 旁路与流水级通信
 	`define EXE_TO_BY_BUS_WD	1
 	`define MEM_TO_BY_BUS_WD	1

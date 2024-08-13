@@ -24,7 +24,7 @@ module IF_stage(
 	output wire[31:0]					inst_ram_w_data,//实际上用不到指令RAM的写
     
 	//流水线控制
-	input  wire							ID_allow_in,
+	input  wire							IPD_allow_in,
 	output wire							IF_to_IPD_valid
 );
 	// PC相关
@@ -56,7 +56,7 @@ module IF_stage(
 	
 	// 控制流水线行为
 	assign IF_ready_go=1'b1;//总认为一周期内能完成
-	assign IF_allow_in=(~IF_valid) | (IF_ready_go & ID_allow_in);//后者加上IF_valid=1,相当于IF可以向ID发送数据(只含“发送”，不含“接收”)
+	assign IF_allow_in=(~IF_valid) | (IF_ready_go & IPD_allow_in);//后者加上IF_valid=1,相当于IF可以向ID发送数据(只含“发送”，不含“接收”)
 	assign Pre_to_IF_valid=~reset;
 	assign IF_to_IPD_valid=IF_valid;//&IF_ready_go
 	
