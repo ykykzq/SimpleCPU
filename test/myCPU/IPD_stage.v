@@ -101,9 +101,9 @@ module IPreD_stage(
     begin
         if(reset)
             IPD_valid<=1'b0;
-        else if(br_taken_cancel)
-            // 分支预测失败，flush
-            IPD_valid<=1'b0;
+        // else if(br_taken_cancel)
+        //     // 分支预测失败，flush
+        //     IPD_valid<=1'b0;
         else if(IPD_allow_in)
             IPD_valid<=IF_to_IPD_valid;
         else 
@@ -254,7 +254,7 @@ module IPreD_stage(
     assign immediate =  (inst_addi_w | inst_st_w | inst_ld_w | inst_st_b | inst_ld_b)?{{20{inst[21]}},inst[21:10]}:
                         (inst_ori | inst_andi )?{20'b0,inst[21:10]}:
                         (inst_srli_w | inst_slli_w | inst_srai_w)?{27'b0,inst[14:10]}:
-                        (inst_lu12i_w | inst_pcaddu12i)?{inst[24:0],12'b0}:
+                        (inst_lu12i_w | inst_pcaddu12i)?{inst[24: 5],12'b0}:
                         (inst_jirl | inst_beq | inst_bne)?{{14{inst[25]}},inst[25:10],2'b0}:
                         (inst_b | inst_bl)?{{4{inst[9]}},inst[ 9: 0],inst[25:10],2'b0}:32'b0;
 

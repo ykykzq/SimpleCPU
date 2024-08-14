@@ -51,6 +51,9 @@ module IF_stage(
 			IF_valid<=1'b0;//相当于清空有效数据
 		else if(IF_allow_in)
 			IF_valid<=Pre_to_IF_valid;
+		else if(br_taken_cancel)
+			// flush掉当前指令
+			IF_valid<=1'b0;
 		else
 			IF_valid<=IF_valid;
 	end
