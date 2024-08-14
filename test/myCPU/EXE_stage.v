@@ -48,10 +48,10 @@ module EXE_stage(
 	wire sel_data_ram_en;
 	wire sel_data_ram_we;
 	wire sel_data_ram_wd;
-	wire data_ram_en;
+	//wire data_ram_en;
 	reg  [ 3: 0]	data_ram_b_en;
-	wire [ 3: 0]	data_ram_w_en;
-	wire [31: 0]	data_ram_addr;
+	//wire [ 3: 0]	data_ram_w_en;//这两个信号在模块声明时声明
+	//wire [31: 0]	data_ram_addr;
 	wire [31: 0]	data_ram_wdata;
 
 	// 写回（WB）阶段用到的控制信号
@@ -92,6 +92,7 @@ module EXE_stage(
 
 	assign data_ram_en=sel_data_ram_en;
 	assign data_ram_addr=alu_result;
+
 	// 字节使能
 	always@(*)
 	begin
@@ -121,7 +122,9 @@ module EXE_stage(
 	// 接收
 	always@(posedge clk)
 	begin
-		if(ID_to_EXE_valid & EXE_allow_in)
+		if(reset)
+			ID_to_EXE_reg<=0;
+		else if(ID_to_EXE_valid & EXE_allow_in)
 			ID_to_EXE_reg<=ID_to_EXE_bus;
 		else
 			ID_to_EXE_reg<=ID_to_EXE_reg;

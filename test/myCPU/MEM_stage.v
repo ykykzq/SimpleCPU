@@ -70,7 +70,9 @@ module MEM_stage(
     // 接收
     always@(posedge clk)
 	begin
-		if(EXE_to_MEM_valid & MEM_allow_in)
+		if(reset)
+			EXE_to_MEM_reg<=0;
+		else if(EXE_to_MEM_valid & MEM_allow_in)
 			EXE_to_MEM_reg<=EXE_to_MEM_bus;
 		else
 			EXE_to_MEM_reg<=EXE_to_MEM_reg;

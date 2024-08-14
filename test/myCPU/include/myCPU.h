@@ -5,9 +5,9 @@
 	`define INST_TYPE_WD		26
 
 	// 流水线间数据通信
-	`define IF_TO_IPD_BUS_WD 	96
+	`define IF_TO_IPD_BUS_WD 	64
     `define IPD_TO_ID_BUS_WD 	137
-    `define ID_TO_EXE_BUS_WD 	149
+    `define ID_TO_EXE_BUS_WD 	150
     `define EXE_TO_MEM_BUS_WD	76
     `define MEM_TO_WB_BUS_WD 	108
 	`define WB_to_ID_bus_WD 	38

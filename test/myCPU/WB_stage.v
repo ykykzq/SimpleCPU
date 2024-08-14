@@ -42,6 +42,7 @@ module WB_stage(
     wire [31: 0]	data_ram_r_data;
     wire [31: 0]	alu_result;
     wire [ 4: 0]	RegFile_w_addr;
+    wire [31: 0]    RegFile_w_data;
     wire [ 3: 0]    data_ram_b_en;
     wire    sel_rf_w_data;
     wire    sel_data_ram_wd;
@@ -97,7 +98,9 @@ module WB_stage(
     // 接收
     always@(posedge clk)
 	begin
-		if(MEM_to_WB_valid & WB_allow_in)
+        if(reset)
+            MEM_to_WB_reg<=0;
+		else if(MEM_to_WB_valid & WB_allow_in)
 			MEM_to_WB_reg<=MEM_to_WB_bus;
 		else
 			MEM_to_WB_reg<=MEM_to_WB_reg;

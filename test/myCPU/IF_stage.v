@@ -72,7 +72,7 @@ module IF_stage(
 	always@(posedge clk)
 	begin
 		if(reset)
-			PC<=32'h1c000000-3'b100;
+			PC<=32'h1c000000-4'b1000;
 		else if(IF_allow_in & Pre_to_IF_valid)
 			PC<=next_PC;
 		else 

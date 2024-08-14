@@ -101,11 +101,11 @@ module IPreD_stage(
     begin
         if(reset)
             IPD_valid<=1'b0;
-        else if(IPD_allow_in)
-            IPD_valid<=IF_to_IPD_valid;
         else if(br_taken_cancel)
             // 分支预测失败，flush
             IPD_valid<=1'b0;
+        else if(IPD_allow_in)
+            IPD_valid<=IF_to_IPD_valid;
         else 
             IPD_valid<=IPD_valid;
     end
@@ -256,7 +256,7 @@ module IPreD_stage(
                         (inst_srli_w | inst_slli_w | inst_srai_w)?{27'b0,inst[14:10]}:
                         (inst_lu12i_w | inst_pcaddu12i)?{inst[24:0],12'b0}:
                         (inst_jirl | inst_beq | inst_bne)?{{14{inst[25]}},inst[25:10],2'b0}:
-                        (inst_b | inst_bl)?{{4{inst[25]}},inst[25: 0],2'b0}:32'b0;
+                        (inst_b | inst_bl)?{{4{inst[9]}},inst[ 9: 0],inst[25:10],2'b0}:32'b0;
 
 
     ////////////////////////////////////////
@@ -265,8 +265,13 @@ module IPreD_stage(
     // 接收
     always@(posedge clk)
 	begin
-		if(IF_to_IPD_valid & IPD_allow_in)
+        if(reset)
+            IF_to_IPD_reg<=0;
+		else if(IF_to_IPD_valid & IPD_allow_in)
 			IF_to_IPD_reg<=IF_to_IPD_bus;
+        else if(br_taken_cancel)
+			//预测错误，flush掉
+            IF_to_IPD_reg<=0;
 		else
 			IF_to_IPD_reg<=IF_to_IPD_reg;
 	end

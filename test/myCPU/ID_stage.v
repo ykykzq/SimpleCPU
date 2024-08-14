@@ -200,7 +200,7 @@ module ID_stage(
 	assign op_sltu = (inst_sltu); 
 	assign op_slt  = (inst_slt);
 	assign op_sub  = (inst_sub_w);
-	assign op_add  = (    inst_add_w | inst_add_w 
+	assign op_add  = (    inst_addi_w | inst_add_w 
 						| inst_jirl 
 						| inst_st_w | inst_ld_w | inst_st_b | inst_ld_b 
 						| inst_pcaddu12i);
@@ -312,8 +312,9 @@ module ID_stage(
 							(inst_b | inst_bl)?immediate:32'b0;
 	assign BranchUnit_src2=(inst_jirl)?immediate:
 							(inst_beq | inst_bne)?RegFile_R_data2:
-							(inst_b | inst_bl)?32'b0:32'b0;
+							(inst_b | inst_bl)?inst_PC:32'b0;
 	BranchUnit BU(
+		.reset				(reset			),
 		.inst_type			(inst_type		),
     	.pred_PC			(pred_PC		),
     	// 用于计算PC的值
@@ -330,7 +331,12 @@ module ID_stage(
 	// 接收
 	always@(posedge clk)
 	begin
-		if(IPD_to_ID_valid & ID_allow_in)
+		if(reset)
+			IPD_to_ID_reg<=0;
+		else if(br_taken_cancel)
+			//预测错误，flush掉
+			IPD_to_ID_reg<=0;
+		else if(IPD_to_ID_valid & ID_allow_in)
 			IPD_to_ID_reg<=IPD_to_ID_bus;
 		else
 			IPD_to_ID_reg<=IPD_to_ID_reg;
@@ -371,7 +377,7 @@ module ID_stage(
 		sel_data_ram_en	,//1
 		data_ram_wdata	,//32
 		RegFile_W_addr	,//5
-		alu_op			,//11
+		alu_op			,//12
 		alu_src2		,//32
 		alu_src1		,//32
 		inst_PC			 //32

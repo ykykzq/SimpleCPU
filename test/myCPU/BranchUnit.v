@@ -8,6 +8,7 @@
  */
 `include"./include/myCPU.h"
 module BranchUnit(
+    input 							reset,
     input  wire[`INST_TYPE_WD-1:0]  inst_type,
     input  wire[31:0]               pred_PC,
     // 用于计算PC的值
@@ -52,7 +53,7 @@ module BranchUnit(
 
     // 计算真正的PC
     assign is_branch=(inst_jirl | inst_b | inst_beq | inst_bne | inst_bl);
-    assign next_PC=is_branch?src1+src2:32'b0;
+    assign next_PC=reset?32'b0:is_branch?src1+src2:32'b0;
     // 检验预测正确性
-    assign br_taken_cancel=is_branch&(~(pred_PC==next_PC));
+    assign br_taken_cancel=reset?1'b0:is_branch&(~(pred_PC==next_PC));
 endmodule
