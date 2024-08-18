@@ -79,7 +79,7 @@
 
 ## 推荐书籍
 
-《计算机组成与设计：硬件/软件接口》DavidA.Patterson、John L.Hennessy著，康继昌等译
+《计算机组成与设计：硬件/软件接口》DavidA.Patterson、John L.Hennessy著，康继昌、王党辉等译
 
 《CPU设计实战》汪文祥、邢金璋著
 
