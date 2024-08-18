@@ -18,12 +18,11 @@
 	// 旁路与流水级通信
 	`define EXE_TO_BY_BUS_WD	1
 	`define MEM_TO_BY_BUS_WD	1
-	`define ID_TO_BY_BUS_WD		1
+	`define WB_TO_BY_BUS_WD		1
+
 	`define BY_TO_ID_BUS_WD		1
 	
-	//阻塞与流水级通信
-	`define ID_TO_ST_BUS_WD		1
-	`define EXE_TO_ST_BUS_WD 	1
-	`define ST_TO_ID_BUS_WD		1
+	// Wake UP与流水级通信
+	`define BY_TO_WK_BUS_WD		1
 
 `endif

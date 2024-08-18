@@ -145,7 +145,7 @@ module ID_stage(
 		.r_addr2	(	RegFile_R_addr2),
 		.r_data1	(	RegFile_R_data1),
 		.r_data2	(	RegFile_R_data2),
-		//写信号
+		//写信号，注意该信号来自当前时刻的WB阶段
 		.w_data		(w_data),
 		.w_addr		(w_addr),
 		.w_en 		(w_en)
