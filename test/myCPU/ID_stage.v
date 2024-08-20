@@ -1,9 +1,9 @@
 /**
  * @file ID_stage.v
  * @author ykykzq
- * @brief 流水线第三级，决定ALU的源操作数；内含一Branch Unit，用于判断分支预测成功与否
- * @version 0.1
- * @date 2024-08-12
+ * @brief 流水线第三级，内含唤醒模块，决定指令是否流动，并获取ALU的源操作数；内含一Branch Unit，用于判断分支预测成功与否
+ * @version 0.2
+ * @date 2024-08-20
  *
  */
 `include "myCPU.h"
@@ -19,6 +19,8 @@ module ID_stage(
     output wire[`ID_TO_IPD_BUS_WD-1:0]  ID_to_IPD_bus,
 
 	input  wire[`WB_to_ID_bus_WD-1:0]	WB_to_ID_bus,
+
+	input  wire[`BY_TO_ID_BUS_WD-1:0]	BY_to_ID_bus,
 
 	//流水线控制
 	input  wire							EXE_allow_in,
@@ -120,8 +122,8 @@ module ID_stage(
 	///////////////////////////////////////////////////////////
 	/// 流水线行为控制
 
-	// 认为一周期内必能完成decode
-    assign ID_ready_go=1'b1;
+	// 两个操作数都准备好之后可以发射
+    assign ID_ready_go=alu_src_1_ready&&alu_src_2_ready;
 	assign ID_allow_in=(~ID_valid)|(ID_ready_go & EXE_allow_in);
 	assign ID_to_EXE_valid=ID_ready_go&ID_valid;
     always@(posedge clk)
@@ -146,164 +148,43 @@ module ID_stage(
 		.r_data1	(	RegFile_R_data1),
 		.r_data2	(	RegFile_R_data2),
 		//写信号，注意该信号来自当前时刻的WB阶段
-		.w_data		(w_data),
-		.w_addr		(w_addr),
-		.w_en 		(w_en)
+		.w_data		(w_data	),
+		.w_addr		(w_addr	),
+		.w_en 		(w_en	)
     );
 
 	//////////////////////////////////////////////////////////
-	/// ALU源操作数决定（立即数、寄存器值、旁路网络）
+	/// wakeUP模块
 
-	// 判断指令类型
-	assign{
-            //加减
-            inst_addi_w     ,
-            inst_add_w      ,
-            inst_sub_w      ,
-            inst_or         ,
-            inst_ori        ,
-            inst_nor        ,
-            inst_andi       ,
-            inst_and        ,
-            inst_xor        ,
-            inst_srli_w     ,
-            inst_slli_w     ,
-            inst_srai_w     ,
-            inst_lu12i_w    ,
-            inst_pcaddu12i  ,
-            inst_slt        ,
-            inst_sltu       ,
-            // 乘除
-            inst_mul_w      ,
-            // 跳转   
-            inst_jirl       ,
-            inst_b          ,
-            inst_beq        ,
-            inst_bne        ,
-            inst_bl         ,
-            // 访存
-            inst_st_w       ,
-            inst_ld_w       ,
-            inst_st_b       ,
-            inst_ld_b       
-    }=inst_type;
-
-	// 计算类型
-	assign op_lui  = (inst_lu12i_w);
-	assign op_sra  = (inst_srai_w);
-	assign op_srl  = (inst_srli_w);
-	assign op_sll  = (inst_slli_w);
-	assign op_xor  = (inst_xor);
-	assign op_or   = (inst_or | inst_ori);
-	assign op_nor  = (inst_nor);
-	assign op_and  = (inst_and | inst_andi);
-	assign op_sltu = (inst_sltu); 
-	assign op_slt  = (inst_slt);
-	assign op_sub  = (inst_sub_w);
-	assign op_add  = (    inst_addi_w | inst_add_w 
-						| inst_jirl 
-						| inst_st_w | inst_ld_w | inst_st_b | inst_ld_b 
-						| inst_pcaddu12i);
-
-	assign alu_op  = {
-		op_lui	,
-		op_sra	,
-		op_srl	,
-		op_sll	,
-		op_xor	,
-		op_or 	,
-		op_nor	,
-		op_and	,
-		op_slt	,
-		op_slt	,
-		op_sub	,
-		op_add	
+	assign BY_to_WK_bus={
+		// EXE阶段信号
+		EXE_RegFile_W_addr			,
+		EXE_sel_RF_W_Data_valid		,
+		EXE_sel_rf_w_en				,
+		// MEM阶段信号
+		MEM_RegFile_W_addr			,
+		MEM_sel_RF_W_Data_valid		,
+		MEM_sel_rf_w_en				,
+		// WB阶段信号		
+		WB_RegFile_W_addr			,
+		WB_sel_RF_W_Data_valid		,
+		WB_sel_rf_w_en		
 	};
 
-	/*
-		// 决定源操作数 one-hot
-		+--------------+-----------------+
-		| sel_alu_src1 | alu_src1        |
-		+--------------+-----------------+
-		| 2            | RegFile_R_data1 |
-		| 1            | inst_PC         |
-		| 0            | 32'b0           |
-		+--------------+-----------------+
+	WakeUP Wake_UP(
+	// 源操作数的控制信号与读取的寄存器号
+		.sel_alu_src1			(sel_alu_src1	),
+		.sel_alu_src2			(sel_alu_src2	),
+		.RegFile_R_addr1		(RegFile_R_addr1),
+		.RegFile_R_addr2		(RegFile_R_addr2),
 
-	*/
-	assign sel_alu_src1[1] =  inst_addi_w | inst_add_w | inst_sub_w | inst_mul_w
-							| inst_or | inst_ori | inst_nor | inst_andi | inst_and | inst_xor 
-							| inst_srli_w | inst_slli_w | inst_srai_w
-							| inst_slt | inst_sltu
-							| inst_jirl
-							| inst_st_w | inst_ld_w | inst_st_b | inst_ld_b;
-	assign sel_alu_src1[0] = inst_pcaddu12i;
+		// 流水线数据交互
+		.BY_to_WK_bus			(BY_to_WK_bus	),
 
-    /*
-		// 决定源操作数 one-hot
-		+--------------+-----------------+
-		| sel_alu_src2 | alu_src2        |
-		+--------------+-----------------+
-		| 2            | RegFile_R_data2 |
-		| 1            | immediate       |
-		| 0            | 32'b0		     |
-		+--------------+-----------------+
-	*/
-	assign sel_alu_src2[1] =  inst_add_w | inst_sub_w | inst_mul_w
-							| inst_or | inst_nor | inst_and | inst_xor
-							| inst_slt | inst_sltu; 
-	assign sel_alu_src2[0]=   inst_addi_w | inst_ori | inst_andi | inst_srli_w | inst_slli_w | inst_srai_w
-							| inst_lu12i_w | inst_pcaddu12i | inst_jirl
-							| inst_st_w | inst_ld_w | inst_st_b | inst_ld_b;
-
-	assign alu_src1 = sel_alu_src1[1]?RegFile_R_data1:
-						sel_alu_src1[0]?inst_PC:32'b0;
-	assign alu_src2 = sel_alu_src2[1]?RegFile_R_data2:
-						sel_alu_src2[0]?immediate:32'b0;
-
-	///////////////////////////////////////////////////////////
-	/// 数据RAM的相关控制信号生成
-
-	// 写使能
-	assign sel_data_ram_we=(inst_st_b | inst_st_w);
-	// 写数据。当写有效时为数据，否则全0
-	assign data_ram_wdata=sel_data_ram_we?RegFile_R_data2:32'b0;
-
-	// Data RAM使能信号
-	assign sel_data_ram_en=(  inst_st_b | inst_st_w
-							| inst_ld_b | inst_ld_w);
-
-	// 字节使能
-	/*
-		+-----------------+-------------+
-		| sel_data_ram_wd | 长度        |
-		+-----------------+-------------+
-		| 1               | byte(8bit)  |
-		| 0               | word(32bit) |
-		+-----------------+-------------+
-
-	*/
-	assign sel_data_ram_wd=(inst_st_b | inst_ld_b);
-
-	///////////////////////////////////////////////////////////
-	/// 生成WB阶段控制信号
-
-	// 是否写回寄存器
-	assign sel_rf_w_en =      inst_addi_w | inst_add_w | inst_sub_w | inst_mul_w
-							| inst_or | inst_ori | inst_nor | inst_andi | inst_and | inst_xor
-							| inst_srli_w | inst_slli_w | inst_srai_w | 
-							| inst_lu12i_w | inst_pcaddu12i;
-
-	/* 
-		控制写入数据来源
-		+---------------+----------+
-		| sel_rf_w_data | 数据来源 |
-		+---------------+----------+
-		| 1             | RAM      |
-		| 0             | ALU      |
-		+---------------+----------+
-	*/
-	assign sel_rf_w_data = inst_ld_w | inst_ld_b;
+		// 输出源操作数可以获得信号
+		.src_1_ready			(alu_src_1_ready),
+		.src_2_ready			(alu_src_2_ready)
+	);
 	
 	//////////////////////////////////////////////////////////
 	/// 检验分支预测正确性
@@ -325,6 +206,71 @@ module ID_stage(
     	.br_taken_cancel	(br_taken_cancel)
 	);
 
+	////////////////////////////////////////////////////////////
+	/// 决定源操作数
+
+	// src_1，当来自于寄存器时，应该从旁路或者寄存器堆得到；否则是当前指令的PC
+	always@(*)
+	begin
+		if(sel_alu_src1[1])
+			if(RegFile_R_addr1==EXE_RegFile_W_addr && EXE_sel_rf_w_en)
+				if(EXE_sel_RF_W_Data_valid)
+					// 可以从EXE阶段旁路该值
+					alu_src1<=EXE_RegFile_W_data;
+				else 
+					// 代表阻塞
+					alu_src1<=32'b0;
+			else if(RegFile_R_addr1==MEM_RegFile_W_addr && MEM_sel_rf_w_en)
+				if(MEM_sel_RF_W_Data_valid)
+					alu_src1<=MEM_RegFile_W_data;
+				else
+					alu_src1<=32'b0;
+			else if(RegFile_R_addr1==WB_RegFile_W_addr && WB_sel_rf_w_en)
+				if(WB_sel_rf_w_en)
+					alu_src1<=WB_RegFile_W_data;
+				else
+					alu_src1<=32'b0;
+			else 
+				// 如果后续阶段均不写入该寄存器，则从寄存器堆获得操作数，一定可以准备好
+				alu_src1<=RegFile_R_data1;
+		else if(sel_alu_src1[0])
+			// 如果操作数不来自于寄存器堆而是来自于指令PC，一定已经准备好
+			alu_src1<=inst_PC;
+		else
+			alu_src1<=32'b0;
+	end
+
+	// src_2，当来自于寄存器时，应该从旁路或者寄存器堆得到；否则是立即数
+	always@(*)
+	begin
+		if(sel_alu_src2[1])
+			if(RegFile_R_addr2==EXE_RegFile_W_addr && EXE_sel_rf_w_en)
+				if(EXE_sel_RF_W_Data_valid)
+					// 可以从EXE阶段旁路该值
+					alu_src2<=EXE_RegFile_W_data;
+				else 
+					// 代表阻塞
+					alu_src2<=32'b0;
+			else if(RegFile_R_addr2==MEM_RegFile_W_addr && MEM_sel_rf_w_en)
+				if(MEM_sel_RF_W_Data_valid)
+					alu_src2<=MEM_RegFile_W_data;
+				else
+					alu_src2<=32'b0;
+			else if(RegFile_R_addr2==WB_RegFile_W_addr && WB_sel_rf_w_en)
+				if(WB_sel_rf_w_en)
+					alu_src2<=WB_RegFile_W_data;
+				else
+					alu_src2<=32'b0;
+			else 
+				// 如果后续阶段均不写入该寄存器，则从寄存器堆获得操作数，一定可以准备好
+				alu_src2<=RegFile_R_data2;
+		else if(sel_alu_src2[0])
+			// 如果操作数不来自于寄存器堆而是来自立即数，一定已经准备好
+			alu_src2<=immediate;
+		else
+			alu_src2<=32'b0;
+	end
+
 	//////////////////////////////////////////////////////////
 	/// 流水级数据交互
 
@@ -341,16 +287,42 @@ module ID_stage(
 		else
 			IPD_to_ID_reg<=IPD_to_ID_reg;
 	end
-	assign{
-            inst_type           ,// xx:111
-            pred_PC             ,//110: 79
-            inst_PC             ,// 78: 47
-            immediate           ,// 46: 15
-            RegFile_W_addr      ,// 14: 10
-            RegFile_R_addr2     ,//  9:  5
-            RegFile_R_addr1      //  4:  0
+	assign {
+            sel_rf_w_en		,//1
+		    sel_rf_w_data	,//1
+		    sel_data_ram_wd	,//1
+		    sel_data_ram_we	,//1
+		    sel_data_ram_en	,//1
+		    data_ram_wdata	,//32
+		    alu_op			,//12
+		    alu_src2		,//32
+		    alu_src1		,//32
+            pred_PC         ,//32
+            inst_PC         ,//32
+            immediate       ,//32
+            RegFile_W_addr  ,//5
+            RegFile_R_addr2 ,//5
+            RegFile_R_addr1  //5
     } = IPD_to_ID_reg;
 
+	// Bypassing旁路信号
+	assign {
+		// EXE阶段信号
+		EXE_RegFile_W_addr			,
+		EXE_RegFile_W_data			,
+		EXE_sel_RF_W_Data_valid		,
+		EXE_sel_rf_w_en				,
+		// MEM阶段信号
+		MEM_RegFile_W_addr			,
+		MEM_RegFile_W_data			,
+		MEM_sel_RF_W_Data_valid		,
+		MEM_sel_rf_w_en				,
+		// WB阶段信号		
+		WB_RegFile_W_addr			,
+		WB_RegFile_W_data			,
+		WB_sel_RF_W_Data_valid		,
+		WB_sel_rf_w_en		
+	}=BY_to_ID_bus;
 
 	assign {
 		w_en	    ,//37

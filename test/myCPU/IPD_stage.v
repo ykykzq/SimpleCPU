@@ -1,9 +1,9 @@
 /**
  * @file IPD_stage.v
  * @author ykykzq
- * @brief 流水线第二级，完成：pre-decoder，包括判断指令类型，决定源操作寄存器号
- * @version 0.1
- * @date 2024-08-12
+ * @brief 流水线第二级，完成：pre-decoder，生成ID、EXE、MEM、WB阶段用到的控制信号
+ * @version 0.2
+ * @date 2024-08-20
  *
  */
 `include"./include/myCPU.h"
@@ -189,7 +189,7 @@ module IPreD_stage(
             inst_st_b       ,
             inst_ld_b       
     };
-    ///////////////////////////////////////////
+    ////////////////////////////////////////////////
     /// 决定读写寄存器号
 
     /*
@@ -239,7 +239,7 @@ module IPreD_stage(
                                 | inst_lu12i_w | inst_pcaddu12i | inst_slt | inst_sltu | inst_mul_w | inst_jirl     
                                 | inst_ld_w | inst_ld_b)?rd
                                     :5'b0;
-    ///////////////////////////////////////////
+    /////////////////////////////////////////////////////////////
     /// 决定立即数
 
     /*
@@ -258,8 +258,148 @@ module IPreD_stage(
                         (inst_jirl | inst_beq | inst_bne)?{{14{inst[25]}},inst[25:10],2'b0}:
                         (inst_b | inst_bl)?{{4{inst[9]}},inst[ 9: 0],inst[25:10],2'b0}:32'b0;
 
+    //////////////////////////////////////////////////////////
+	/// ALU源操作数决定（立即数、寄存器值、旁路网络）
 
-    ////////////////////////////////////////
+	// 计算类型
+	assign op_lui  = (inst_lu12i_w);
+	assign op_sra  = (inst_srai_w);
+	assign op_srl  = (inst_srli_w);
+	assign op_sll  = (inst_slli_w);
+	assign op_xor  = (inst_xor);
+	assign op_or   = (inst_or | inst_ori);
+	assign op_nor  = (inst_nor);
+	assign op_and  = (inst_and | inst_andi);
+	assign op_sltu = (inst_sltu); 
+	assign op_slt  = (inst_slt);
+	assign op_sub  = (inst_sub_w);
+	assign op_add  = (    inst_addi_w | inst_add_w 
+						| inst_jirl 
+						| inst_st_w | inst_ld_w | inst_st_b | inst_ld_b 
+						| inst_pcaddu12i);
+
+	assign alu_op  = {
+		op_lui	,
+		op_sra	,
+		op_srl	,
+		op_sll	,
+		op_xor	,
+		op_or 	,
+		op_nor	,
+		op_and	,
+		op_slt	,
+		op_slt	,
+		op_sub	,
+		op_add	
+	};
+
+	/*
+		// 决定源操作数 one-hot
+		+--------------+-----------------+
+		| sel_alu_src1 | alu_src1        |
+		+--------------+-----------------+
+		| 2            | RegFile_R_data1 |
+		| 1            | inst_PC         |
+		| 0            | 32'b0           |
+		+--------------+-----------------+
+
+	*/
+	assign sel_alu_src1[1] =  inst_addi_w | inst_add_w | inst_sub_w | inst_mul_w
+							| inst_or | inst_ori | inst_nor | inst_andi | inst_and | inst_xor 
+							| inst_srli_w | inst_slli_w | inst_srai_w
+							| inst_slt | inst_sltu
+							| inst_jirl
+							| inst_st_w | inst_ld_w | inst_st_b | inst_ld_b;
+	assign sel_alu_src1[0] = inst_pcaddu12i;
+
+    /*
+		// 决定源操作数 one-hot
+		+--------------+-----------------+
+		| sel_alu_src2 | alu_src2        |
+		+--------------+-----------------+
+		| 2            | RegFile_R_data2 |
+		| 1            | immediate       |
+		| 0            | 32'b0		     |
+		+--------------+-----------------+
+	*/
+	assign sel_alu_src2[1] =  inst_add_w | inst_sub_w | inst_mul_w
+							| inst_or | inst_nor | inst_and | inst_xor
+							| inst_slt | inst_sltu; 
+	assign sel_alu_src2[0]=   inst_addi_w | inst_ori | inst_andi | inst_srli_w | inst_slli_w | inst_srai_w
+							| inst_lu12i_w | inst_pcaddu12i | inst_jirl
+							| inst_st_w | inst_ld_w | inst_st_b | inst_ld_b;
+
+
+	///////////////////////////////////////////////////////////
+	/// 数据RAM的相关控制信号生成
+
+	// 写使能
+	assign sel_data_ram_we=(inst_st_b | inst_st_w);
+	// 写数据。当写有效时为数据，否则全0
+	assign data_ram_wdata=sel_data_ram_we?RegFile_R_data2:32'b0;
+
+	// Data RAM使能信号
+	assign sel_data_ram_en=(  inst_st_b | inst_st_w
+							| inst_ld_b | inst_ld_w);
+
+	// 字节使能
+	/*
+		+-----------------+-------------+
+		| sel_data_ram_wd | 长度        |
+		+-----------------+-------------+
+		| 1               | byte(8bit)  |
+		| 0               | word(32bit) |
+		+-----------------+-------------+
+
+	*/
+	assign sel_data_ram_wd=(inst_st_b | inst_ld_b);
+
+	///////////////////////////////////////////////////////////
+	/// 生成WB阶段控制信号
+
+	// 是否写回寄存器
+	assign sel_rf_w_en =      inst_addi_w | inst_add_w | inst_sub_w | inst_mul_w
+							| inst_or | inst_ori | inst_nor | inst_andi | inst_and | inst_xor
+							| inst_srli_w | inst_slli_w | inst_srai_w | 
+							| inst_lu12i_w | inst_pcaddu12i;
+
+	/* 
+		控制写入数据来源
+		+---------------+----------+
+		| sel_rf_w_data | 数据来源 |
+		+---------------+----------+
+		| 1             | RAM      |
+		| 0             | ALU      |
+		+---------------+----------+
+	*/
+	assign sel_rf_w_data = inst_ld_w | inst_ld_b;
+
+    //////////////////////////////////////////////////////////
+    /// 与旁路及唤醒（阻塞）有关的控制信号生成
+
+    /*
+        +---------------------------+---------------+
+        | sel_RF_W_Data_Valid_Stage | 写数据有效阶段 |
+        +---------------------------+---------------+
+        | 3'b100                    |  WB           |
+        | 3'b010                    |  MEM          |
+        | 3'b001                    |  EXE          |
+        | 3'b000                    |  \            |
+        +---------------------------+---------------+
+    */
+
+    assign sel_RF_W_Data_Valid_Stage[0]=inst_addi_w | inst_add_w | inst_sub_w | inst_mul_w 
+                                        | inst_or   | inst_ori | inst_nor | inst_andi | inst_and | inst_xor
+                                        | inst_srli_w | inst_slli_w | inst_srai_w 
+                                        | inst_lu12i_w | inst_pcaddu12i
+                                        | inst_slt | inst_sltu
+                                        | inst_jirl;
+    assign sel_RF_W_Data_Valid_Stage[1]=(inst_ld_b | inst_ld_w);
+    assign sel_RF_W_Data_Valid_Stage[2]=1'b0;//所有指令均可在WB阶段前得到信号
+
+
+
+    /////////////////////////////////////////////////////////
     /// 流水级间数据交互
 
     // 接收
@@ -290,12 +430,20 @@ module IPreD_stage(
 
     // 发送
     assign IPD_to_ID_bus={
-            inst_type           ,// xx:111
-            pred_PC             ,//110: 79
-            inst_PC             ,// 78: 47
-            immediate           ,// 46: 15
-            RegFile_W_addr      ,// 14: 10
-            RegFile_R_addr2     ,//  9:  5
-            RegFile_R_addr1      //  4:  0
+            sel_rf_w_en		,//1
+		    sel_rf_w_data	,//1
+		    sel_data_ram_wd	,//1
+		    sel_data_ram_we	,//1
+		    sel_data_ram_en	,//1
+		    data_ram_wdata	,//32
+		    alu_op			,//12
+		    alu_src2		,//32
+		    alu_src1		,//32
+            pred_PC         ,//32
+            inst_PC         ,//32
+            immediate       ,//32
+            RegFile_W_addr  ,//5
+            RegFile_R_addr2 ,//5
+            RegFile_R_addr1  //5
     };
 endmodule

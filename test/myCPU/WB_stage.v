@@ -15,6 +15,8 @@ module WB_stage(
 	input  wire[`MEM_TO_WB_BUS_WD-1:0]	MEM_to_WB_bus,
 
 	output wire[`WB_to_ID_bus_WD-1:0]	WB_to_ID_bus,
+
+    output wire[`WB_TO_BY_BUS_WD-1:0]	WB_to_BY_bus,
 	
 	//debug的接口
 	output [31:0] 						debug_wb_pc     ,
@@ -123,6 +125,10 @@ module WB_stage(
 		RegFile_w_data	,//36:5
 		RegFile_w_addr	 //4:0
 	};
+
+    assign WB_to_BY_bus={
+        32'b0;
+    };
 
     ////////////////////////////////////////////
     /// Debug接口

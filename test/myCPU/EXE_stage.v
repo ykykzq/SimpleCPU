@@ -14,6 +14,8 @@ module EXE_stage(
 	// 流水线数据传送
 	input  wire[`ID_TO_EXE_BUS_WD-1:0]	ID_to_EXE_bus,
 	output wire[`EXE_TO_MEM_BUS_WD-1:0]	EXE_to_MEM_bus,
+
+	output wire[`EXE_TO_BY_BUS_WD-1:0]	EXE_to_BY_bus,
 	
 	// 流水线控制
 	input  wire							MEM_allow_in,
@@ -152,6 +154,10 @@ module EXE_stage(
 		RegFile_W_addr	,//5
 		alu_result		,//32
 		inst_PC			 //32
+	};
+
+	assign EXE_to_BY_bus={
+		32'b0;
 	};
 	
 endmodule

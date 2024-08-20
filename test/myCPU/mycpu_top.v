@@ -59,7 +59,13 @@ module mycpu_top(
     wire [`ID_TO_IF_BUS_WD-1:0]     ID_to_IF_bus    ;
     wire [`ID_TO_IPD_BUS_WD-1:0]    ID_to_IPD_bus   ;
 
+	wire[`EXE_TO_BY_BUS_WD-1:0]		EXE_to_BY_bus	;
+	wire[`MEM_TO_BY_BUS_WD-1:0]		MEM_to_BY_bus	;
+	wire[`WB_TO_BY_BUS_WD-1:0]		WB_to_BY_bus	;
+	wire[`BY_TO_ID_BUS_WD-1:0]		BY_to_ID_bus	;
 
+	//////////////////////////////////////////////////////////////
+	/// 六级流水线
     IF_stage IF_stage(
 	    .clk                (clk),
 	    .reset              (reset),
@@ -109,6 +115,7 @@ module mycpu_top(
         .ID_to_IPD_bus      (ID_to_IPD_bus),
     
 	    .WB_to_ID_bus       (WB_to_ID_bus),  
+		.BY_to_ID_bus		(BY_to_ID_bus),
 
 	    //流水线控制
 	    .EXE_allow_in       (EXE_allow_in),
@@ -124,6 +131,7 @@ module mycpu_top(
 	    // 流水线数据传送
 	    .ID_to_EXE_bus      (ID_to_EXE_bus),
 	    .EXE_to_MEM_bus     (EXE_to_MEM_bus),
+		.EXE_to_BY_bus		(EXE_to_BY_bus)，
     
 	    // 流水线控制
 	    .MEM_allow_in       (MEM_allow_in),
@@ -145,6 +153,8 @@ module mycpu_top(
 	// 流水级数据交互
 	    .EXE_to_MEM_bus     (EXE_to_MEM_bus),
 	    .MEM_to_WB_bus      (MEM_to_WB_bus),
+
+		.MEM_to_BY_bus		(MEM_to_BY_bus),
 	
     // 来自Data RAM的数据
 	    .data_ram_r_data    (data_sram_rdata),
@@ -164,6 +174,8 @@ module mycpu_top(
 	    .MEM_to_WB_bus      (MEM_to_WB_bus),
 
 	    .WB_to_ID_bus       (WB_to_ID_bus),
+
+		.WB_to_BY_bus		(WB_to_BY_bus),
 	
 	//debug的接口
 	    .debug_wb_pc        (debug_wb_pc),
@@ -173,6 +185,19 @@ module mycpu_top(
 	//流水线控制
 	    .MEM_to_WB_valid    (MEM_to_WB_valid),
 	    .WB_allow_in        (WB_allow_in)
+    );
+
+	//////////////////////////////////////////////////////////
+	/// 六级流水之外的模块
+
+	Bypassing Bypassing(
+	// 流水线数据交互，需要包括ID阶段之后所有阶段的信息
+	.EXE_to_BY_bus			(EXE_to_BY_bus),
+	.MEM_to_BY_bus			(MEM_to_BY_bus),
+	.WB_to_BY_bus			(WB_to_BY_bus),
+	
+	// 将旁路数据传输到ID阶段
+	.BY_to_ID_bus			(BY_to_ID_bus)
     );
     
 

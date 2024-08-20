@@ -14,6 +14,8 @@ module MEM_stage(
 	// 流水级数据交互
 	input  wire[`EXE_TO_MEM_BUS_WD-1:0]	EXE_to_MEM_bus,
 	output wire[`MEM_TO_WB_BUS_WD-1:0]	MEM_to_WB_bus,
+
+	output wire[`MEM_TO_BY_BUS_WD-1:0]	MEM_to_BY_bus,
 	
     // 来自Data RAM的数据
 	input  wire[31:0]					data_ram_r_data,
@@ -98,5 +100,9 @@ module MEM_stage(
 		alu_result		,//32
         inst_PC          //32
     };
+
+	assign MEM_to_BY_bus={
+		32'b0;
+	};
 
 endmodule
