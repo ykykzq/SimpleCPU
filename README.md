@@ -4,7 +4,7 @@
 
 本仓库于2024.8进行了重置，将工程从MIPS版本调整为LoongArch版本。参考了2022年龙芯杯大赛[作品](https://github.com/fluctlight001/cpu_for_nscscc2022_single)，该作品是一个七级流水线CPU。
 
-本工程使用Verilog语言描述了一个六级流水线CPU，五个阶段分别为IF、IPreD、ID、EXE、MEM、WB。CPU基于LoongArch指令集，支持运算、访存、分支跳转等大部分用户态指令，具体支持的指令参见[这里](./docs/CPU控制信号.xlsx)。该工程还支持串口，通过UART协议与外界进行通信。其他技术要求，可以参见[龙芯杯大赛](http://www.nscscc.com)技术方案。
+本工程使用Verilog语言描述了一个六级流水线CPU，五个阶段分别为IF、IPreD、ID、EXE、MEM、WB。CPU基于LoongArch指令集，支持运算、访存、分支跳转等大部分用户态指令，具体支持的指令参见[这里](./docs/指令控制信号.xlsx)。该工程还支持串口，通过UART协议与外界进行通信。其他技术要求，可以参见[龙芯杯大赛](http://www.nscscc.com)技术方案。
 
 工程使用的综合工具为Vivado 2019.2，尽管如此，仍然可以使用低版本Vivado工具，通过新建一个工程并添加Verilog源代码的方式进行综合。
 
@@ -73,6 +73,8 @@
 - [ ] 适配NSCSCC大赛的模板，完成：串口添加、地址映射、RAM结构冒险、进一步添加用户态指令
 - [ ] 本地仿真，对应三级功能测试，进行debug
 
+在上述过程中，你可以参考本项目的源代码。
+
 至此，你已经完成了NSCSCC的基本要求，现在你可以添加一些进阶内容。
 
 - [ ] 流水级拆分、i-cache添加、特权态指令......
@@ -81,6 +83,6 @@
 
 《计算机组成与设计：硬件/软件接口》DavidA.Patterson、John L.Hennessy著，康继昌、王党辉等译
 
-《CPU设计实战》汪文祥、邢金璋著
+《CPU设计实战 LoongArch版》汪文祥、邢金璋著
 
 《超标量处理器设计》姚永斌著
