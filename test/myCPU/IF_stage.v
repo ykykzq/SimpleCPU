@@ -103,9 +103,9 @@ module IF_stage(
 					}=ID_to_IF_bus;
 
 	assign IF_to_IPD_bus={
-			pred_PC		,//95:64
-			next_PC		 //63:32
-						 //31:0 预占据inst的位置
+			pred_PC		,//32
+			next_PC		 //32
+						 //32
 		};
 
 endmodule

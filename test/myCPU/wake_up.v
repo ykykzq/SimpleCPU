@@ -21,7 +21,20 @@ module WakeUP(
 	output reg 							src_1_ready,
 	output reg							src_2_ready
     );
-	
+	// EXE
+	wire [ 4: 0]	EXE_RegFile_W_addr	;
+	wire 	EXE_sel_RF_W_Data_valid		;
+	wire 	EXE_sel_rf_w_en				;
+
+	// MEM
+	wire [ 4: 0]MEM_RegFile_W_addr		;
+	wire MEM_sel_RF_W_Data_valid		;
+	wire MEM_sel_rf_w_en				;
+
+	// WB
+	wire [ 4: 0]	WB_RegFile_W_addr	;
+	wire WB_sel_RF_W_Data_valid			;
+	wire WB_sel_rf_w_en				 	;
 
 	/////////////////////////////////////////////////////////////////
 	/// 检测是否已经准备好
@@ -90,17 +103,17 @@ module WakeUP(
 	// BY_to_WK_bus中应该包括从ID阶段之后 所有阶段 的寄存器写入信息，包括：是否写入、写入寄存器号、是否已经准备好写入数据
 	assign {
 		// EXE阶段信号
-		EXE_RegFile_W_addr			,
-		EXE_sel_RF_W_Data_valid		,
-		EXE_sel_rf_w_en				,
+		EXE_RegFile_W_addr			,//5
+		EXE_sel_RF_W_Data_valid		,//1
+		EXE_sel_rf_w_en				,//1
 		// MEM阶段信号
-		MEM_RegFile_W_addr			,
-		MEM_sel_RF_W_Data_valid		,
-		MEM_sel_rf_w_en				,
+		MEM_RegFile_W_addr			,//5
+		MEM_sel_RF_W_Data_valid		,//1
+		MEM_sel_rf_w_en				,//1
 		// WB阶段信号		
-		WB_RegFile_W_addr			,
-		WB_sel_RF_W_Data_valid		,
-		WB_sel_rf_w_en		
+		WB_RegFile_W_addr			,//5
+		WB_sel_RF_W_Data_valid		,//1
+		WB_sel_rf_w_en				 //1
 	}=BY_to_WK_bus;
 	
 endmodule

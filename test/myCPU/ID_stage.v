@@ -53,21 +53,9 @@ module ID_stage(
 	// ALU控制信号与源操作数
 	wire [ 1: 0]	sel_alu_src1;
 	wire [ 1: 0]	sel_alu_src2;
-	wire [31: 0]	alu_src1;
-	wire [31: 0]	alu_src2;
+	reg  [31: 0]	alu_src1;
+	reg  [31: 0]	alu_src2;
 	wire [11: 0]	alu_op;
-	wire 		op_lui;   //Load Upper Immediate
-	wire 		op_sra;   //arithmetic right shift
-	wire 		op_srl;   //logic right shift
-	wire 		op_sll;   //logic left shift
-	wire 		op_xor;   //bitwise xor
-	wire 		op_or;    //bitwise or
-	wire 		op_nor;   //bitwise nor
-	wire 		op_and;   //bitwise and
-	wire 		op_sltu;  //unsigned compared and set less than
-	wire 		op_slt;   //signed compared and set less than
-	wire 		op_sub;   //sub operation
-	wire 		op_add;   //add operation
 
 	// 数据RAM的相关控制信号
 	wire		sel_data_ram_en;
@@ -86,6 +74,11 @@ module ID_stage(
 	wire [31: 0] 	pred_PC;
 	wire [31: 0]	PC_fromID;
 	wire 	br_taken_cancel;
+
+	// 唤醒（阻塞）模块的控制信号
+	wire [`BY_TO_WK_BUS_WD-1:0]	BY_to_WK_bus	;
+	wire 						alu_src_1_ready	;
+	wire 						alu_src_2_ready	;
 
 	// 指令类型
 	//加减
@@ -189,6 +182,39 @@ module ID_stage(
 	//////////////////////////////////////////////////////////
 	/// 检验分支预测正确性
 
+	assign {
+            //加减
+            inst_addi_w     ,
+            inst_add_w      ,
+            inst_sub_w      ,
+            inst_or         ,
+            inst_ori        ,
+            inst_nor        ,
+            inst_andi       ,
+            inst_and        ,
+            inst_xor        ,
+            inst_srli_w     ,
+            inst_slli_w     ,
+            inst_srai_w     ,
+            inst_lu12i_w    ,
+            inst_pcaddu12i  ,
+            inst_slt        ,
+            inst_sltu       ,
+            // 乘除
+            inst_mul_w      ,
+            // 跳转   
+            inst_jirl       ,
+            inst_b          ,
+            inst_beq        ,
+            inst_bne        ,
+            inst_bl         ,
+            // 访存
+            inst_st_w       ,
+            inst_ld_w       ,
+            inst_st_b       ,
+            inst_ld_b       
+    }=inst_type;
+
 	assign BranchUnit_src1=(inst_jirl | inst_beq | inst_bne)?RegFile_R_data1:
 							(inst_b | inst_bl)?immediate:32'b0;
 	assign BranchUnit_src2=(inst_jirl)?immediate:
@@ -271,6 +297,12 @@ module ID_stage(
 			alu_src2<=32'b0;
 	end
 
+	////////////////////////////////////////////////////////
+	/// 决定Data RAM写回数据
+
+	// 写数据。当写有效时为数据，否则全0
+	assign data_ram_wdata=sel_data_ram_we?RegFile_R_data2:32'b0;
+	
 	//////////////////////////////////////////////////////////
 	/// 流水级数据交互
 
@@ -288,40 +320,41 @@ module ID_stage(
 			IPD_to_ID_reg<=IPD_to_ID_reg;
 	end
 	assign {
-            sel_rf_w_en		,//1
-		    sel_rf_w_data	,//1
-		    sel_data_ram_wd	,//1
-		    sel_data_ram_we	,//1
-		    sel_data_ram_en	,//1
-		    data_ram_wdata	,//32
-		    alu_op			,//12
-		    alu_src2		,//32
-		    alu_src1		,//32
-            pred_PC         ,//32
-            inst_PC         ,//32
-            immediate       ,//32
-            RegFile_W_addr  ,//5
-            RegFile_R_addr2 ,//5
-            RegFile_R_addr1  //5
+			sel_RF_W_Data_Valid_Stage   ,//3
+            sel_alu_src2                ,//2
+            sel_alu_src1                ,//2
+            sel_rf_w_en		            ,//1
+		    sel_rf_w_data	            ,//1
+		    sel_data_ram_wd	            ,//1
+		    sel_data_ram_we	            ,//1
+		    sel_data_ram_en	            ,//1
+            inst_type                   ,//26
+		    alu_op			            ,//12
+            pred_PC                     ,//32
+            inst_PC                     ,//32
+            immediate                   ,//32
+            RegFile_W_addr              ,//5
+            RegFile_R_addr2             ,//5
+            RegFile_R_addr1              //5
     } = IPD_to_ID_reg;
 
 	// Bypassing旁路信号
 	assign {
 		// EXE阶段信号
-		EXE_RegFile_W_addr			,
-		EXE_RegFile_W_data			,
-		EXE_sel_RF_W_Data_valid		,
-		EXE_sel_rf_w_en				,
+		EXE_RegFile_W_addr			,//5
+		EXE_RegFile_W_data			,//32
+		EXE_sel_RF_W_Data_valid		,//1
+		EXE_sel_rf_w_en				,//1
 		// MEM阶段信号
-		MEM_RegFile_W_addr			,
-		MEM_RegFile_W_data			,
-		MEM_sel_RF_W_Data_valid		,
-		MEM_sel_rf_w_en				,
+		MEM_RegFile_W_addr			,//5
+		MEM_RegFile_W_data			,//32
+		MEM_sel_RF_W_Data_valid		,//1
+		MEM_sel_rf_w_en				,//1
 		// WB阶段信号		
-		WB_RegFile_W_addr			,
-		WB_RegFile_W_data			,
-		WB_sel_RF_W_Data_valid		,
-		WB_sel_rf_w_en		
+		WB_RegFile_W_addr			,//5
+		WB_RegFile_W_data			,//32
+		WB_sel_RF_W_Data_valid		,//1
+		WB_sel_rf_w_en				 //1
 	}=BY_to_ID_bus;
 
 	assign {
@@ -332,27 +365,28 @@ module ID_stage(
 
 	// 发送
 	assign ID_to_IF_bus={
-			br_taken_cancel	,//32
-			PC_fromID		 //31:0			
+			br_taken_cancel	,//1
+			PC_fromID		 //32		
 	};
 
 	assign ID_to_IPD_bus = {
-			br_taken_cancel	,//32
-			PC_fromID		 //31:0			
+			br_taken_cancel	,//1
+			PC_fromID		 //32		
 	};
 
 	assign ID_to_EXE_bus ={
-		sel_rf_w_en		,//1
-		sel_rf_w_data	,//1
-		sel_data_ram_wd	,//1
-		sel_data_ram_we	,//1
-		sel_data_ram_en	,//1
-		data_ram_wdata	,//32
-		RegFile_W_addr	,//5
-		alu_op			,//12
-		alu_src2		,//32
-		alu_src1		,//32
-		inst_PC			 //32
+		sel_RF_W_Data_Valid_Stage	,//3
+		sel_rf_w_en					,//1
+		sel_rf_w_data				,//1
+		sel_data_ram_wd				,//1
+		sel_data_ram_we				,//1
+		sel_data_ram_en				,//1
+		data_ram_wdata				,//32
+		RegFile_W_addr				,//5
+		alu_op						,//12
+		alu_src2					,//32
+		alu_src1					,//32
+		inst_PC						 //32
 	};
 
 	

@@ -56,6 +56,10 @@ module EXE_stage(
 	//wire [31: 0]	data_ram_addr;
 	wire [31: 0]	data_ram_wdata;
 
+	// 旁路阶段所需控制信号
+	wire [ 2: 0]    sel_RF_W_Data_Valid_Stage;
+	wire 	EXE_sel_RF_W_Data_valid;
+
 	// 写回（WB）阶段用到的控制信号
 	wire [ 4: 0]	RegFile_W_addr;
 	wire	sel_rf_w_data;
@@ -89,6 +93,11 @@ module EXE_stage(
   		.alu_result		(alu_result	)
 	);
 
+
+	/////////////////////////////////////////////////////
+	/// 旁路信号生成
+
+	assign EXE_sel_RF_W_Data_valid=EXE_ready_go & EXE_valid & sel_RF_W_Data_Valid_Stage[0];
 	/////////////////////////////////////////////////////
 	/// 生成Data RAM信号
 
@@ -132,32 +141,37 @@ module EXE_stage(
 			ID_to_EXE_reg<=ID_to_EXE_reg;
 	end
 	assign  {
-		sel_rf_w_en		,
-		sel_rf_w_data	,
-		sel_data_ram_wd	,
-		sel_data_ram_we	,
-		sel_data_ram_en	,
-		data_ram_wdata	,
-		RegFile_W_addr	,
-		alu_op			,
-		alu_src2		,
-		alu_src1		, 
-		inst_PC			 //31:0
+		sel_RF_W_Data_Valid_Stage	,//3
+		sel_rf_w_en					,//1
+		sel_rf_w_data				,//1
+		sel_data_ram_wd				,//1
+		sel_data_ram_we				,//1
+		sel_data_ram_en				,//1
+		data_ram_wdata				,//32
+		RegFile_W_addr				,//5
+		alu_op						,//12
+		alu_src2					,//32
+		alu_src1					,//32
+		inst_PC						 //32
 	}=ID_to_EXE_reg;
 	
 	// 发送
 	assign EXE_to_MEM_bus = {
-		sel_rf_w_en		,//1
-		sel_rf_w_data	,//1
-		sel_data_ram_wd	,//1
-		data_ram_b_en	,//4
-		RegFile_W_addr	,//5
-		alu_result		,//32
-		inst_PC			 //32
+		sel_RF_W_Data_Valid_Stage	,//3
+		sel_rf_w_en					,//1
+		sel_rf_w_data				,//1
+		sel_data_ram_wd				,//1
+		data_ram_b_en				,//4
+		RegFile_W_addr				,//5
+		alu_result					,//32
+		inst_PC						 //32
 	};
 
 	assign EXE_to_BY_bus={
-		32'b0;
+		RegFile_W_addr				,//5
+		alu_result					,//32
+		EXE_sel_RF_W_Data_valid		,//1
+		sel_rf_w_en					 //1
 	};
 	
 endmodule

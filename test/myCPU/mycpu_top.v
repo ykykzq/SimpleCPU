@@ -131,7 +131,7 @@ module mycpu_top(
 	    // 流水线数据传送
 	    .ID_to_EXE_bus      (ID_to_EXE_bus),
 	    .EXE_to_MEM_bus     (EXE_to_MEM_bus),
-		.EXE_to_BY_bus		(EXE_to_BY_bus)，
+		.EXE_to_BY_bus		(EXE_to_BY_bus),
     
 	    // 流水线控制
 	    .MEM_allow_in       (MEM_allow_in),

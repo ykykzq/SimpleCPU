@@ -90,6 +90,21 @@ module IPreD_stage(
     wire [ 6: 0]                opcode_07b      ;
     wire [ 5: 0]                opcode_06b      ;
 
+
+    // 控制信号-ID
+    wire [ 1: 0]                sel_alu_src1    ;
+    wire [ 1: 0]                sel_alu_src2    ;
+    // 控制信号-MEM
+    wire    sel_data_ram_we ;
+    wire    sel_data_ram_en ;
+    wire    sel_data_ram_wd ;
+    wire [31: 0]    data_ram_wdata;
+    // 控制信号-WB
+    wire    sel_rf_w_en     ;
+    wire    sel_rf_w_data   ;  
+    // 控制信号-BY＆WK
+    wire [ 2: 0]    sel_RF_W_Data_Valid_Stage;
+
     ////////////////////////////////////////
     ///流水线控制
 
@@ -335,8 +350,6 @@ module IPreD_stage(
 
 	// 写使能
 	assign sel_data_ram_we=(inst_st_b | inst_st_w);
-	// 写数据。当写有效时为数据，否则全0
-	assign data_ram_wdata=sel_data_ram_we?RegFile_R_data2:32'b0;
 
 	// Data RAM使能信号
 	assign sel_data_ram_en=(  inst_st_b | inst_st_w
@@ -426,24 +439,25 @@ module IPreD_stage(
     assign {
 		br_taken_cancel	,//32
 		PC_fromID		 //31:0			
-					}=ID_to_IPD_bus;
+	}=ID_to_IPD_bus;
 
     // 发送
     assign IPD_to_ID_bus={
-            sel_rf_w_en		,//1
-		    sel_rf_w_data	,//1
-		    sel_data_ram_wd	,//1
-		    sel_data_ram_we	,//1
-		    sel_data_ram_en	,//1
-		    data_ram_wdata	,//32
-		    alu_op			,//12
-		    alu_src2		,//32
-		    alu_src1		,//32
-            pred_PC         ,//32
-            inst_PC         ,//32
-            immediate       ,//32
-            RegFile_W_addr  ,//5
-            RegFile_R_addr2 ,//5
-            RegFile_R_addr1  //5
+            sel_RF_W_Data_Valid_Stage   ,//3
+            sel_alu_src2                ,//2
+            sel_alu_src1                ,//2
+            sel_rf_w_en		            ,//1
+		    sel_rf_w_data	            ,//1
+		    sel_data_ram_wd	            ,//1
+		    sel_data_ram_we	            ,//1
+		    sel_data_ram_en	            ,//1
+            inst_type                   ,//26
+		    alu_op			            ,//12
+            pred_PC                     ,//32
+            inst_PC                     ,//32
+            immediate                   ,//32
+            RegFile_W_addr              ,//5
+            RegFile_R_addr2             ,//5
+            RegFile_R_addr1              //5
     };
 endmodule

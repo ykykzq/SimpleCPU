@@ -19,33 +19,55 @@ module Bypassing(
 	output wire[`BY_TO_ID_BUS_WD-1:0]	BY_to_ID_bus
     );
 	
-	
+	// EXE
+	wire [ 4: 0]	EXE_RegFile_W_addr	;
+	wire [31: 0]	EXE_alu_result		;
+	wire 	EXE_sel_RF_W_Data_valid		;
+	wire 	EXE_sel_rf_w_en				;
+
+	wire [31: 0]	EXE_RegFile_W_data	;
+
+	// MEM
+	wire [ 3: 0]	MEM_data_ram_b_en	;
+	wire [ 4: 0]	MEM_RegFile_W_addr	;
+	wire [31: 0]	MEM_data_ram_r_data	;
+	wire 	MEM_sel_RF_W_Data_valid		;
+	wire 	MEM_sel_data_ram_wd			;
+	wire 	MEM_sel_rf_w_en				;
+
+	reg  [31: 0]	MEM_RegFile_W_data	;
+
+	// WB
+	wire [ 4: 0]	WB_RegFile_W_addr	;
+	wire [31: 0]	WB_RegFile_W_data	;
+	wire WB_sel_RF_W_Data_valid			;
+	wire WB_sel_rf_w_en				 	;
 	
 	/////////////////////////////////////////////////////////
 	/// 筛选
 	
 	// 通过筛选信号，提前把写入数据筛选出来
-	assign EXE_RegFile_W_data=alu_result;
+	assign EXE_RegFile_W_data=EXE_alu_result;
 
     // 处理半字读与字节读
     always@(*)
     begin
-        if(sel_data_ram_wd==1)
+        if(MEM_sel_data_ram_wd==1)
         begin
-            if(data_ram_b_en==4'b0001)
+            if(MEM_data_ram_b_en==4'b0001)
                 // 注意是符号扩展
-                MEM_RegFile_W_data<={{24{data_ram_r_data[7]}},data_ram_r_data[7:0]};
-            else if(data_ram_b_en==4'b0010)
-                MEM_RegFile_W_data<={{24{data_ram_r_data[15]}},data_ram_r_data[15:8]};
-            else if(data_ram_b_en==4'b0100)
-                MEM_RegFile_W_data<={{24{data_ram_r_data[23]}},data_ram_r_data[23:16]};
-            else if(data_ram_b_en==4'b1000)
-                MEM_RegFile_W_data<={{24{data_ram_r_data[31]}},data_ram_r_data[31:24]};
+                MEM_RegFile_W_data<={{24{MEM_data_ram_r_data[7]}},MEM_data_ram_r_data[7:0]};
+            else if(MEM_data_ram_b_en==4'b0010)
+                MEM_RegFile_W_data<={{24{MEM_data_ram_r_data[15]}},MEM_data_ram_r_data[15:8]};
+            else if(MEM_data_ram_b_en==4'b0100)
+                MEM_RegFile_W_data<={{24{MEM_data_ram_r_data[23]}},MEM_data_ram_r_data[23:16]};
+            else if(MEM_data_ram_b_en==4'b1000)
+                MEM_RegFile_W_data<={{24{MEM_data_ram_r_data[31]}},MEM_data_ram_r_data[31:24]};
             else 
                 MEM_RegFile_W_data<=32'b0;
         end
         else 
-            MEM_RegFile_W_data<=data_ram_r_data;
+            MEM_RegFile_W_data<=MEM_data_ram_r_data;
     end
 	
 
@@ -56,46 +78,47 @@ module Bypassing(
 	// 接收
 	assign {
 		// EXE阶段信号
-		EXE_RegFile_W_addr			,
-		alu_result					,
-		EXE_sel_RF_W_Data_valid		,
-		EXE_sel_rf_w_en				
+		EXE_RegFile_W_addr			,//5
+		EXE_alu_result				,//32
+		EXE_sel_RF_W_Data_valid		,//1
+		EXE_sel_rf_w_en				 //1
 	}=EXE_to_BY_bus;
 
 	assign {
 		// MEM阶段信号
-		sel_data_ram_wd				,
-		MEM_RegFile_W_addr			,
-		data_ram_r_data				,
-		MEM_sel_RF_W_Data_valid		,
-		MEM_sel_rf_w_en				
+		MEM_data_ram_b_en			,//4
+		MEM_RegFile_W_addr			,//5
+		MEM_data_ram_r_data			,//32
+		MEM_sel_RF_W_Data_valid		,//1
+		MEM_sel_data_ram_wd			,//1
+		MEM_sel_rf_w_en				 //1
 	}=MEM_to_BY_bus;
 
 	assign {
 		// WB阶段信号		
-		WB_RegFile_W_addr			,
-		WB_RegFile_W_data			,
-		WB_sel_RF_W_Data_valid		,
-		WB_sel_rf_w_en		
+		WB_RegFile_W_addr			,//5
+		WB_RegFile_W_data			,//32
+		WB_sel_RF_W_Data_valid		,//1
+		WB_sel_rf_w_en				 //1
 	}=WB_to_BY_bus;
 
 	// 发送
 	assign BY_to_ID_bus={
 		// EXE阶段信号
-		EXE_RegFile_W_addr			,
-		EXE_RegFile_W_data			,
-		EXE_sel_RF_W_Data_valid		,
-		EXE_sel_rf_w_en				,
+		EXE_RegFile_W_addr			,//5
+		EXE_RegFile_W_data			,//32
+		EXE_sel_RF_W_Data_valid		,//1
+		EXE_sel_rf_w_en				,//1
 		// MEM阶段信号
-		MEM_RegFile_W_addr			,
-		MEM_RegFile_W_data			,
-		MEM_sel_RF_W_Data_valid		,
-		MEM_sel_rf_w_en				,
+		MEM_RegFile_W_addr			,//5
+		MEM_RegFile_W_data			,//32
+		MEM_sel_RF_W_Data_valid		,//1
+		MEM_sel_rf_w_en				,//1
 		// WB阶段信号		
-		WB_RegFile_W_addr			,
-		WB_RegFile_W_data			,
-		WB_sel_RF_W_Data_valid		,
-		WB_sel_rf_w_en		
+		WB_RegFile_W_addr			,//5
+		WB_RegFile_W_data			,//32
+		WB_sel_RF_W_Data_valid		,//1
+		WB_sel_rf_w_en				 //1
 	};
 	
 endmodule

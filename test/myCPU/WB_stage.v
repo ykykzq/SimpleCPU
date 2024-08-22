@@ -49,6 +49,9 @@ module WB_stage(
     wire    sel_rf_w_data;
     wire    sel_data_ram_wd;
 
+    // 旁路所需控制信号
+    wire [ 2: 0]    sel_RF_W_Data_Valid_Stage;
+
     // 写回使能信号
     wire sel_rf_w_en;
 
@@ -95,6 +98,12 @@ module WB_stage(
     assign RegFile_w_data = sel_rf_w_data?RF_w_data_From_RAM:RF_w_data_From_ALU;
 
     ///////////////////////////////////////////////
+    /// 旁路信号
+
+    assign WB_sel_RF_W_Data_valid=WB_valid & WB_ready_go 
+                & ( sel_RF_W_Data_Valid_Stage[0] | sel_RF_W_Data_Valid_Stage[1] | sel_RF_W_Data_Valid_Stage[2]);
+
+    ///////////////////////////////////////////////
     /// 流水级数据交互
 
     // 接收
@@ -109,25 +118,30 @@ module WB_stage(
 	end
 	
 	assign{
-        sel_rf_w_en		,
-		sel_rf_w_data	,
-        sel_data_ram_wd ,
-		data_ram_b_en	,
-        data_ram_r_data ,
-        RegFile_w_addr  ,
-		alu_result		,
-        inst_PC          //31:0
+        sel_RF_W_Data_Valid_Stage	,//3
+        sel_rf_w_en					,//1
+		sel_rf_w_data				,//1
+        sel_data_ram_wd 			,//1
+		data_ram_b_en				,//4
+        data_ram_r_data 			,//32
+        RegFile_W_addr  			,//5
+		alu_result					,//32
+        inst_PC         			 //32
     }=MEM_to_WB_reg;
 
     // 发送
     assign WB_to_ID_bus={
-		sel_rf_w_en	    ,//37
-		RegFile_w_data	,//36:5
-		RegFile_w_addr	 //4:0
+		sel_rf_w_en	    ,//1
+		RegFile_w_data	,//32
+		RegFile_w_addr	 //5
 	};
 
     assign WB_to_BY_bus={
-        32'b0;
+        // WB阶段信号		
+		RegFile_w_addr			,//5
+		RegFile_w_data			,//32
+		WB_sel_RF_W_Data_valid	,//1
+		sel_rf_w_en				 //1
     };
 
     ////////////////////////////////////////////

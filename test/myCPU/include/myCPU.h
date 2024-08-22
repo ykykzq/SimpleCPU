@@ -6,23 +6,23 @@
 
 	// 流水线间数据通信
 	`define IF_TO_IPD_BUS_WD 	64
-    `define IPD_TO_ID_BUS_WD 	137
-    `define ID_TO_EXE_BUS_WD 	150
-    `define EXE_TO_MEM_BUS_WD	76
-    `define MEM_TO_WB_BUS_WD 	108
+    `define IPD_TO_ID_BUS_WD 	161
+    `define ID_TO_EXE_BUS_WD 	153
+    `define EXE_TO_MEM_BUS_WD	79
+    `define MEM_TO_WB_BUS_WD 	111
 	`define WB_to_ID_bus_WD 	38
 
 	`define ID_TO_IF_BUS_WD  	33
 	`define ID_TO_IPD_BUS_WD	33
     
 	// 旁路与流水级通信
-	`define EXE_TO_BY_BUS_WD	1
-	`define MEM_TO_BY_BUS_WD	1
-	`define WB_TO_BY_BUS_WD		1
+	`define EXE_TO_BY_BUS_WD	39
+	`define MEM_TO_BY_BUS_WD	40
+	`define WB_TO_BY_BUS_WD		39
 
-	`define BY_TO_ID_BUS_WD		1
+	`define BY_TO_ID_BUS_WD		117
 	
-	// Wake UP与流水级通信
-	`define BY_TO_WK_BUS_WD		1
+	// Wake UP模块与流水级通信
+	`define BY_TO_WK_BUS_WD		21
 
 `endif
