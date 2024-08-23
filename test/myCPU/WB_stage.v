@@ -43,7 +43,7 @@ module WB_stage(
     reg  [31: 0]	RF_w_data_From_RAM;
     wire [31: 0]	data_ram_r_data;
     wire [31: 0]	alu_result;
-    wire [ 4: 0]	RegFile_w_addr;
+    wire [ 4: 0]	RegFile_W_addr;
     wire [31: 0]    RegFile_w_data;
     wire [ 3: 0]    data_ram_b_en;
     wire    sel_rf_w_data;
@@ -133,12 +133,12 @@ module WB_stage(
     assign WB_to_ID_bus={
 		sel_rf_w_en	    ,//1
 		RegFile_w_data	,//32
-		RegFile_w_addr	 //5
+		RegFile_W_addr	 //5
 	};
 
     assign WB_to_BY_bus={
         // WB阶段信号		
-		RegFile_w_addr			,//5
+		RegFile_W_addr			,//5
 		RegFile_w_data			,//32
 		WB_sel_RF_W_Data_valid	,//1
 		sel_rf_w_en				 //1
@@ -149,7 +149,7 @@ module WB_stage(
 
     assign debug_wb_pc          = inst_PC;
     assign debug_wb_rf_wen      = {4{sel_rf_w_en}};
-    assign debug_wb_rf_wnum     = RegFile_w_addr;
+    assign debug_wb_rf_wnum     = RegFile_W_addr;
     assign debug_wb_rf_wdata    = RegFile_w_data;
 	
 endmodule

@@ -74,7 +74,7 @@ module MEM_stage(
 	/////////////////////////////////////////////////
 	/// 旁路信号生成
 
-	wire MEM_sel_RF_W_Data_valid=MEM_valid & MEM_ready_go & (sel_RF_W_Data_Valid_Stage[0] | sel_RF_W_Data_Valid_Stage[1]);
+	assign MEM_sel_RF_W_Data_valid=MEM_valid & MEM_ready_go & (sel_RF_W_Data_Valid_Stage[0] | sel_RF_W_Data_Valid_Stage[1]);
 
     /////////////////////////////////////////////////
     /// 流水级数据交互

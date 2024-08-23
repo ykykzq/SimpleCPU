@@ -13,7 +13,7 @@ module IPreD_stage(
 
     //流水线数据传输
 	input  wire[`IF_TO_IPD_BUS_WD-1:0]	IF_to_IPD_bus,
-	output wire[`ID_TO_EXE_BUS_WD-1:0]	IPD_to_ID_bus,
+	output wire[`IPD_TO_ID_BUS_WD-1:0]	IPD_to_ID_bus,
     input  wire[`ID_TO_IPD_BUS_WD-1:0]  ID_to_IPD_bus,
     //inst RAM
     input  wire[31:0]					inst_ram_r_data,
@@ -94,11 +94,24 @@ module IPreD_stage(
     // 控制信号-ID
     wire [ 1: 0]                sel_alu_src1    ;
     wire [ 1: 0]                sel_alu_src2    ;
+    // 控制信号-EXE
+    wire [11: 0]                alu_op          ;
+    wire    op_lui;
+    wire    op_sra;
+    wire    op_srl;
+    wire    op_sll;
+    wire    op_xor;
+    wire    op_or ;
+    wire    op_nor;
+    wire    op_and;
+    wire    op_slt;
+    wire    op_slt;
+    wire    op_sub;
+    wire    op_add;
     // 控制信号-MEM
     wire    sel_data_ram_we ;
     wire    sel_data_ram_en ;
     wire    sel_data_ram_wd ;
-    wire [31: 0]    data_ram_wdata;
     // 控制信号-WB
     wire    sel_rf_w_en     ;
     wire    sel_rf_w_data   ;  
