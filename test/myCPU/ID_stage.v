@@ -173,8 +173,8 @@ module ID_stage(
 		.inst_type			(inst_type		),
     	.pred_PC			(pred_PC		),
     	// 用于判断是否跳转和计算next_PC
-    	.RegFile_R_data1	(RegFile_R_data1),
-    	.RegFile_R_data2	(RegFile_R_data2),
+    	.BranchUnit_src1	(alu_src1		),
+    	.BranchUnit_src2	(alu_src2		),
 		.offset				(immediate		),
 		.inst_PC			(inst_PC		),
 	

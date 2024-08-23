@@ -12,8 +12,8 @@ module BranchUnit(
     input  wire[`INST_TYPE_WD-1:0]  inst_type,
     input  wire[31:0]               pred_PC,
     // 用于判断是否跳转和计算next_PC
-    input  wire[31:0]               RegFile_R_data1,
-    input  wire[31:0]               RegFile_R_data2,
+    input  wire[31:0]               BranchUnit_src1,
+    input  wire[31:0]               BranchUnit_src2,
     input  wire[31:0]               offset,
     input  wire[31:0]               inst_PC, 
 
@@ -60,16 +60,16 @@ module BranchUnit(
         if(reset)
             next_PC<=32'b0;
         else if(inst_jirl)
-            next_PC<=RegFile_R_data1+offset;
+            next_PC<=BranchUnit_src1+offset;
         else if(inst_b)
             next_PC<=inst_PC+offset;
         else if(inst_beq)
-            if(RegFile_R_data1==RegFile_R_data2)
+            if(BranchUnit_src1==BranchUnit_src2)
                 next_PC<=inst_PC+offset;
             else 
                 next_PC<=inst_PC+32'h0000_0004;
         else if(inst_bne)
-            if(RegFile_R_data1!=RegFile_R_data2)
+            if(BranchUnit_src1!=BranchUnit_src2)
                 next_PC<=inst_PC+offset;
             else 
                 next_PC<=inst_PC+32'h0000_0004;
