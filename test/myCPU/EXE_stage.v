@@ -123,7 +123,7 @@ module EXE_stage(
 		else 
 			data_ram_b_en=4'b1111;// 若是写入一个word(32bit)
 	end
-	assign data_ram_w_en = data_ram_b_en;
+	assign data_ram_w_en = sel_data_ram_we?data_ram_b_en:4'b0000;//若是读取，全0即可
 	// 写回的数据
 	assign data_ram_w_data = data_ram_wdata;
 
