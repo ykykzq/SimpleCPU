@@ -71,8 +71,6 @@ module ID_stage(
 
 	// 分支处理单元（BU）的控制信号
 	wire [`INST_TYPE_WD-1: 0]	inst_type;
-	wire [31: 0]	BranchUnit_src1;
-	wire [31: 0] 	BranchUnit_src2;
 	wire [31: 0] 	pred_PC;
 	wire [31: 0]	PC_fromID;
 	wire 	br_taken_cancel;
@@ -83,37 +81,22 @@ module ID_stage(
 	wire 						alu_src_1_ready	;
 	wire 						alu_src_2_ready	;
 
-	// 指令类型
-	//加减
-    wire                        inst_addi_w     ;
-    wire                        inst_add_w      ;
-    wire                        inst_sub_w      ;
-    wire                        inst_or         ;
-    wire                        inst_ori        ;
-    wire                        inst_nor        ;
-    wire                        inst_andi       ;
-    wire                        inst_and        ;
-    wire                        inst_xor        ;
-    wire                        inst_srli_w     ;
-    wire                        inst_slli_w     ;
-    wire                        inst_srai_w     ;
-    wire                        inst_lu12i_w    ;
-    wire                        inst_pcaddu12i  ;
-    wire                        inst_slt        ;
-    wire                        inst_sltu       ;
-    // 乘除
-    wire                        inst_mul_w      ;
-    // 跳转   
-    wire                        inst_jirl       ;
-    wire                        inst_b          ;
-    wire                        inst_beq        ;
-    wire                        inst_bne        ;
-    wire                        inst_bl         ;
-    // 访存
-    wire                        inst_st_w       ;
-    wire                        inst_ld_w       ;
-    wire                        inst_st_b       ;
-    wire                        inst_ld_b       ;
+	// 旁路-EXE
+	wire [ 4: 0]	EXE_RegFile_W_addr	;
+	wire 	EXE_sel_RF_W_Data_valid		;
+	wire 	EXE_sel_rf_w_en				;
+	wire [31: 0]	EXE_RegFile_W_data	;
+	// 旁路-MEM
+	wire [ 4: 0]	MEM_RegFile_W_addr	;
+	wire 	MEM_sel_RF_W_Data_valid		;
+	wire 	MEM_sel_rf_w_en				;
+	wire [31: 0]	MEM_RegFile_W_data	;
+	// 旁路-WB
+	wire [ 4: 0]	WB_RegFile_W_addr	;
+	wire [31: 0]	WB_RegFile_W_data	;
+	wire WB_sel_RF_W_Data_valid			;
+	wire WB_sel_rf_w_en				 	;
+
 
 	///////////////////////////////////////////////////////////
 	/// 流水线行为控制
@@ -185,51 +168,15 @@ module ID_stage(
 	//////////////////////////////////////////////////////////
 	/// 检验分支预测正确性
 
-	assign {
-            //加减
-            inst_addi_w     ,
-            inst_add_w      ,
-            inst_sub_w      ,
-            inst_or         ,
-            inst_ori        ,
-            inst_nor        ,
-            inst_andi       ,
-            inst_and        ,
-            inst_xor        ,
-            inst_srli_w     ,
-            inst_slli_w     ,
-            inst_srai_w     ,
-            inst_lu12i_w    ,
-            inst_pcaddu12i  ,
-            inst_slt        ,
-            inst_sltu       ,
-            // 乘除
-            inst_mul_w      ,
-            // 跳转   
-            inst_jirl       ,
-            inst_b          ,
-            inst_beq        ,
-            inst_bne        ,
-            inst_bl         ,
-            // 访存
-            inst_st_w       ,
-            inst_ld_w       ,
-            inst_st_b       ,
-            inst_ld_b       
-    }=inst_type;
-
-	assign BranchUnit_src1=(inst_jirl | inst_beq | inst_bne)?RegFile_R_data1:
-							(inst_b | inst_bl)?immediate:32'b0;
-	assign BranchUnit_src2=(inst_jirl)?immediate:
-							(inst_beq | inst_bne)?RegFile_R_data2:
-							(inst_b | inst_bl)?inst_PC:32'b0;
 	BranchUnit BU(
 		.reset				(reset			),
 		.inst_type			(inst_type		),
     	.pred_PC			(pred_PC		),
-    	// 用于计算PC的值
-    	.src1				(BranchUnit_src1),
-    	.src2				(BranchUnit_src2),
+    	// 用于判断是否跳转和计算next_PC
+    	.RegFile_R_data1	(RegFile_R_data1),
+    	.RegFile_R_data2	(RegFile_R_data2),
+		.offset				(immediate		),
+		.inst_PC			(inst_PC		),
 	
     	.next_PC			(PC_fromID		),
     	.br_taken_cancel	(br_taken_cancel)

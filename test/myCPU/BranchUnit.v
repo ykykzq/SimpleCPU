@@ -11,11 +11,13 @@ module BranchUnit(
     input 							reset,
     input  wire[`INST_TYPE_WD-1:0]  inst_type,
     input  wire[31:0]               pred_PC,
-    // 用于计算PC的值
-    input  wire[31:0]               src1,
-    input  wire[31:0]               src2,
+    // 用于判断是否跳转和计算next_PC
+    input  wire[31:0]               RegFile_R_data1,
+    input  wire[31:0]               RegFile_R_data2,
+    input  wire[31:0]               offset,
+    input  wire[31:0]               inst_PC, 
 
-    output wire[31:0]               next_PC,
+    output reg [31:0]               next_PC,
     output wire                     br_taken_cancel
 );
     assign{
@@ -53,7 +55,30 @@ module BranchUnit(
 
     // 计算真正的PC
     assign is_branch=(inst_jirl | inst_b | inst_beq | inst_bne | inst_bl);
-    assign next_PC=reset?32'b0:is_branch?src1+src2:32'b0;
+    always@(*)
+    begin
+        if(reset)
+            next_PC<=32'b0;
+        else if(inst_jirl)
+            next_PC<=RegFile_R_data1+offset;
+        else if(inst_b)
+            next_PC<=inst_PC+offset;
+        else if(inst_beq)
+            if(RegFile_R_data1==RegFile_R_data2)
+                next_PC<=inst_PC+offset;
+            else 
+                next_PC<=inst_PC+32'h0000_0004;
+        else if(inst_bne)
+            if(RegFile_R_data1!=RegFile_R_data2)
+                next_PC<=inst_PC+offset;
+            else 
+                next_PC<=inst_PC+32'h0000_0004;
+        else if(inst_bl)
+            next_PC<=inst_PC+offset;
+        else 
+            // 如果不是分支指令
+            next_PC<=inst_PC+32'h0000_0004;
+    end
     // 检验预测正确性
     assign br_taken_cancel=reset?1'b0:is_branch&(~(pred_PC==next_PC));
 endmodule
