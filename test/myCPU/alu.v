@@ -52,8 +52,8 @@ wire        adder_cin;
 wire [31:0] adder_result;
 wire        adder_cout;
 
-assign adder_a   = alu_src1;
-assign adder_b   = (op_sub | op_slt | op_sltu) ? ~alu_src2 : alu_src2;  //src1 - src2 rj-rk
+assign adder_a   = alu_src2;
+assign adder_b   = (op_sub | op_slt | op_sltu) ? ~alu_src1 : alu_src1;  //src2 - src1 rj-rk
 assign adder_cin = (op_sub | op_slt | op_sltu) ? 1'b1      : 1'b0;
 assign {adder_cout, adder_result} = adder_a + adder_b + adder_cin;
 
