@@ -100,6 +100,7 @@ module WB_stage(
     ///////////////////////////////////////////////
     /// 旁路信号
 
+    // 写回数据在当前（WB）阶段是否已经准备好
     assign WB_sel_RF_W_Data_valid=WB_valid & WB_ready_go 
                 & ( sel_RF_W_Data_Valid_Stage[0] | sel_RF_W_Data_Valid_Stage[1] | sel_RF_W_Data_Valid_Stage[2]);
 
@@ -131,9 +132,9 @@ module WB_stage(
 
     // 发送
     assign WB_to_ID_bus={
-		sel_rf_w_en	    ,//1
-		RegFile_w_data	,//32
-		RegFile_W_addr	 //5
+		sel_rf_w_en & WB_sel_RF_W_Data_valid    ,//1
+		RegFile_w_data	                        ,//32
+		RegFile_W_addr	                         //5
 	};
 
     assign WB_to_BY_bus={
@@ -148,7 +149,7 @@ module WB_stage(
     /// Debug接口
 
     assign debug_wb_pc          = inst_PC;
-    assign debug_wb_rf_wen      = {4{sel_rf_w_en}};
+    assign debug_wb_rf_wen      = {4{sel_rf_w_en&WB_sel_RF_W_Data_valid}};
     assign debug_wb_rf_wnum     = RegFile_W_addr;
     assign debug_wb_rf_wdata    = RegFile_w_data;
 	

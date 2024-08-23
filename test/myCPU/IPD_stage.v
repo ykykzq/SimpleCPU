@@ -222,36 +222,36 @@ module IPreD_stage(
 
     /*
     指令与用到的寄存器列表
-        +------------+----+----+----+
-        | inst       | rk | rj | rd |
-        +------------+----+----+----+
-        | addi.w     |    | R  | W  |
-        | add.w      | R  | R  | W  |
-        | sub.w      | R  | R  | W  |
-        | mul.w      | R  | R  | W  |
-        | or         | R  | R  | W  |
-        | ori        |    | R  | W  |
-        | nor        | R  | R  | W  |
-        | andi       |    | R  | W  |
-        | and        | R  | R  | W  |
-        | xor        | R  | R  | W  |
-        | srli.w     |    | R  | W  |
-        | slli.w     |    | R  | W  |
-        | srai.w     |    | R  | W  |
-        | lu12i.w    |    |    | W  |
-        | pcaddu12i  |    |    | W  |
-        | slt        | R  | R  | W  |
-        | sltu       | R  | R  | W  |
-        | jirl       |    | R  | W  |
-        | b          |    |    |    |
-        | beq        |    | R  | R  |
-        | bne        |    | R  | R  |
-        | bl         |    |    |    |
-        | st.w       |    | R  | R  |
-        | ld.w       |    | R  | W  |
-        | st.b       |    | R  | R  |
-        | ld.b       |    | R  | W  |
-        +------------+----+----+----+
+        +------------+----+----+----+----+
+        | inst       | rk | rj | rd |[1] |
+        +------------+----+----+----+----+
+        | addi.w     |    | R  | W  |    |
+        | add.w      | R  | R  | W  |    |
+        | sub.w      | R  | R  | W  |    |
+        | mul.w      | R  | R  | W  |    |
+        | or         | R  | R  | W  |    |
+        | ori        |    | R  | W  |    |
+        | nor        | R  | R  | W  |    |
+        | andi       |    | R  | W  |    |
+        | and        | R  | R  | W  |    |
+        | xor        | R  | R  | W  |    |
+        | srli.w     |    | R  | W  |    |
+        | slli.w     |    | R  | W  |    |
+        | srai.w     |    | R  | W  |    |
+        | lu12i.w    |    |    | W  |    |
+        | pcaddu12i  |    |    | W  |    |
+        | slt        | R  | R  | W  |    |
+        | sltu       | R  | R  | W  |    |
+        | jirl       |    | R  | W  |    |
+        | b          |    |    |    |    |
+        | beq        |    | R  | R  |    |
+        | bne        |    | R  | R  |    |
+        | bl         |    |    |    | W  |
+        | st.w       |    | R  | R  |    |
+        | ld.w       |    | R  | W  |    |
+        | st.b       |    | R  | R  |    |
+        | ld.b       |    | R  | W  |    |
+        +------------+----+----+----+----+
 
     */
     //如果读rk、rj，则分别为1、2。如果读rj、rd，则这俩为1、2。
@@ -422,7 +422,7 @@ module IPreD_stage(
                                         | inst_srli_w | inst_slli_w | inst_srai_w 
                                         | inst_lu12i_w | inst_pcaddu12i
                                         | inst_slt | inst_sltu
-                                        | inst_jirl;
+                                        | inst_jirl | inst_bl;
     assign sel_RF_W_Data_Valid_Stage[1]=(inst_ld_b | inst_ld_w);
     assign sel_RF_W_Data_Valid_Stage[2]=1'b0;//所有指令均可在WB阶段前得到信号
 
