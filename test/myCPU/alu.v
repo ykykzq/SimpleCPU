@@ -62,8 +62,8 @@ assign add_sub_result = adder_result;
 
 // SLT result
 assign slt_result[31:1] = 31'b0;   //rj < rk 1
-assign slt_result[0]    = (alu_src1[31] & ~alu_src2[31])
-                        | ((alu_src1[31] ~^ alu_src2[31]) & adder_result[31]);
+assign slt_result[0]    = (alu_src2[31] & ~alu_src1[31])
+                        | ((alu_src2[31] ^~ alu_src1[31]) & adder_result[31]);
 
 // SLTU result
 assign sltu_result[31:1] = 31'b0;

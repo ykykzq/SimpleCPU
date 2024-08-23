@@ -315,7 +315,7 @@ module IPreD_stage(
 		op_or 	,
 		op_nor	,
 		op_and	,
-		op_slt	,
+		op_sltu	,
 		op_slt	,
 		op_sub	,
 		op_add	
