@@ -95,7 +95,7 @@ module WB_stage(
             RF_w_data_From_RAM<=data_ram_r_data;
     end
 
-    assign RegFile_w_data = sel_rf_w_data?RF_w_data_From_RAM:RF_w_data_From_ALU;
+    assign RegFile_w_data = (RegFile_W_addr==5'b0_0000)?32'b0:sel_rf_w_data?RF_w_data_From_RAM:RF_w_data_From_ALU;
 
     ///////////////////////////////////////////////
     /// 旁路信号

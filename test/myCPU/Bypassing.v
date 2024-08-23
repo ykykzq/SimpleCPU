@@ -47,12 +47,14 @@ module Bypassing(
 	/// 筛选
 	
 	// 通过筛选信号，提前把写入数据筛选出来
-	assign EXE_RegFile_W_data=EXE_alu_result;
+	assign EXE_RegFile_W_data=(EXE_RegFile_W_addr==5'b0)?32'b0:EXE_alu_result;
 
     // 处理半字读与字节读
     always@(*)
     begin
-        if(MEM_sel_data_ram_wd==1)
+		if(MEM_RegFile_W_addr==5'b0_0000)
+			MEM_RegFile_W_data<=32'b0;
+        else if(MEM_sel_data_ram_wd==1)
         begin
             if(MEM_data_ram_b_en==4'b0001)
                 // 注意是符号扩展
