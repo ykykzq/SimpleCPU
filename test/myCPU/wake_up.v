@@ -10,7 +10,7 @@
 module WakeUP(
 	// 源操作数的控制信号与读取的寄存器号
 	input  wire[ 1: 0]					sel_alu_src1,
-	input  wire[ 1: 0]					sel_alu_src2,
+	input  wire[ 2: 0]					sel_alu_src2,
 	input  wire[ 4: 0]					RegFile_R_addr1,
 	input  wire[ 4: 0]					RegFile_R_addr2,
 
@@ -93,6 +93,7 @@ module WakeUP(
 				// 如果后续阶段均不写入该寄存器，则从寄存器堆获得操作数，一定可以准备好
 				src_2_ready<=1'b1;
 		else 
+			// 如果是PC+4，也一定可以准备好
 			// 如果操作数不来自于寄存器堆而是来自于指令PC，一定已经准备好
 			src_2_ready<=1'b1;
 	end

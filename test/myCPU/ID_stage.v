@@ -1,7 +1,7 @@
 /**
  * @file ID_stage.v
  * @author ykykzq
- * @brief 流水线第三级，内含唤醒模块，决定指令是否流动，并获取ALU的源操作数；内含一Branch Unit，用于判断分支预测成功与否
+ * @brief 流水线第三级，内含唤醒模块，决定是否阻塞，并获取ALU的源操作数；内含一Branch Unit，用于判断分支预测结果正确性
  * @version 0.2
  * @date 2024-08-20
  *
@@ -44,6 +44,8 @@ module ID_stage(
 	wire 			w_en;
 	wire [31: 0]	w_data;
 	wire [ 4: 0]	w_addr;
+	wire [31: 0]	RegFile_R_data1;
+	wire [31: 0]	RegFile_R_data2;
 
 	wire [ 4: 0]	RegFile_W_addr;//注意此值代表当前流水级（ID）正在处理的指令的目的寄存器，不代表这拍要写入(WB)的寄存器
 	
@@ -52,7 +54,7 @@ module ID_stage(
 
 	// ALU控制信号与源操作数
 	wire [ 1: 0]	sel_alu_src1;
-	wire [ 1: 0]	sel_alu_src2;
+	wire [ 2: 0]	sel_alu_src2;
 	reg  [31: 0]	alu_src1;
 	reg  [31: 0]	alu_src2;
 	wire [11: 0]	alu_op;
@@ -290,6 +292,9 @@ module ID_stage(
 			else 
 				// 如果后续阶段均不写入该寄存器，则从寄存器堆获得操作数，一定可以准备好
 				alu_src2<=RegFile_R_data2;
+		else if(sel_alu_src2[2])
+			// 特殊情况，BL指令计算PC+4
+			alu_src2<=32'h0000_0004;
 		else if(sel_alu_src2[0])
 			// 如果操作数不来自于寄存器堆而是来自立即数，一定已经准备好
 			alu_src2<=immediate;
