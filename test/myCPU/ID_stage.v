@@ -139,14 +139,17 @@ module ID_stage(
 		// EXE阶段信号
 		EXE_RegFile_W_addr			,
 		EXE_sel_RF_W_Data_valid		,
+		EXE_valid					,//1
 		EXE_sel_rf_w_en				,
 		// MEM阶段信号
 		MEM_RegFile_W_addr			,
 		MEM_sel_RF_W_Data_valid		,
+		MEM_valid					,//1
 		MEM_sel_rf_w_en				,
 		// WB阶段信号		
 		WB_RegFile_W_addr			,
 		WB_sel_RF_W_Data_valid		,
+		WB_valid					,//1
 		WB_sel_rf_w_en		
 	};
 
@@ -297,16 +300,19 @@ module ID_stage(
 		EXE_RegFile_W_addr			,//5
 		EXE_RegFile_W_data			,//32
 		EXE_sel_RF_W_Data_valid		,//1
+		EXE_valid					,//1
 		EXE_sel_rf_w_en				,//1
 		// MEM阶段信号
 		MEM_RegFile_W_addr			,//5
 		MEM_RegFile_W_data			,//32
 		MEM_sel_RF_W_Data_valid		,//1
+		MEM_valid					,//1
 		MEM_sel_rf_w_en				,//1
 		// WB阶段信号		
 		WB_RegFile_W_addr			,//5
 		WB_RegFile_W_data			,//32
 		WB_sel_RF_W_Data_valid		,//1
+		WB_valid					,//1
 		WB_sel_rf_w_en				 //1
 	}=BY_to_ID_bus;
 

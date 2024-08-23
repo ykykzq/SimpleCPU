@@ -171,6 +171,7 @@ module EXE_stage(
 		RegFile_W_addr				,//5
 		alu_result					,//32
 		EXE_sel_RF_W_Data_valid		,//1
+		EXE_valid					,//1
 		sel_rf_w_en					 //1
 	};
 	

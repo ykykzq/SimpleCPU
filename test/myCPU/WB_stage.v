@@ -142,6 +142,7 @@ module WB_stage(
 		RegFile_W_addr			,//5
 		RegFile_w_data			,//32
 		WB_sel_RF_W_Data_valid	,//1
+        WB_valid                ,//1
 		sel_rf_w_en				 //1
     };
 

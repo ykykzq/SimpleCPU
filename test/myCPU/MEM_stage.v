@@ -121,6 +121,7 @@ module MEM_stage(
 		alu_result					,//32
 		MEM_sel_RF_W_Data_valid		,//1
 		sel_data_ram_wd				,//1
+		MEM_valid					,//1
 		sel_rf_w_en					 //1
 	};
 

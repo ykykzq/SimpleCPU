@@ -87,6 +87,7 @@ module Bypassing(
 		EXE_RegFile_W_addr			,//5
 		EXE_alu_result				,//32
 		EXE_sel_RF_W_Data_valid		,//1
+		EXE_valid					,//1
 		EXE_sel_rf_w_en				 //1
 	}=EXE_to_BY_bus;
 
@@ -99,6 +100,7 @@ module Bypassing(
 		MEM_alu_result					,//32
 		MEM_sel_RF_W_Data_valid			,//1
 		MEM_sel_data_ram_wd				,//1
+		MEM_valid						,//1
 		MEM_sel_rf_w_en					 //1
 	}=MEM_to_BY_bus;
 
@@ -107,6 +109,7 @@ module Bypassing(
 		WB_RegFile_W_addr			,//5
 		WB_RegFile_W_data			,//32
 		WB_sel_RF_W_Data_valid		,//1
+		WB_valid					,//1
 		WB_sel_rf_w_en				 //1
 	}=WB_to_BY_bus;
 
@@ -116,16 +119,19 @@ module Bypassing(
 		EXE_RegFile_W_addr			,//5
 		EXE_RegFile_W_data			,//32
 		EXE_sel_RF_W_Data_valid		,//1
+		EXE_valid					,//1
 		EXE_sel_rf_w_en				,//1
 		// MEM阶段信号
 		MEM_RegFile_W_addr			,//5
 		MEM_RegFile_W_data			,//32
 		MEM_sel_RF_W_Data_valid		,//1
+		MEM_valid					,//1
 		MEM_sel_rf_w_en				,//1
 		// WB阶段信号		
 		WB_RegFile_W_addr			,//5
 		WB_RegFile_W_data			,//32
 		WB_sel_RF_W_Data_valid		,//1
+		WB_valid					,//1
 		WB_sel_rf_w_en				 //1
 	};
 	
