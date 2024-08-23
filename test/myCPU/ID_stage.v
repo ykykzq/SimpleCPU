@@ -79,6 +79,7 @@ module ID_stage(
 
 	// 唤醒（阻塞）模块的控制信号
 	wire [`BY_TO_WK_BUS_WD-1:0]	BY_to_WK_bus	;
+	wire [ 2: 0]				sel_RF_W_Data_Valid_Stage;
 	wire 						alu_src_1_ready	;
 	wire 						alu_src_2_ready	;
 

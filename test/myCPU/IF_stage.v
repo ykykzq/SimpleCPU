@@ -90,7 +90,7 @@ module IF_stage(
 	/// 取INST
 
 	assign inst_ram_en=1'b1;
-	assign inst_ram_addr=next_PC;
+	assign inst_ram_addr=IF_allow_in?next_PC:PC;
 	//不写RAM
 	assign inst_ram_w_data=32'b0;
 	assign inst_ram_w_en=4'b0;
