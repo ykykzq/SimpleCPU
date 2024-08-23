@@ -390,7 +390,8 @@ module IPreD_stage(
 							| inst_or | inst_ori | inst_nor | inst_andi | inst_and | inst_xor
 							| inst_srli_w | inst_slli_w | inst_srai_w | 
 							| inst_lu12i_w | inst_pcaddu12i
-                            | inst_jirl | inst_bl;
+                            | inst_jirl | inst_bl
+                            | inst_ld_w | inst_ld_b;
 
 	/* 
 		控制写入数据来源
