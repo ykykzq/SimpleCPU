@@ -114,9 +114,11 @@ module MEM_stage(
     };
 
 	assign MEM_to_BY_bus={
+		sel_RF_W_Data_Valid_Stage	,//3
 		data_ram_b_en				,//4
 		RegFile_W_addr				,//5
 		data_ram_r_data				,//32
+		alu_result					,//32
 		MEM_sel_RF_W_Data_valid		,//1
 		sel_data_ram_wd				,//1
 		sel_rf_w_en					 //1

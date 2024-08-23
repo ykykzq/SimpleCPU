@@ -17,7 +17,7 @@
     
 	// 旁路与流水级通信
 	`define EXE_TO_BY_BUS_WD	39
-	`define MEM_TO_BY_BUS_WD	44
+	`define MEM_TO_BY_BUS_WD	79
 	`define WB_TO_BY_BUS_WD		39
 
 	`define BY_TO_ID_BUS_WD		117

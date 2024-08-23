@@ -28,9 +28,11 @@ module Bypassing(
 	wire [31: 0]	EXE_RegFile_W_data	;
 
 	// MEM
+	wire [ 2: 0]	MEM_sel_RF_W_Data_Valid_Stage;
 	wire [ 3: 0]	MEM_data_ram_b_en	;
 	wire [ 4: 0]	MEM_RegFile_W_addr	;
 	wire [31: 0]	MEM_data_ram_r_data	;
+	wire [31: 0]	MEM_alu_result		;
 	wire 	MEM_sel_RF_W_Data_valid		;
 	wire 	MEM_sel_data_ram_wd			;
 	wire 	MEM_sel_rf_w_en				;
@@ -54,6 +56,8 @@ module Bypassing(
     begin
 		if(MEM_RegFile_W_addr==5'b0_0000)
 			MEM_RegFile_W_data<=32'b0;
+		else if(MEM_sel_RF_W_Data_Valid_Stage[0])
+			MEM_RegFile_W_data<=MEM_alu_result;
         else if(MEM_sel_data_ram_wd==1)
         begin
             if(MEM_data_ram_b_en==4'b0001)
@@ -88,12 +92,14 @@ module Bypassing(
 
 	assign {
 		// MEM阶段信号
-		MEM_data_ram_b_en			,//4
-		MEM_RegFile_W_addr			,//5
-		MEM_data_ram_r_data			,//32
-		MEM_sel_RF_W_Data_valid		,//1
-		MEM_sel_data_ram_wd			,//1
-		MEM_sel_rf_w_en				 //1
+		MEM_sel_RF_W_Data_Valid_Stage	,//3
+		MEM_data_ram_b_en				,//4
+		MEM_RegFile_W_addr				,//5
+		MEM_data_ram_r_data				,//32
+		MEM_alu_result					,//32
+		MEM_sel_RF_W_Data_valid			,//1
+		MEM_sel_data_ram_wd				,//1
+		MEM_sel_rf_w_en					 //1
 	}=MEM_to_BY_bus;
 
 	assign {
