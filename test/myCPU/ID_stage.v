@@ -177,7 +177,9 @@ module ID_stage(
     	.pred_PC			(pred_PC		),
     	// 用于判断是否跳转和计算next_PC
     	.BranchUnit_src1	(alu_src1		),
+		.src_1_ready		(src_1_ready	),
     	.BranchUnit_src2	(alu_src2		),
+		.src_2_ready		(src_2_ready	),
 		.offset				(immediate		),
 		.inst_PC			(inst_PC		),
 	
