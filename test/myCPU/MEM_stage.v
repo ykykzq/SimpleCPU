@@ -37,12 +37,12 @@ module MEM_stage(
     reg [`EXE_TO_MEM_BUS_WD-1:0]    EXE_to_MEM_reg;
 
 	// 旁路所需控制信号
-	wire [ 2: 0]    sel_RF_W_Data_Valid_Stage;
-	wire 	MEM_sel_RF_W_Data_valid;
+	wire [ 2: 0]    sel_rf_w_data_valid_stage;
+	wire 			MEM_sel_rf_w_data_valid;
 	
     // 写回阶段的数据与控制信号
     wire [31: 0]    alu_result;
-    wire [ 4: 0]    RegFile_W_addr;
+    wire [ 4: 0]    RegFile_w_addr;
     wire [ 3: 0]	data_ram_b_en;
     wire    sel_data_ram_wd;
     wire    sel_rf_w_data;
@@ -74,7 +74,7 @@ module MEM_stage(
 	/////////////////////////////////////////////////
 	/// 旁路信号生成
 
-	assign MEM_sel_RF_W_Data_valid=MEM_valid & MEM_ready_go & (sel_RF_W_Data_Valid_Stage[0] | sel_RF_W_Data_Valid_Stage[1]);
+	assign MEM_sel_rf_w_data_valid = MEM_valid & MEM_ready_go & (sel_rf_w_data_valid_stage[0] | sel_rf_w_data_valid_stage[1]);
 
     /////////////////////////////////////////////////
     /// 流水级数据交互
@@ -90,36 +90,36 @@ module MEM_stage(
 			EXE_to_MEM_reg<=EXE_to_MEM_reg;
 	end
     assign {
-		sel_RF_W_Data_Valid_Stage	,//3
+		sel_rf_w_data_valid_stage	,//3
 		sel_rf_w_en					,//1
 		sel_rf_w_data				,//1
 		sel_data_ram_wd				,//1
 		data_ram_b_en				,//4
-		RegFile_W_addr				,//5
+		RegFile_w_addr				,//5
 		alu_result					,//32
 		inst_PC						 //32
 	}=EXE_to_MEM_reg;
 
     // 发送
     assign MEM_to_WB_bus = {
-		sel_RF_W_Data_Valid_Stage	,//3
+		sel_rf_w_data_valid_stage	,//3
         sel_rf_w_en					,//1
 		sel_rf_w_data				,//1
         sel_data_ram_wd 			,//1
 		data_ram_b_en				,//4
         data_ram_r_data 			,//32
-        RegFile_W_addr  			,//5
+        RegFile_w_addr  			,//5
 		alu_result					,//32
         inst_PC         			 //32
     };
 
 	assign MEM_to_BY_bus={
-		sel_RF_W_Data_Valid_Stage	,//3
+		sel_rf_w_data_valid_stage	,//3
 		data_ram_b_en				,//4
-		RegFile_W_addr				,//5
+		RegFile_w_addr				,//5
 		data_ram_r_data				,//32
 		alu_result					,//32
-		MEM_sel_RF_W_Data_valid		,//1
+		MEM_sel_rf_w_data_valid		,//1
 		sel_data_ram_wd				,//1
 		MEM_valid					,//1
 		sel_rf_w_en					 //1

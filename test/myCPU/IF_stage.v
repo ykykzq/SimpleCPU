@@ -2,7 +2,7 @@
  * @file IF_stage.v
  * @author ykykzq
  * @brief 流水线第一级，主要完成PC的维护与Inst RAM取指。
- * @brief 分支预测：静态分支预测，预测不跳转
+ * @brief 分支预测：静态分支预测，预测不跳转（pred_PC=PC+4）
  * @version 0.1
  * @date 2024-08-12
  *
@@ -45,7 +45,7 @@ module IF_stage(
 	///维护与流水线控制有关的信号
 	
 	// IF_valid
-	always@(posedge clk)//异步复位
+	always@(posedge clk)//同步复位
 	begin
 		if(reset)
 			IF_valid<=1'b0;//相当于清空有效数据
@@ -59,10 +59,10 @@ module IF_stage(
 	end
 	
 	// 控制流水线行为
-	assign IF_ready_go=1'b1;//总认为一周期内能完成
-	assign IF_allow_in=(~IF_valid) | (IF_ready_go & IPD_allow_in);//后者加上IF_valid=1,相当于IF可以向ID发送数据(只含“发送”，不含“接收”)
+	assign IF_ready_go=1'b1;// 当前取指在一周期内一定能完成
+	assign IF_allow_in=(~IF_valid) | (IF_ready_go & IPD_allow_in);
 	assign Pre_to_IF_valid=~reset;
-	assign IF_to_IPD_valid=IF_valid;//&IF_ready_go
+	assign IF_to_IPD_valid=IF_valid & IF_ready_go;
 	
 	/////////////////////////////////////////////////
 	/// 分支预测
@@ -75,7 +75,7 @@ module IF_stage(
 	always@(posedge clk)
 	begin
 		if(reset)
-			PC<=32'h1c000000-4'b1000;
+			PC<=32'h1c000000-4'b1000;// 考虑到rst后第一周期无效，再加上给Inst RAM的是next_PC，故-8
 		else if(IF_allow_in & Pre_to_IF_valid)
 			PC<=next_PC;
 		else 
@@ -91,7 +91,7 @@ module IF_stage(
 
 	assign inst_ram_en=1'b1;
 	assign inst_ram_addr=IF_allow_in?next_PC:PC;
-	//不写RAM
+	// 不写Inst RAM
 	assign inst_ram_w_data=32'b0;
 	assign inst_ram_w_en=4'b0;
 
@@ -99,8 +99,8 @@ module IF_stage(
 	/// 流水线数据交互
 	assign {
 		br_taken_cancel	,//32
-		PC_fromID		 //31:0			
-					}=ID_to_IF_bus;
+		PC_fromID		 //32	
+	}=ID_to_IF_bus;
 
 	assign IF_to_IPD_bus={
 			pred_PC		,//32

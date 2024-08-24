@@ -42,26 +42,23 @@ module EXE_stage(
 
 	// ALU操作数与运算类型
 	wire [11: 0]	alu_op;
-	wire [31: 0]	alu_src1;
-	wire [31: 0]	alu_src2;
+	wire [31: 0]	alu_bu_src1;
+	wire [31: 0]	alu_bu_src2;
 	wire [31: 0]	alu_result;
 
 	// Data RAM控制信号
 	wire sel_data_ram_en;
 	wire sel_data_ram_we;
 	wire sel_data_ram_wd;
-	//wire data_ram_en;
 	reg  [ 3: 0]	data_ram_b_en;
-	//wire [ 3: 0]	data_ram_w_en;//这两个信号在模块声明时声明
-	//wire [31: 0]	data_ram_addr;
 	wire [31: 0]	data_ram_wdata;
 
 	// 旁路阶段所需控制信号
-	wire [ 2: 0]    sel_RF_W_Data_Valid_Stage;
-	wire 	EXE_sel_RF_W_Data_valid;
+	wire [ 2: 0]    sel_rf_w_data_valid_stage;
+	wire 			EXE_sel_rf_w_data_valid;
 
 	// 写回（WB）阶段用到的控制信号
-	wire [ 4: 0]	RegFile_W_addr;
+	wire [ 4: 0]	RegFile_w_addr;
 	wire	sel_rf_w_data;
 	wire 	sel_rf_w_en;
 
@@ -88,8 +85,8 @@ module EXE_stage(
 
 	alu ALU(
   		.alu_op			(alu_op 	),
-  		.alu_src1		(alu_src1	),
-  		.alu_src2		(alu_src2	),
+  		.alu_src1		(alu_bu_src1),
+  		.alu_src2		(alu_bu_src2),
   		.alu_result		(alu_result	)
 	);
 
@@ -97,7 +94,7 @@ module EXE_stage(
 	/////////////////////////////////////////////////////
 	/// 旁路信号生成
 
-	assign EXE_sel_RF_W_Data_valid=EXE_ready_go & EXE_valid & sel_RF_W_Data_Valid_Stage[0];
+	assign EXE_sel_rf_w_data_valid = EXE_ready_go & EXE_valid & sel_rf_w_data_valid_stage[0];
 	/////////////////////////////////////////////////////
 	/// 生成Data RAM信号
 
@@ -123,7 +120,8 @@ module EXE_stage(
 		else 
 			data_ram_b_en=4'b1111;// 若是写入一个word(32bit)
 	end
-	assign data_ram_w_en = sel_data_ram_we?data_ram_b_en:4'b0000;//若是读取，全0即可
+	// 若是不读Data RAM，全0即可
+	assign data_ram_w_en = sel_data_ram_we?data_ram_b_en:4'b0000;
 	// 写回的数据
 	assign data_ram_w_data = data_ram_wdata;
 
@@ -141,36 +139,36 @@ module EXE_stage(
 			ID_to_EXE_reg<=ID_to_EXE_reg;
 	end
 	assign  {
-		sel_RF_W_Data_Valid_Stage	,//3
+		sel_rf_w_data_valid_stage	,//3
 		sel_rf_w_en					,//1
 		sel_rf_w_data				,//1
 		sel_data_ram_wd				,//1
 		sel_data_ram_we				,//1
 		sel_data_ram_en				,//1
 		data_ram_wdata				,//32
-		RegFile_W_addr				,//5
+		RegFile_w_addr				,//5
 		alu_op						,//12
-		alu_src2					,//32
-		alu_src1					,//32
+		alu_bu_src2					,//32
+		alu_bu_src1					,//32
 		inst_PC						 //32
 	}=ID_to_EXE_reg;
 	
 	// 发送
 	assign EXE_to_MEM_bus = {
-		sel_RF_W_Data_Valid_Stage	,//3
+		sel_rf_w_data_valid_stage	,//3
 		sel_rf_w_en					,//1
 		sel_rf_w_data				,//1
 		sel_data_ram_wd				,//1
 		data_ram_b_en				,//4
-		RegFile_W_addr				,//5
+		RegFile_w_addr				,//5
 		alu_result					,//32
 		inst_PC						 //32
 	};
 
 	assign EXE_to_BY_bus={
-		RegFile_W_addr				,//5
+		RegFile_w_addr				,//5
 		alu_result					,//32
-		EXE_sel_RF_W_Data_valid		,//1
+		EXE_sel_rf_w_data_valid		,//1
 		EXE_valid					,//1
 		sel_rf_w_en					 //1
 	};

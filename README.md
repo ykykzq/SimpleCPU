@@ -13,7 +13,8 @@
 - [x] 六级流水线设计，完成20条用户态指令
 - [x] 阻塞(或唤醒)模块设计与实现
 - [x] 旁路模块设计与实现
-- [ ] 通过《CPU设计实战》exp7、8、9
+- [x] 通过《CPU设计实战》exp7（commit：[6f57858aa503a204427d251ed48f78b21216acb6](https://github.com/ykykzq/SimpleCPU/commit/6f57858aa503a204427d251ed48f78b21216acb6)）
+- [x] 通过《CPU设计实战》exp8、9（commit：[6e12934ad4ada67a1a4f0eae59e8954e9a2666b5](https://github.com/ykykzq/SimpleCPU/commit/6e12934ad4ada67a1a4f0eae59e8954e9a2666b5)）
 - [ ] 添加用户态指令，支持40+条
 - [ ] 通过《CPU设计实战》exp10、11
 - [ ] 根据NSCSCC大赛要求，添加更多指令
@@ -25,6 +26,8 @@
 系统的总体架构如下所示。
 
 <img src="./images/project.png" alt="project" style="zoom:48%;" />
+
+:bangbang: 注意：如果使用超过五级的流水线结构，将无法在没有旁路与阻塞模块的情况下通过《CPU设计实战》的exp7
 
 ## 项目结构
 
@@ -69,9 +72,12 @@
 
 - [ ] 完成前置知识的学习：数字逻辑设计、Verilog语言、计算机组成原理
 - [ ] 根据《CPU设计实战》，**设计**并**完成**一个五级流水线CPU
+
+> 做单周期与多周期CPU纯在浪费时间
+
 - [ ] 通过《CPU设计实战》中的lab，对五级流水线CPU进行debug
 - [ ] 适配NSCSCC大赛的模板，完成：串口添加、地址映射、RAM结构冒险、进一步添加用户态指令
-- [ ] 本地仿真，对应三级功能测试，进行debug
+- [ ] 本地仿真，对照三级功能测试与性能测试，进行debug
 
 在上述过程中，你可以参考本项目的源代码。
 

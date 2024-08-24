@@ -9,8 +9,8 @@
 `include "myCPU.h"
 module WakeUP(
 	// 源操作数的控制信号与读取的寄存器号
-	input  wire[ 1: 0]					sel_alu_src1,
-	input  wire[ 2: 0]					sel_alu_src2,
+	input  wire[ 1: 0]					sel_alu_bu_src1,
+	input  wire[ 2: 0]					sel_alu_bu_src2,
 	input  wire[ 4: 0]					RegFile_R_addr1,
 	input  wire[ 4: 0]					RegFile_R_addr2,
 
@@ -45,7 +45,7 @@ module WakeUP(
 	// src_1，当源操作数来自于寄存器，并且流水线中还没有该数据时，数据为未准备好状态
 	always@(*)
 	begin
-		if(sel_alu_src1[1])
+		if(sel_alu_bu_src1[1])
 			if(RegFile_R_addr1==EXE_RegFile_W_addr && EXE_sel_rf_w_en)
 				if(EXE_sel_RF_W_Data_valid)
 					// 可以从EXE阶段旁路该值
@@ -74,7 +74,7 @@ module WakeUP(
 	// src_2，当源操作数来自于寄存器，并且流水线中还没有该数据时，数据为未准备好状态
 	always@(*)
 	begin
-		if(sel_alu_src2[1])
+		if(sel_alu_bu_src2[1])
 			if(RegFile_R_addr2==EXE_RegFile_W_addr && EXE_sel_rf_w_en && EXE_valid)
 				if(EXE_sel_RF_W_Data_valid)
 					// 可以从EXE阶段旁路该值
