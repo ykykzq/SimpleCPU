@@ -4,7 +4,7 @@
 
 本仓库于2024.8进行了重置，将工程从MIPS版本调整为LoongArch版本。参考了2022年龙芯杯大赛[作品](https://github.com/fluctlight001/cpu_for_nscscc2022_single)，该作品是一个七级流水线CPU。
 
-本工程使用Verilog语言描述了一个六级流水线CPU，五个阶段分别为IF、IPreD、ID、EXE、MEM、WB。CPU基于LoongArch指令集，支持运算、访存、分支跳转等大部分用户态指令，具体支持的指令参见[这里](./docs/指令控制信号.xlsx)。该工程还支持串口，通过UART协议与外界进行通信。其他技术要求，可以参见[龙芯杯大赛](http://www.nscscc.com)技术方案。
+本工程使用Verilog语言描述了一个六级流水线CPU，六个流水级分别为IF、IPreD、ID、EXE、MEM、WB。CPU基于LoongArch指令集，支持运算、访存、分支跳转等大部分用户态指令，具体支持的指令参见[这里](./docs/指令控制信号.xlsx)。该工程还支持串口，通过UART协议与外界进行通信。其他技术要求，可以参见[龙芯杯大赛](http://www.nscscc.com)技术方案。
 
 工程使用的综合工具为Vivado 2019.2，尽管如此，仍然可以使用低版本Vivado工具，通过新建一个工程并添加Verilog源代码的方式进行综合。
 
@@ -13,8 +13,8 @@
 - [x] 六级流水线设计，完成20条用户态指令
 - [x] 阻塞(或唤醒)模块设计与实现
 - [x] 旁路模块设计与实现
-- [x] 通过《CPU设计实战》exp7（commit：[6f57858aa503a204427d251ed48f78b21216acb6](https://github.com/ykykzq/SimpleCPU/commit/6f57858aa503a204427d251ed48f78b21216acb6)）
-- [x] 通过《CPU设计实战》exp8、9（commit：[6e12934ad4ada67a1a4f0eae59e8954e9a2666b5](https://github.com/ykykzq/SimpleCPU/commit/6e12934ad4ada67a1a4f0eae59e8954e9a2666b5)）
+- [x] 通过《CPU设计实战》exp7（commit：[v1.0](https://github.com/ykykzq/SimpleCPU/commit/6f57858aa503a204427d251ed48f78b21216acb6)）
+- [x] 通过《CPU设计实战》exp8、9（commit：[v2.0](https://github.com/ykykzq/SimpleCPU/commit/6e12934ad4ada67a1a4f0eae59e8954e9a2666b5)、[v2.1](https://github.com/ykykzq/SimpleCPU/commit/d00fffc3704908f9dc4b94863b6e44d64e6c84ea)）
 - [ ] 添加用户态指令，支持40+条
 - [ ] 通过《CPU设计实战》exp10、11
 - [ ] 根据NSCSCC大赛要求，添加更多指令
