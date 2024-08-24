@@ -63,7 +63,7 @@ module ID_stage(
 	wire		sel_data_ram_en;
 	wire 		sel_data_ram_we;
 	wire 		sel_data_ram_wd;
-	wire [31:0]	data_ram_wdata;
+	reg  [31:0]	data_ram_wdata;
 
 	// WB阶段的控制信号
 	wire 		sel_rf_w_en;
@@ -205,7 +205,7 @@ module ID_stage(
 				else
 					alu_src1<=32'b0;
 			else if(RegFile_R_addr1==WB_RegFile_W_addr && WB_sel_rf_w_en)
-				if(WB_sel_rf_w_en)
+				if(WB_sel_RF_W_Data_valid)
 					alu_src1<=WB_RegFile_W_data;
 				else
 					alu_src1<=32'b0;
@@ -236,7 +236,7 @@ module ID_stage(
 				else
 					alu_src2<=32'b0;
 			else if(RegFile_R_addr2==WB_RegFile_W_addr && WB_sel_rf_w_en && WB_valid)
-				if(WB_sel_rf_w_en)
+				if(WB_sel_RF_W_Data_valid)
 					alu_src2<=WB_RegFile_W_data;
 				else
 					alu_src2<=32'b0;
@@ -257,7 +257,32 @@ module ID_stage(
 	/// 决定Data RAM写回数据
 
 	// 写数据。当写有效时为数据，否则全0
-	assign data_ram_wdata=sel_data_ram_we?alu_src2:32'b0;
+	always@(*)
+	begin
+		if(sel_data_ram_we)
+			if(RegFile_R_addr2==EXE_RegFile_W_addr && EXE_sel_rf_w_en && EXE_valid)
+				if(EXE_sel_RF_W_Data_valid)
+					// 可以从EXE阶段旁路该值
+					data_ram_wdata<=EXE_RegFile_W_data;
+				else 
+					// 代表阻塞
+					data_ram_wdata<=32'b0;
+			else if(RegFile_R_addr2==MEM_RegFile_W_addr && MEM_sel_rf_w_en && MEM_valid)
+				if(MEM_sel_RF_W_Data_valid)
+					data_ram_wdata<=MEM_RegFile_W_data;
+				else
+					data_ram_wdata<=32'b0;
+			else if(RegFile_R_addr2==WB_RegFile_W_addr && WB_sel_rf_w_en && WB_valid)
+				if(WB_sel_RF_W_Data_valid)
+					data_ram_wdata<=WB_RegFile_W_data;
+				else
+					data_ram_wdata<=32'b0;
+			else 
+				// 如果后续阶段均不写入该寄存器，则从寄存器堆获得操作数，一定可以准备好
+				data_ram_wdata<=RegFile_R_data2;
+		else 
+			data_ram_wdata<=32'b0;
+	end
 	
 	//////////////////////////////////////////////////////////
 	/// 流水级数据交互
