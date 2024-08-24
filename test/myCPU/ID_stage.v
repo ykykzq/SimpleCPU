@@ -257,7 +257,7 @@ module ID_stage(
 	/// 决定Data RAM写回数据
 
 	// 写数据。当写有效时为数据，否则全0
-	assign data_ram_wdata=sel_data_ram_we?RegFile_R_data2:32'b0;
+	assign data_ram_wdata=sel_data_ram_we?alu_src2:32'b0;
 	
 	//////////////////////////////////////////////////////////
 	/// 流水级数据交互
