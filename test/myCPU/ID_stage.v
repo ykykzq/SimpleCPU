@@ -102,7 +102,7 @@ module ID_stage(
 	/// 流水线行为控制
 
 	// 两个操作数都准备好之后可以发射
-    assign ID_ready_go=alu_src_1_ready&&alu_src_2_ready;
+    assign ID_ready_go=alu_src_1_ready&alu_src_2_ready;
 	assign ID_allow_in=(~ID_valid)|(ID_ready_go & EXE_allow_in);
 	assign ID_to_EXE_valid=ID_ready_go&ID_valid;
     always@(posedge clk)
@@ -177,9 +177,9 @@ module ID_stage(
     	.pred_PC			(pred_PC		),
     	// 用于判断是否跳转和计算next_PC
     	.BranchUnit_src1	(alu_src1		),
-		.src_1_ready		(src_1_ready	),
+		.src_1_ready		(alu_src_1_ready),
     	.BranchUnit_src2	(alu_src2		),
-		.src_2_ready		(src_2_ready	),
+		.src_2_ready		(alu_src_1_ready),
 		.offset				(immediate		),
 		.inst_PC			(inst_PC		),
 	

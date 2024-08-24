@@ -336,7 +336,7 @@ module IPreD_stage(
 							| inst_or | inst_ori | inst_nor | inst_andi | inst_and | inst_xor 
 							| inst_srli_w | inst_slli_w | inst_srai_w
 							| inst_slt | inst_sltu
-							| inst_jirl
+							| inst_jirl | inst_beq | inst_bne
 							| inst_st_w | inst_ld_w | inst_st_b | inst_ld_b;
 	assign sel_alu_src1[0] = inst_pcaddu12i | inst_bl;
 
@@ -354,7 +354,8 @@ module IPreD_stage(
     assign sel_alu_src2[2] = inst_bl;
 	assign sel_alu_src2[1] =  inst_add_w | inst_sub_w | inst_mul_w
 							| inst_or | inst_nor | inst_and | inst_xor
-							| inst_slt | inst_sltu; 
+							| inst_slt | inst_sltu
+                            | inst_beq | inst_bne; 
 	assign sel_alu_src2[0]=   inst_addi_w | inst_ori | inst_andi | inst_srli_w | inst_slli_w | inst_srai_w
 							| inst_lu12i_w | inst_pcaddu12i | inst_jirl
 							| inst_st_w | inst_ld_w | inst_st_b | inst_ld_b;
