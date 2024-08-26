@@ -45,6 +45,7 @@ module MEM_stage(
     wire [ 4: 0]    RegFile_w_addr;
     wire [ 3: 0]	data_ram_b_en;
     wire [ 1: 0]	sel_data_ram_wd;
+	wire 	sel_data_ram_extend;
     wire    sel_rf_w_data;
     wire    sel_rf_w_en;
 
@@ -94,6 +95,7 @@ module MEM_stage(
 		sel_rf_w_en					,//1
 		sel_rf_w_data				,//1
 		sel_data_ram_wd				,//2
+		sel_data_ram_extend			,//1
 		data_ram_b_en				,//4
 		RegFile_w_addr				,//5
 		alu_result					,//32
@@ -106,6 +108,7 @@ module MEM_stage(
         sel_rf_w_en					,//1
 		sel_rf_w_data				,//1
         sel_data_ram_wd 			,//2
+		sel_data_ram_extend			,//1
 		data_ram_b_en				,//4
         data_ram_r_data 			,//32
         RegFile_w_addr  			,//5
@@ -121,6 +124,7 @@ module MEM_stage(
 		alu_result					,//32
 		MEM_sel_rf_w_data_valid		,//1
 		sel_data_ram_wd				,//2
+		sel_data_ram_extend			,//1
 		MEM_valid					,//1
 		sel_rf_w_en					 //1
 	};

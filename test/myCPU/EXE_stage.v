@@ -49,9 +49,11 @@ module EXE_stage(
 	// Data RAM控制信号
 	wire sel_data_ram_en;
 	wire sel_data_ram_we;
+	wire sel_data_ram_extend;
 	wire [ 1: 0]	sel_data_ram_wd;
 	reg  [ 3: 0]	data_ram_b_en;
 	wire [31: 0]	data_ram_wdata;
+	wire [31: 0]	data_ram_addr_from_alu;
 
 	// 旁路阶段所需控制信号
 	wire [ 2: 0]    sel_rf_w_data_valid_stage;
@@ -99,7 +101,9 @@ module EXE_stage(
 	/// 生成Data RAM信号
 
 	assign data_ram_en=sel_data_ram_en;
-	assign data_ram_addr=alu_result;
+	assign data_ram_addr={alu_result[31:2],2'b0};
+
+	assign data_ram_addr_from_alu=alu_result;
 
 	// 字节使能
 	always@(*)
@@ -107,13 +111,13 @@ module EXE_stage(
 		if(sel_data_ram_wd[1])
 			begin
 				// 如果长度为byte(8bit)
-				if(data_ram_addr[1:0]==2'b00)
+				if(data_ram_addr_from_alu[1:0]==2'b00)
 					data_ram_b_en<=4'b0001;
-				else if(data_ram_addr[1:0]==2'b01)
+				else if(data_ram_addr_from_alu[1:0]==2'b01)
 					data_ram_b_en<=4'b0010;
-				else if(data_ram_addr[1:0]==2'b10)
+				else if(data_ram_addr_from_alu[1:0]==2'b10)
 					data_ram_b_en<=4'b0100;
-				else if(data_ram_addr[1:0]==2'b11)
+				else if(data_ram_addr_from_alu[1:0]==2'b11)
 					data_ram_b_en<=4'b1000;
 				else 
 					data_ram_b_en<=4'b0000;//不会走到的分支
@@ -121,13 +125,13 @@ module EXE_stage(
 		if(sel_data_ram_wd[0])
 			begin
 				// 如果长度为half-word(16bit)
-				if(data_ram_addr[1:0]==2'b00)
+				if(data_ram_addr_from_alu[1:0]==2'b00)
 					data_ram_b_en<=4'b0011;
-				else if(data_ram_addr[1:0]==2'b01)
+				else if(data_ram_addr_from_alu[1:0]==2'b01)
 					data_ram_b_en<=4'b1100;
-				else if(data_ram_addr[1:0]==2'b10)
+				else if(data_ram_addr_from_alu[1:0]==2'b10)
 					data_ram_b_en<=4'b1100;
-				else if(data_ram_addr[1:0]==2'b11)
+				else if(data_ram_addr_from_alu[1:0]==2'b11)
 					data_ram_b_en<=4'b1100;
 				else 
 					data_ram_b_en<=4'b0000;//不会走到的分支
@@ -158,6 +162,7 @@ module EXE_stage(
 		sel_rf_w_en					,//1
 		sel_rf_w_data				,//1
 		sel_data_ram_wd				,//2
+		sel_data_ram_extend			,//1
 		sel_data_ram_we				,//1
 		sel_data_ram_en				,//1
 		data_ram_wdata				,//32
@@ -174,6 +179,7 @@ module EXE_stage(
 		sel_rf_w_en					,//1
 		sel_rf_w_data				,//1
 		sel_data_ram_wd				,//2
+		sel_data_ram_extend			,//1
 		data_ram_b_en				,//4
 		RegFile_w_addr				,//5
 		alu_result					,//32

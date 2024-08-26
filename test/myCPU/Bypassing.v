@@ -61,23 +61,39 @@ module Bypassing(
         else if(MEM_sel_data_ram_wd[1]==1)
 			// byte
             if(MEM_data_ram_b_en==4'b0001)
-                // 注意是符号扩展
-                MEM_RegFile_W_data<={{24{MEM_data_ram_r_data[7]}},MEM_data_ram_r_data[7:0]};
+                if(MEM_sel_data_ram_extend)
+					MEM_RegFile_W_data<={24'b0,MEM_data_ram_r_data[7:0]};
+				else
+					MEM_RegFile_W_data<={{24{MEM_data_ram_r_data[7]}},MEM_data_ram_r_data[7:0]};
             else if(MEM_data_ram_b_en==4'b0010)
-                MEM_RegFile_W_data<={{24{MEM_data_ram_r_data[15]}},MEM_data_ram_r_data[15:8]};
+                if(MEM_sel_data_ram_extend)
+					MEM_RegFile_W_data<={24'b0,MEM_data_ram_r_data[15:8]};
+				else
+					MEM_RegFile_W_data<={{24{MEM_data_ram_r_data[15]}},MEM_data_ram_r_data[15:8]};
             else if(MEM_data_ram_b_en==4'b0100)
-                MEM_RegFile_W_data<={{24{MEM_data_ram_r_data[23]}},MEM_data_ram_r_data[23:16]};
+                if(MEM_sel_data_ram_extend)
+					MEM_RegFile_W_data<={24'b0,MEM_data_ram_r_data[23:16]};
+				else
+					MEM_RegFile_W_data<={{24{MEM_data_ram_r_data[23]}},MEM_data_ram_r_data[23:16]};
             else if(MEM_data_ram_b_en==4'b1000)
-                MEM_RegFile_W_data<={{24{MEM_data_ram_r_data[31]}},MEM_data_ram_r_data[31:24]};
+                if(MEM_sel_data_ram_extend)
+					MEM_RegFile_W_data<={24'b0,MEM_data_ram_r_data[31:24]};
+				else
+					MEM_RegFile_W_data<={{24{MEM_data_ram_r_data[31]}},MEM_data_ram_r_data[31:24]};
             else 
                 MEM_RegFile_W_data<=32'b0;
         else if(MEM_sel_data_ram_wd[0]==1)
             // half-word
             if(MEM_data_ram_b_en==4'b0011)
-                // 注意是符号扩展
-                MEM_RegFile_W_data<={{16{MEM_data_ram_r_data[15]}},MEM_data_ram_r_data[15: 0]};
+                if(MEM_sel_data_ram_extend)
+					MEM_RegFile_W_data<={16'b0,MEM_data_ram_r_data[15: 0]};
+				else
+					MEM_RegFile_W_data<={{16{MEM_data_ram_r_data[15]}},MEM_data_ram_r_data[15: 0]};
             else if(MEM_data_ram_b_en==4'b1100)
-                MEM_RegFile_W_data<={{16{MEM_data_ram_r_data[31]}},MEM_data_ram_r_data[31:16]};
+                if(MEM_sel_data_ram_extend)
+					MEM_RegFile_W_data<={16'b0,MEM_data_ram_r_data[31:16]};
+				else
+					MEM_RegFile_W_data<={{16{MEM_data_ram_r_data[31]}},MEM_data_ram_r_data[31:16]};
             else 
                 MEM_RegFile_W_data<=32'b0;
 		else 
@@ -108,6 +124,7 @@ module Bypassing(
 		MEM_alu_result					,//32
 		MEM_sel_RF_W_Data_valid			,//1
 		MEM_sel_data_ram_wd				,//1
+		MEM_sel_data_ram_extend			,//1
 		MEM_valid						,//1
 		MEM_sel_rf_w_en					 //1
 	}=MEM_to_BY_bus;

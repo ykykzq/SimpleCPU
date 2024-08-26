@@ -70,7 +70,9 @@ module BranchUnit(
             inst_st_h       ,
             inst_ld_h       ,
             inst_st_b       ,
-            inst_ld_b       
+            inst_ld_b       ,
+            inst_ld_bu      ,
+            inst_ld_hu      
     }=inst_type;
 
     // 计算真正的PC

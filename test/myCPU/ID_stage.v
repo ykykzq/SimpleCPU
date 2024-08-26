@@ -65,6 +65,7 @@ module ID_stage(
 	wire		sel_data_ram_en;
 	wire 		sel_data_ram_we;
 	wire [ 1:0]	sel_data_ram_wd;
+	wire		sel_data_ram_extend;
 	reg  [31:0]	data_ram_wdata;
 
 	// WB阶段的控制信号
@@ -313,9 +314,10 @@ module ID_stage(
             sel_rf_w_en		            ,//1
 		    sel_rf_w_data	            ,//1
 		    sel_data_ram_wd	            ,//2
+            sel_data_ram_extend         ,//1
 		    sel_data_ram_we	            ,//1
 		    sel_data_ram_en	            ,//1
-            inst_type                   ,//44
+            inst_type                   ,//46
 		    alu_op			            ,//19
             inst_PC                     ,//32
             immediate                   ,//32
@@ -368,6 +370,7 @@ module ID_stage(
 		sel_rf_w_en					,//1
 		sel_rf_w_data				,//1
 		sel_data_ram_wd				,//2
+		sel_data_ram_extend			,//1
 		sel_data_ram_we				,//1
 		sel_data_ram_en				,//1
 		data_ram_wdata				,//32

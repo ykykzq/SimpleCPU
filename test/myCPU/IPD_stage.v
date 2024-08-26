@@ -93,6 +93,8 @@ module IPreD_stage(
     wire    inst_ld_h       ;
     wire    inst_st_b       ;
     wire    inst_ld_b       ;
+    wire    inst_ld_bu      ;
+    wire    inst_ld_hu      ;
 
     // 三寄存器号与立即数
     wire [ 4: 0]                RegFile_r_addr1 ;
@@ -145,6 +147,7 @@ module IPreD_stage(
     // 控制信号-MEM
     wire            sel_data_ram_we ;
     wire            sel_data_ram_en ;
+    wire            sel_data_ram_extend ;
     wire[ 1: 0]     sel_data_ram_wd ;
     // 控制信号-WB
     wire    sel_rf_w_en     ;
@@ -236,6 +239,8 @@ module IPreD_stage(
     assign inst_ld_h        = opcode_10b==10'b00_1010_0001;
     assign inst_st_b        = opcode_10b==10'b00_1010_0100;
     assign inst_ld_b        = opcode_10b==10'b00_1010_0000;
+    assign inst_ld_bu       = opcode_10b==10'b00_1010_1000;
+    assign inst_ld_hu       = opcode_10b==10'b00_1010_1001;
 
 
     assign inst_type        ={
@@ -286,62 +291,13 @@ module IPreD_stage(
             inst_st_h       ,
             inst_ld_h       ,
             inst_st_b       ,
-            inst_ld_b       
+            inst_ld_b       ,
+            inst_ld_bu      ,
+            inst_ld_hu      
     };
     ////////////////////////////////////////////////
     /// 决定读写寄存器号
 
-    /*
-    指令与用到的寄存器列表
-        +-----------+----+----+-----+-------+
-        | inst      | rj | rk | rd  | GR[1] |
-        +-----------+----+----+-----+-------+
-        | addi.w    | R  |    | W   |       |
-        | add.w     | R  | R  | W   |       |
-        | sub.w     | R  | R  | W   |       |
-        | mul.w     | R  | R  | W   |       |
-        | mulh.w    | R  | R  | W   |       |
-        | mulh.wu   | R  | R  | W   |       |
-        | div.w     | R  | R  | W   |       |
-        | div.wu    | R  | R  | W   |       |
-        | mod.w     | R  | R  | W   |       |
-        | mod.wu    | R  | R  | W   |       |
-        | or        | R  | R  | W   |       |
-        | ori       | R  |    | W   |       |
-        | nor       | R  | R  | W   |       |
-        | andi      | R  |    | W   |       |
-        | and       | R  | R  | W   |       |
-        | xor       | R  | R  | W   |       |
-        | xori      | R  |    | W   |       |
-        | srl.w     | R  | R  | W   |       |
-        | srli.w    | R  |    | W   |       |
-        | sll.w     | R  | R  | W   |       |
-        | slli.w    | R  |    | W   |       |
-        | sra.w     | R  | R  | W   |       |
-        | srai.w    | R  |    | W   |       |
-        | lu12i.w   |    |    | W   |       |
-        | pcaddu12i |    |    | W   |       |
-        | slt       | R  | R  | W   |       |
-        | slti      | R  |    | W   |       |
-        | sltu      | R  | R  | W   |       |
-        | sltui     | R  |    | W   |       |
-        | jirl      | R  |    | W   |       |
-        | b         |    |    |     |       |
-        | beq       | R  |    | R   |       |
-        | bne       | R  |    | R   |       |
-        | bge       | R  |    | R   |       |
-        | bgeu      | R  |    | R   |       |
-        | bl        |    |    |     |  W    |
-        | blt       | R  |    | R   |       |
-        | bltu      | R  |    | R   |       |
-        | st.w      | R  |    | R   |       |
-        | ld.w      | R  |    | W   |       |
-        | st.h      | R  |    | R   |       |
-        | ld.h      | R  |    | W   |       |
-        | st.b      | R  |    | R   |       |
-        | ld.b      | R  |    | W   |       |
-        +-----------+----+----+-----+-------+
-    */
 
     /*
         +-----------------+------------+
@@ -361,7 +317,8 @@ module IPreD_stage(
                                 | inst_srli_w | inst_slli_w | inst_srai_w
                                 | inst_slt | inst_sltu | inst_slti | inst_sltui
                                 | inst_jirl | inst_beq | inst_bne | inst_bge | inst_bgeu | inst_blt | inst_bltu 
-                                | inst_st_w | inst_st_h | inst_st_b | inst_ld_w | inst_ld_h | inst_ld_b;
+                                | inst_st_w | inst_st_h | inst_st_b | inst_ld_w | inst_ld_h | inst_ld_b
+                                | inst_ld_bu | inst_ld_hu;
     assign RegFile_r_addr1    = sel_rf_r_addr_1[0]?rj:5'b0;
 
     /*
@@ -399,7 +356,7 @@ module IPreD_stage(
                                 | inst_srl_w | inst_srli_w | inst_sll_w | inst_slli_w | inst_sra_w | inst_srai_w   
                                 | inst_lu12i_w | inst_pcaddu12i 
                                 | inst_slt | inst_slti | inst_sltu | inst_sltui | inst_jirl     
-                                | inst_ld_w | inst_ld_h | inst_ld_b;
+                                | inst_ld_w | inst_ld_h | inst_ld_b | inst_ld_bu | inst_ld_hu;
     assign sel_rf_w_addr[0] = inst_bl;
     assign RegFile_w_addr   = sel_rf_w_addr[1]?rd:
                             sel_rf_w_addr[0]?5'b0_0001:5'b0;
@@ -417,7 +374,7 @@ module IPreD_stage(
         SignExtend({offs16, 2'b0}, 32)
         SignExtend({offs26, 2'b0}, 32)
     */
-    assign immediate =  (inst_addi_w | inst_st_w | inst_ld_w | inst_st_h | inst_ld_h | inst_st_b | inst_ld_b | inst_slti | inst_sltui)?{{20{inst[21]}},inst[21:10]}:
+    assign immediate =  (inst_addi_w | inst_st_w | inst_ld_w | inst_st_h | inst_ld_h | inst_st_b | inst_ld_b | inst_ld_bu | inst_ld_hu | inst_slti | inst_sltui)?{{20{inst[21]}},inst[21:10]}:
                         (inst_ori | inst_andi | inst_xori)?{20'b0,inst[21:10]}:
                         (inst_srli_w | inst_slli_w | inst_srai_w)?{27'b0,inst[14:10]}:
                         (inst_lu12i_w | inst_pcaddu12i)?{inst[24: 5],12'b0}:
@@ -450,7 +407,8 @@ module IPreD_stage(
 	assign op_add      = inst_addi_w | inst_add_w 
 					    | inst_jirl | inst_bl
 					    | inst_st_w | inst_ld_w | inst_st_h | inst_ld_h | inst_st_b | inst_ld_b 
-					    | inst_pcaddu12i;
+					    | inst_ld_bu | inst_ld_hu
+                        | inst_pcaddu12i;
 
 	assign alu_op  = {
         op_mul_s_l  ,
@@ -495,7 +453,8 @@ module IPreD_stage(
 							| inst_slt | inst_sltu | inst_slti | inst_sltui
 							| inst_jirl | inst_beq | inst_bne | inst_bge | inst_bgeu | inst_blt | inst_bltu
 							| inst_st_w | inst_st_h | inst_st_b
-                            | inst_ld_w | inst_ld_h | inst_ld_b;
+                            | inst_ld_w | inst_ld_h | inst_ld_b
+                            | inst_ld_bu | inst_ld_hu;
 	assign sel_alu_bu_src1[0] = inst_pcaddu12i | inst_bl;
 
     /*
@@ -521,7 +480,8 @@ module IPreD_stage(
                             | inst_slti | inst_sltui
 							| inst_lu12i_w | inst_pcaddu12i | inst_jirl
 							| inst_st_w | inst_st_h |  inst_st_b
-                            | inst_ld_w | inst_ld_h | inst_ld_b;
+                            | inst_ld_w | inst_ld_h | inst_ld_b
+                            | inst_ld_bu | inst_ld_hu;
 
 
 	///////////////////////////////////////////////////////////
@@ -532,7 +492,19 @@ module IPreD_stage(
 
 	// Data RAM使能信号
 	assign sel_data_ram_en =  inst_st_b | inst_st_w | inst_st_h
-							| inst_ld_b | inst_ld_w | inst_ld_h;
+							| inst_ld_b | inst_ld_w | inst_ld_h
+                            | inst_ld_bu | inst_ld_hu;
+
+
+    /*
+        +---------------------+---------------+
+        | sel_data_ram_extend | how-to-extend |
+        +---------------------+---------------+
+        | 1'b1                | ZeroExtend    |
+        | 1'b0                | SignExtend    |
+        +---------------------+---------------+
+    */
+    assign sel_data_ram_extend = inst_ld_bu | inst_ld_hu;
 
 	/*
     字节使能，表示写入/读取数据的宽度 one-hot
@@ -545,8 +517,8 @@ module IPreD_stage(
 		+-----------------+-------------+
 
 	*/
-	assign sel_data_ram_wd[1]= inst_st_b | inst_ld_b;
-    assign sel_data_ram_wd[0]= inst_st_h | inst_ld_h;
+	assign sel_data_ram_wd[1]= inst_st_b | inst_ld_b | inst_ld_bu;
+    assign sel_data_ram_wd[0]= inst_st_h | inst_ld_h | inst_ld_hu;
 
 	///////////////////////////////////////////////////////////
 	/// 生成WB阶段控制信号
@@ -563,7 +535,7 @@ module IPreD_stage(
                             | inst_slt | inst_sltu
                             | inst_slti | inst_sltui
                             | inst_jirl | inst_bl
-                            | inst_ld_w | inst_ld_b | inst_ld_h;
+                            | inst_ld_w | inst_ld_b | inst_ld_h | inst_ld_hu | inst_ld_bu;
 
 	/* 
 	控制写入数据来源 one-hot
@@ -574,7 +546,7 @@ module IPreD_stage(
 		| 0(default)    | ALU      |
 		+---------------+----------+
 	*/
-	assign sel_rf_w_data = inst_ld_w | inst_ld_b | inst_ld_h;
+	assign sel_rf_w_data = inst_ld_w | inst_ld_b | inst_ld_h | inst_ld_bu | inst_ld_hu;
 
     //////////////////////////////////////////////////////////
     /// 与旁路及唤醒（阻塞）有关的控制信号生成
@@ -592,7 +564,7 @@ module IPreD_stage(
     */
 
     assign sel_rf_w_data_valid_stage[2] = 1'b0;//所有指令均可在WB阶段前得到信号
-    assign sel_rf_w_data_valid_stage[1] = inst_ld_b | inst_ld_w | inst_ld_h;
+    assign sel_rf_w_data_valid_stage[1] = inst_ld_w | inst_ld_b | inst_ld_h | inst_ld_hu | inst_ld_bu;
     assign sel_rf_w_data_valid_stage[0] = inst_addi_w | inst_add_w | inst_sub_w 
                                         | inst_mul_w | inst_mulh_w | inst_mulh_wu
                                         | inst_div_w | inst_div_wu | inst_mod_w | inst_mod_wu
@@ -642,9 +614,10 @@ module IPreD_stage(
             sel_rf_w_en		            ,//1
 		    sel_rf_w_data	            ,//1
 		    sel_data_ram_wd	            ,//2
+            sel_data_ram_extend         ,//1
 		    sel_data_ram_we	            ,//1
 		    sel_data_ram_en	            ,//1
-            inst_type                   ,//44
+            inst_type                   ,//46
 		    alu_op			            ,//19
             inst_PC                     ,//32
             immediate                   ,//32
