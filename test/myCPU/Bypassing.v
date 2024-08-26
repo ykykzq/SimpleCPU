@@ -34,7 +34,7 @@ module Bypassing(
 	wire [31: 0]	MEM_data_ram_r_data	;
 	wire [31: 0]	MEM_alu_result		;
 	wire 	MEM_sel_RF_W_Data_valid		;
-	wire 	MEM_sel_data_ram_wd			;
+	wire [ 1: 0]	MEM_sel_data_ram_wd			;
 	wire 	MEM_sel_rf_w_en				;
 
 	reg  [31: 0]	MEM_RegFile_W_data	;
@@ -71,7 +71,16 @@ module Bypassing(
                 MEM_RegFile_W_data<={{24{MEM_data_ram_r_data[31]}},MEM_data_ram_r_data[31:24]};
             else 
                 MEM_RegFile_W_data<=32'b0;
-        else 
+        else if(MEM_sel_data_ram_wd[0]==1)
+            // half-word
+            if(MEM_data_ram_b_en==4'b0011)
+                // 注意是符号扩展
+                MEM_RegFile_W_data<={{16{MEM_data_ram_r_data[15]}},MEM_data_ram_r_data[15: 0]};
+            else if(MEM_data_ram_b_en==4'b1100)
+                MEM_RegFile_W_data<={{16{MEM_data_ram_r_data[31]}},MEM_data_ram_r_data[31:16]};
+            else 
+                MEM_RegFile_W_data<=32'b0;
+		else 
             MEM_RegFile_W_data<=MEM_data_ram_r_data;
     end
 	

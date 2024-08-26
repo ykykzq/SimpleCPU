@@ -11,8 +11,8 @@ module WakeUP(
 	// 源操作数的控制信号与读取的寄存器号
 	input  wire[ 1: 0]					sel_alu_bu_src1,
 	input  wire[ 2: 0]					sel_alu_bu_src2,
-	input  wire[ 4: 0]					RegFile_R_addr1,
-	input  wire[ 4: 0]					RegFile_R_addr2,
+	input  wire[ 4: 0]					RegFile_r_addr1,
+	input  wire[ 4: 0]					RegFile_r_addr2,
 
 	// 流水线数据交互
 	input  wire[`BY_TO_WK_BUS_WD-1:0]	BY_to_WK_bus,
@@ -46,19 +46,19 @@ module WakeUP(
 	always@(*)
 	begin
 		if(sel_alu_bu_src1[1])
-			if(RegFile_R_addr1==EXE_RegFile_W_addr && EXE_sel_rf_w_en)
+			if(RegFile_r_addr1==EXE_RegFile_W_addr && EXE_sel_rf_w_en)
 				if(EXE_sel_RF_W_Data_valid)
 					// 可以从EXE阶段旁路该值
 					src_1_ready<=1'b1;
 				else 
 					// 若EXE阶段还未产生写入数据，则无法通过旁路获得该值。
 					src_1_ready<=1'b0;
-			else if(RegFile_R_addr1==MEM_RegFile_W_addr && MEM_sel_rf_w_en)
+			else if(RegFile_r_addr1==MEM_RegFile_W_addr && MEM_sel_rf_w_en)
 				if(MEM_sel_RF_W_Data_valid)
 					src_1_ready<=1'b1;
 				else
 					src_1_ready<=1'b0;
-			else if(RegFile_R_addr1==WB_RegFile_W_addr && WB_sel_rf_w_en)
+			else if(RegFile_r_addr1==WB_RegFile_W_addr && WB_sel_rf_w_en)
 				if(WB_sel_rf_w_en)
 					src_1_ready<=1'b1;
 				else
@@ -75,19 +75,19 @@ module WakeUP(
 	always@(*)
 	begin
 		if(sel_alu_bu_src2[1])
-			if(RegFile_R_addr2==EXE_RegFile_W_addr && EXE_sel_rf_w_en && EXE_valid)
+			if(RegFile_r_addr2==EXE_RegFile_W_addr && EXE_sel_rf_w_en && EXE_valid)
 				if(EXE_sel_RF_W_Data_valid)
 					// 可以从EXE阶段旁路该值
 					src_2_ready<=1'b1;
 				else 
 					// 若EXE阶段还未产生写入数据，则无法通过旁路获得该值。
 					src_2_ready<=1'b0;
-			else if(RegFile_R_addr2==MEM_RegFile_W_addr && MEM_sel_rf_w_en && MEM_valid)
+			else if(RegFile_r_addr2==MEM_RegFile_W_addr && MEM_sel_rf_w_en && MEM_valid)
 				if(MEM_sel_RF_W_Data_valid)
 					src_2_ready<=1'b1;
 				else
 					src_2_ready<=1'b0;
-			else if(RegFile_R_addr2==WB_RegFile_W_addr && WB_sel_rf_w_en && WB_valid)
+			else if(RegFile_r_addr2==WB_RegFile_W_addr && WB_sel_rf_w_en && WB_valid)
 				if(WB_sel_rf_w_en)
 					src_2_ready<=1'b1;
 				else

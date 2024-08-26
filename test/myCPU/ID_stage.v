@@ -39,10 +39,10 @@ module ID_stage(
 	reg [`IPD_TO_ID_BUS_WD-1:0]	IPD_to_ID_reg;
 
 	// 寄存器访问相关
-	wire [ 4: 0]	RegFile_R_addr1;
-	wire [ 4: 0]	RegFile_R_addr2;
-	wire [31: 0]	RegFile_R_data1;
-	wire [31: 0]	RegFile_R_data2;
+	wire [ 4: 0]	RegFile_r_addr1;
+	wire [ 4: 0]	RegFile_r_addr2;
+	wire [31: 0]	RegFile_r_data1;
+	wire [31: 0]	RegFile_r_data2;
 	wire 			w_en;
 	wire [31: 0]	w_data;
 	wire [ 4: 0]	w_addr;
@@ -83,18 +83,18 @@ module ID_stage(
 
 	// 旁路-EXE
 	wire [ 4: 0]	EXE_RegFile_w_addr		;
-	wire 			EXE_sel_RF_W_Data_valid	;
+	wire 			EXE_sel_RF_w_data_valid	;
 	wire 			EXE_sel_rf_w_en			;
 	wire [31: 0]	EXE_RegFile_w_data		;
 	// 旁路-MEM
 	wire [ 4: 0]	MEM_RegFile_w_addr		;
-	wire 			MEM_sel_RF_W_Data_valid	;
+	wire 			MEM_sel_RF_w_data_valid	;
 	wire 			MEM_sel_rf_w_en			;
 	wire [31: 0]	MEM_RegFile_w_data		;
 	// 旁路-WB
 	wire [ 4: 0]	WB_RegFile_w_addr		;
 	wire [31: 0]	WB_RegFile_w_data		;
-	wire 			WB_sel_RF_W_Data_valid	;
+	wire 			WB_sel_RF_w_data_valid	;
 	wire 			WB_sel_rf_w_en			;
 
 
@@ -122,10 +122,10 @@ module ID_stage(
 	/// 寄存器访问
 	RegFile RF(
 		.clk		(				clk),
-		.r_addr1	(	RegFile_R_addr1),
-		.r_addr2	(	RegFile_R_addr2),
-		.r_data1	(	RegFile_R_data1),
-		.r_data2	(	RegFile_R_data2),
+		.r_addr1	(	RegFile_r_addr1),
+		.r_addr2	(	RegFile_r_addr2),
+		.r_data1	(	RegFile_r_data1),
+		.r_data2	(	RegFile_r_data2),
 		// 写信号，注意该信号来自这一拍的WB流水级
 		.w_data		(w_data	),
 		.w_addr		(w_addr	),
@@ -138,17 +138,17 @@ module ID_stage(
 	assign BY_to_WK_bus={
 		// EXE阶段信号
 		EXE_RegFile_w_addr			,//5
-		EXE_sel_RF_W_Data_valid		,//1
+		EXE_sel_RF_w_data_valid		,//1
 		EXE_valid					,//1
 		EXE_sel_rf_w_en				,//1
 		// MEM阶段信号
 		MEM_RegFile_w_addr			,//5
-		MEM_sel_RF_W_Data_valid		,//1
+		MEM_sel_RF_w_data_valid		,//1
 		MEM_valid					,//1
 		MEM_sel_rf_w_en				,//1
 		// WB阶段信号		
 		WB_RegFile_w_addr			,//5
-		WB_sel_RF_W_Data_valid		,//1
+		WB_sel_RF_w_data_valid		,//1
 		WB_valid					,//1
 		WB_sel_rf_w_en				 //1
 	};
@@ -157,8 +157,8 @@ module ID_stage(
 		// 源操作数的控制信号与读取的寄存器号
 		.sel_alu_bu_src1		(sel_alu_bu_src1),
 		.sel_alu_bu_src2		(sel_alu_bu_src2),
-		.RegFile_R_addr1		(RegFile_R_addr1),
-		.RegFile_R_addr2		(RegFile_R_addr2),
+		.RegFile_r_addr1		(RegFile_r_addr1),
+		.RegFile_r_addr2		(RegFile_r_addr2),
 
 		// 流水线数据交互
 		.BY_to_WK_bus			(BY_to_WK_bus	),
@@ -194,26 +194,26 @@ module ID_stage(
 	always@(*)
 	begin
 		if(sel_alu_bu_src1[1])
-			if(RegFile_R_addr1==EXE_RegFile_w_addr && EXE_sel_rf_w_en)
-				if(EXE_sel_RF_W_Data_valid)
+			if(RegFile_r_addr1==EXE_RegFile_w_addr && EXE_sel_rf_w_en)
+				if(EXE_sel_RF_w_data_valid)
 					// 可以从EXE阶段旁路该值
 					alu_bu_src1<=EXE_RegFile_w_data;
 				else 
 					// 代表阻塞
 					alu_bu_src1<=32'b0;
-			else if(RegFile_R_addr1==MEM_RegFile_w_addr && MEM_sel_rf_w_en)
-				if(MEM_sel_RF_W_Data_valid)
+			else if(RegFile_r_addr1==MEM_RegFile_w_addr && MEM_sel_rf_w_en)
+				if(MEM_sel_RF_w_data_valid)
 					alu_bu_src1<=MEM_RegFile_w_data;
 				else
 					alu_bu_src1<=32'b0;
-			else if(RegFile_R_addr1==WB_RegFile_w_addr && WB_sel_rf_w_en)
-				if(WB_sel_RF_W_Data_valid)
+			else if(RegFile_r_addr1==WB_RegFile_w_addr && WB_sel_rf_w_en)
+				if(WB_sel_RF_w_data_valid)
 					alu_bu_src1<=WB_RegFile_w_data;
 				else
 					alu_bu_src1<=32'b0;
 			else 
 				// 如果后续流水级指令均不写入该寄存器，则从寄存器堆获得操作数
-				alu_bu_src1<=RegFile_R_data1;
+				alu_bu_src1<=RegFile_r_data1;
 		else if(sel_alu_bu_src1[0])
 			// 如果操作数不来自于寄存器堆而是来自于指令PC
 			alu_bu_src1<=inst_PC;
@@ -225,26 +225,26 @@ module ID_stage(
 	always@(*)
 	begin
 		if(sel_alu_bu_src2[1])
-			if(RegFile_R_addr2==EXE_RegFile_w_addr && EXE_sel_rf_w_en && EXE_valid)
-				if(EXE_sel_RF_W_Data_valid)
+			if(RegFile_r_addr2==EXE_RegFile_w_addr && EXE_sel_rf_w_en && EXE_valid)
+				if(EXE_sel_RF_w_data_valid)
 					// 可以从EXE阶段旁路该值
 					alu_bu_src2<=EXE_RegFile_w_data;
 				else 
 					// 代表阻塞
 					alu_bu_src2<=32'b0;
-			else if(RegFile_R_addr2==MEM_RegFile_w_addr && MEM_sel_rf_w_en && MEM_valid)
-				if(MEM_sel_RF_W_Data_valid)
+			else if(RegFile_r_addr2==MEM_RegFile_w_addr && MEM_sel_rf_w_en && MEM_valid)
+				if(MEM_sel_RF_w_data_valid)
 					alu_bu_src2<=MEM_RegFile_w_data;
 				else
 					alu_bu_src2<=32'b0;
-			else if(RegFile_R_addr2==WB_RegFile_w_addr && WB_sel_rf_w_en && WB_valid)
-				if(WB_sel_RF_W_Data_valid)
+			else if(RegFile_r_addr2==WB_RegFile_w_addr && WB_sel_rf_w_en && WB_valid)
+				if(WB_sel_RF_w_data_valid)
 					alu_bu_src2<=WB_RegFile_w_data;
 				else
 					alu_bu_src2<=32'b0;
 			else 
 				// 如果后续流水级指令均不写入该寄存器，则从寄存器堆获得操作数
-				alu_bu_src2<=RegFile_R_data2;
+				alu_bu_src2<=RegFile_r_data2;
 		else if(sel_alu_bu_src2[2])
 			// 特殊情况，BL指令计算PC+4
 			alu_bu_src2<=32'h0000_0004;
@@ -262,26 +262,26 @@ module ID_stage(
 	always@(*)
 	begin
 		if(sel_data_ram_we)
-			if(RegFile_R_addr2==EXE_RegFile_w_addr && EXE_sel_rf_w_en && EXE_valid)
-				if(EXE_sel_RF_W_Data_valid)
+			if(RegFile_r_addr2==EXE_RegFile_w_addr && EXE_sel_rf_w_en && EXE_valid)
+				if(EXE_sel_RF_w_data_valid)
 					// 可以从EXE阶段旁路该值
 					data_ram_wdata<=EXE_RegFile_w_data;
 				else 
 					// 代表阻塞
 					data_ram_wdata<=32'b0;
-			else if(RegFile_R_addr2==MEM_RegFile_w_addr && MEM_sel_rf_w_en && MEM_valid)
-				if(MEM_sel_RF_W_Data_valid)
+			else if(RegFile_r_addr2==MEM_RegFile_w_addr && MEM_sel_rf_w_en && MEM_valid)
+				if(MEM_sel_RF_w_data_valid)
 					data_ram_wdata<=MEM_RegFile_w_data;
 				else
 					data_ram_wdata<=32'b0;
-			else if(RegFile_R_addr2==WB_RegFile_w_addr && WB_sel_rf_w_en && WB_valid)
-				if(WB_sel_RF_W_Data_valid)
+			else if(RegFile_r_addr2==WB_RegFile_w_addr && WB_sel_rf_w_en && WB_valid)
+				if(WB_sel_RF_w_data_valid)
 					data_ram_wdata<=WB_RegFile_w_data;
 				else
 					data_ram_wdata<=32'b0;
 			else 
 				// 如果后续流水级指令均不写入该寄存器，则从寄存器堆获得操作数
-				data_ram_wdata<=RegFile_R_data2;
+				data_ram_wdata<=RegFile_r_data2;
 		else 
 			// 当前流水级指令不写RAM
 			data_ram_wdata<=32'b0;
@@ -305,21 +305,21 @@ module ID_stage(
 	end
 	assign {
 			sel_rf_w_data_valid_stage   ,//3
-            sel_alu_bu_src2             ,//2
+            sel_alu_bu_src2             ,//3
             sel_alu_bu_src1             ,//2
             sel_rf_w_en		            ,//1
 		    sel_rf_w_data	            ,//1
 		    sel_data_ram_wd	            ,//2
 		    sel_data_ram_we	            ,//1
 		    sel_data_ram_en	            ,//1
-            inst_type                   ,//26
+            inst_type                   ,//44
 		    alu_op			            ,//19
             pred_PC                     ,//32
             inst_PC                     ,//32
             immediate                   ,//32
             RegFile_w_addr              ,//5
-            RegFile_R_addr2             ,//5
-            RegFile_R_addr1              //5
+            RegFile_r_addr2             ,//5
+            RegFile_r_addr1              //5
     } = IPD_to_ID_reg;
 
 	// Bypassing旁路信号
@@ -327,19 +327,19 @@ module ID_stage(
 		// EXE阶段信号
 		EXE_RegFile_w_addr			,//5
 		EXE_RegFile_w_data			,//32
-		EXE_sel_RF_W_Data_valid		,//1
+		EXE_sel_RF_w_data_valid		,//1
 		EXE_valid					,//1
 		EXE_sel_rf_w_en				,//1
 		// MEM阶段信号
 		MEM_RegFile_w_addr			,//5
 		MEM_RegFile_w_data			,//32
-		MEM_sel_RF_W_Data_valid		,//1
+		MEM_sel_RF_w_data_valid		,//1
 		MEM_valid					,//1
 		MEM_sel_rf_w_en				,//1
 		// WB阶段信号		
 		WB_RegFile_w_addr			,//5
 		WB_RegFile_w_data			,//32
-		WB_sel_RF_W_Data_valid		,//1
+		WB_sel_RF_w_data_valid		,//1
 		WB_valid					,//1
 		WB_sel_rf_w_en				 //1
 	}=BY_to_ID_bus;

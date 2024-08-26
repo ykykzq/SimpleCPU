@@ -48,7 +48,7 @@ module WB_stage(
     wire [31: 0]    RegFile_w_data;
     wire [ 3: 0]    data_ram_b_en;
     wire    sel_rf_w_data;
-    wire    sel_data_ram_wd;
+    wire [ 1: 0]    sel_data_ram_wd;
 
     // 旁路所需控制信号
     wire [ 2: 0]    sel_rf_w_data_valid_stage;
@@ -85,13 +85,22 @@ module WB_stage(
             // byte
             if(data_ram_b_en==4'b0001)
                 // 注意是符号扩展
-                RF_w_data_from_RAM<={{24{data_ram_r_data[7]}},data_ram_r_data[7:0]};
+                RF_w_data_from_RAM<={{24{data_ram_r_data[7]}},data_ram_r_data[ 7: 0]};
             else if(data_ram_b_en==4'b0010)
                 RF_w_data_from_RAM<={{24{data_ram_r_data[15]}},data_ram_r_data[15:8]};
             else if(data_ram_b_en==4'b0100)
                 RF_w_data_from_RAM<={{24{data_ram_r_data[23]}},data_ram_r_data[23:16]};
             else if(data_ram_b_en==4'b1000)
                 RF_w_data_from_RAM<={{24{data_ram_r_data[31]}},data_ram_r_data[31:24]};
+            else 
+                RF_w_data_from_RAM<=32'b0;
+        else if(sel_data_ram_wd[0]==1)
+            // half-word
+            if(data_ram_b_en==4'b0011)
+                // 注意是符号扩展
+                RF_w_data_from_RAM<={{16{data_ram_r_data[15]}},data_ram_r_data[15: 0]};
+            else if(data_ram_b_en==4'b1100)
+                RF_w_data_from_RAM<={{16{data_ram_r_data[31]}},data_ram_r_data[31:16]};
             else 
                 RF_w_data_from_RAM<=32'b0;
         else 

@@ -23,7 +23,7 @@ module BranchUnit(
     output wire                     br_taken_cancel
 );
     assign{
-            //加减
+            // 常规算数运算
             inst_addi_w     ,
             inst_add_w      ,
             inst_sub_w      ,
@@ -33,24 +33,42 @@ module BranchUnit(
             inst_andi       ,
             inst_and        ,
             inst_xor        ,
+            inst_xori       ,
+            inst_srl_w      ,
             inst_srli_w     ,
+            inst_sll_w      ,
             inst_slli_w     ,
+            inst_sra_w      ,
             inst_srai_w     ,
             inst_lu12i_w    ,
             inst_pcaddu12i  ,
             inst_slt        ,
+            inst_slti       ,
             inst_sltu       ,
+            inst_sltui      ,
             // 乘除
             inst_mul_w      ,
+            inst_mulh_w     ,
+            inst_mulh_wu    ,
+            inst_div_w      ,
+            inst_mod_w      ,
+            inst_div_wu     ,
+            inst_mod_wu     ,
             // 跳转   
             inst_jirl       ,
             inst_b          ,
             inst_beq        ,
             inst_bne        ,
+            inst_bge        ,
+            inst_bgeu       ,
             inst_bl         ,
+            inst_blt        ,
+            inst_bltu       ,
             // 访存
             inst_st_w       ,
             inst_ld_w       ,
+            inst_st_h       ,
+            inst_ld_h       ,
             inst_st_b       ,
             inst_ld_b       
     }=inst_type;
@@ -72,6 +90,26 @@ module BranchUnit(
                 next_PC<=inst_PC+32'h0000_0004;
         else if(inst_bne)
             if(src_1_ready & src_2_ready  && BranchUnit_src1!=BranchUnit_src2)
+                next_PC<=inst_PC+offset;
+            else 
+                next_PC<=inst_PC+32'h0000_0004;
+        else if(inst_bge)
+            if(src_1_ready & src_2_ready  && $signed(BranchUnit_src1)>=$signed(BranchUnit_src2))
+                next_PC<=inst_PC+offset;
+            else 
+                next_PC<=inst_PC+32'h0000_0004;
+        else if(inst_bgeu)
+            if(src_1_ready & src_2_ready  && $unsigned(BranchUnit_src1)>=$unsigned(BranchUnit_src2))
+                next_PC<=inst_PC+offset;
+            else 
+                next_PC<=inst_PC+32'h0000_0004;
+        else if(inst_blt)
+            if(src_1_ready & src_2_ready  && $signed(BranchUnit_src1)<$signed(BranchUnit_src2))
+                next_PC<=inst_PC+offset;
+            else 
+                next_PC<=inst_PC+32'h0000_0004;
+        else if(inst_bltu)
+            if(src_1_ready & src_2_ready  && $unsigned(BranchUnit_src1)<$unsigned(BranchUnit_src2))
                 next_PC<=inst_PC+offset;
             else 
                 next_PC<=inst_PC+32'h0000_0004;

@@ -41,7 +41,7 @@ module EXE_stage(
 	reg [`ID_TO_EXE_BUS_WD-1:0]	ID_to_EXE_reg;
 
 	// ALU操作数与运算类型
-	wire [11: 0]	alu_op;
+	wire [18: 0]	alu_op;
 	wire [31: 0]	alu_bu_src1;
 	wire [31: 0]	alu_bu_src2;
 	wire [31: 0]	alu_result;
@@ -104,8 +104,9 @@ module EXE_stage(
 	// 字节使能
 	always@(*)
 	begin
-		if(sel_data_ram_wd)
+		if(sel_data_ram_wd[1])
 			begin
+				// 如果长度为byte(8bit)
 				if(data_ram_addr[1:0]==2'b00)
 					data_ram_b_en<=4'b0001;
 				else if(data_ram_addr[1:0]==2'b01)
@@ -117,8 +118,22 @@ module EXE_stage(
 				else 
 					data_ram_b_en<=4'b0000;//不会走到的分支
 			end
+		if(sel_data_ram_wd[0])
+			begin
+				// 如果长度为half-word(16bit)
+				if(data_ram_addr[1:0]==2'b00)
+					data_ram_b_en<=4'b0011;
+				else if(data_ram_addr[1:0]==2'b01)
+					data_ram_b_en<=4'b1100;
+				else if(data_ram_addr[1:0]==2'b10)
+					data_ram_b_en<=4'b1100;
+				else if(data_ram_addr[1:0]==2'b11)
+					data_ram_b_en<=4'b1100;
+				else 
+					data_ram_b_en<=4'b0000;//不会走到的分支
+			end
 		else 
-			data_ram_b_en=4'b1111;// 若是写入一个word(32bit)
+			data_ram_b_en=4'b1111;// 若是一个word(32bit)
 	end
 	// 若是不读Data RAM，全0即可
 	assign data_ram_w_en = sel_data_ram_we?data_ram_b_en:4'b0000;
@@ -147,7 +162,7 @@ module EXE_stage(
 		sel_data_ram_en				,//1
 		data_ram_wdata				,//32
 		RegFile_w_addr				,//5
-		alu_op						,//12
+		alu_op						,//19
 		alu_bu_src2					,//32
 		alu_bu_src1					,//32
 		inst_PC						 //32

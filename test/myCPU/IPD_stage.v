@@ -93,9 +93,9 @@ module IPreD_stage(
     wire    inst_ld_b       ;
 
     // 三寄存器号与立即数
-    wire [ 4: 0]                RegFile_R_addr1 ;
-    wire [ 4: 0]                RegFile_R_addr2 ;
-    wire [ 4: 0]                RegFile_W_addr  ;
+    wire [ 4: 0]                RegFile_r_addr1 ;
+    wire [ 4: 0]                RegFile_r_addr2 ;
+    wire [ 4: 0]                RegFile_w_addr  ;
     wire [31: 0]                immediate       ;
 
     // 指令与指令字段
@@ -123,7 +123,7 @@ module IPreD_stage(
     wire [18: 0]                alu_op          ;
     wire    op_mul_s_l;
     wire    op_mul_s_h;
-    wire    op_mul_h_u;
+    wire    op_mul_u_h;
     wire    op_div_s  ;
     wire    op_div_u  ;
     wire    op_mod_s  ;
@@ -360,7 +360,7 @@ module IPreD_stage(
                                 | inst_srli_w | inst_slli_w | inst_srai_w
                                 | inst_jirl | inst_beq | inst_bne | inst_bge | inst_bgeu | inst_blt | inst_bltu
                                 | inst_st_w | inst_ld_w | inst_st_h | inst_ld_h | inst_st_b | inst_ld_b;
-    assign RegFile_R_addr1    = sel_rf_r_addr_1[1]?rk:
+    assign RegFile_r_addr1    = sel_rf_r_addr_1[1]?rk:
                                 sel_rf_r_addr_1[0]?rj:5'b0;
 
     /*
@@ -378,7 +378,7 @@ module IPreD_stage(
                                 | inst_srl_w | inst_sll_w | inst_sra_w | inst_slt | inst_sltu;
     assign sel_rf_r_addr_2[0] = inst_beq | inst_bne | inst_bge | inst_bgeu | inst_blt | inst_bltu 
                                 | inst_st_w | inst_st_h | inst_st_b;
-    assign RegFile_R_addr2    = sel_rf_r_addr_2[1]?rj:
+    assign RegFile_r_addr2    = sel_rf_r_addr_2[1]?rj:
                                 sel_rf_r_addr_2[0]?rd:5'b0;
 
     /*
@@ -398,7 +398,7 @@ module IPreD_stage(
                                 | inst_slt | inst_slti | inst_sltu | inst_sltui | inst_jirl     
                                 | inst_ld_w | inst_ld_h | inst_ld_b;
     assign sel_rf_w_addr[0] = inst_bl;
-    assign RegFile_W_addr   = sel_rf_w_addr[1]?rd:
+    assign RegFile_w_addr   = sel_rf_w_addr[1]?rd:
                             sel_rf_w_addr[0]?5'b0_0001:5'b0;
                             
     /////////////////////////////////////////////////////////////
@@ -428,7 +428,7 @@ module IPreD_stage(
 	// ALU执行的计算类型
     assign op_mul_s_l  = inst_mul_w;
     assign op_mul_s_h  = inst_mulh_w;
-	assign op_mul_h_u  = inst_mulh_wu;
+	assign op_mul_u_h  = inst_mulh_wu;
 	assign op_div_s    = inst_div_w;
 	assign op_div_u    = inst_div_wu;
 	assign op_mod_s    = inst_mod_w;
@@ -452,7 +452,7 @@ module IPreD_stage(
 	assign alu_op  = {
         op_mul_s_l  ,
         op_mul_s_h  ,
-        op_mul_h_u  ,
+        op_mul_u_h  ,
         op_div_s    ,
         op_div_u    ,
         op_mod_s    ,
@@ -642,13 +642,13 @@ module IPreD_stage(
 		    sel_data_ram_wd	            ,//2
 		    sel_data_ram_we	            ,//1
 		    sel_data_ram_en	            ,//1
-            inst_type                   ,//42
+            inst_type                   ,//44
 		    alu_op			            ,//19
             pred_PC                     ,//32
             inst_PC                     ,//32
             immediate                   ,//32
-            RegFile_W_addr              ,//5
-            RegFile_R_addr2             ,//5
-            RegFile_R_addr1              //5
+            RegFile_w_addr              ,//5
+            RegFile_r_addr2             ,//5
+            RegFile_r_addr1              //5
     };
 endmodule
