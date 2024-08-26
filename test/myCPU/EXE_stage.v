@@ -49,7 +49,7 @@ module EXE_stage(
 	// Data RAM控制信号
 	wire sel_data_ram_en;
 	wire sel_data_ram_we;
-	wire sel_data_ram_wd;
+	wire [ 1: 0]	sel_data_ram_wd;
 	reg  [ 3: 0]	data_ram_b_en;
 	wire [31: 0]	data_ram_wdata;
 
@@ -142,7 +142,7 @@ module EXE_stage(
 		sel_rf_w_data_valid_stage	,//3
 		sel_rf_w_en					,//1
 		sel_rf_w_data				,//1
-		sel_data_ram_wd				,//1
+		sel_data_ram_wd				,//2
 		sel_data_ram_we				,//1
 		sel_data_ram_en				,//1
 		data_ram_wdata				,//32
@@ -158,7 +158,7 @@ module EXE_stage(
 		sel_rf_w_data_valid_stage	,//3
 		sel_rf_w_en					,//1
 		sel_rf_w_data				,//1
-		sel_data_ram_wd				,//1
+		sel_data_ram_wd				,//2
 		data_ram_b_en				,//4
 		RegFile_w_addr				,//5
 		alu_result					,//32

@@ -57,12 +57,12 @@ module ID_stage(
 	wire [ 2: 0]	sel_alu_bu_src2;
 	reg  [31: 0]	alu_bu_src1;
 	reg  [31: 0]	alu_bu_src2;
-	wire [11: 0]	alu_op;
+	wire [18: 0]	alu_op;
 
 	// 数据RAM的相关控制信号
 	wire		sel_data_ram_en;
 	wire 		sel_data_ram_we;
-	wire 		sel_data_ram_wd;
+	wire [ 1:0]	sel_data_ram_wd;
 	reg  [31:0]	data_ram_wdata;
 
 	// WB阶段的控制信号
@@ -309,11 +309,11 @@ module ID_stage(
             sel_alu_bu_src1             ,//2
             sel_rf_w_en		            ,//1
 		    sel_rf_w_data	            ,//1
-		    sel_data_ram_wd	            ,//1
+		    sel_data_ram_wd	            ,//2
 		    sel_data_ram_we	            ,//1
 		    sel_data_ram_en	            ,//1
             inst_type                   ,//26
-		    alu_op			            ,//12
+		    alu_op			            ,//19
             pred_PC                     ,//32
             inst_PC                     ,//32
             immediate                   ,//32
@@ -365,12 +365,12 @@ module ID_stage(
 		sel_rf_w_data_valid_stage	,//3
 		sel_rf_w_en					,//1
 		sel_rf_w_data				,//1
-		sel_data_ram_wd				,//1
+		sel_data_ram_wd				,//2
 		sel_data_ram_we				,//1
 		sel_data_ram_en				,//1
 		data_ram_wdata				,//32
 		RegFile_w_addr				,//5
-		alu_op						,//12
+		alu_op						,//19
 		alu_bu_src2					,//32
 		alu_bu_src1					,//32
 		inst_PC						 //32

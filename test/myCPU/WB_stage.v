@@ -81,8 +81,8 @@ module WB_stage(
     // 处理半字读与字节读
     always@(*)
     begin
-        if(sel_data_ram_wd==1)
-        begin
+        if(sel_data_ram_wd[1]==1)
+            // byte
             if(data_ram_b_en==4'b0001)
                 // 注意是符号扩展
                 RF_w_data_from_RAM<={{24{data_ram_r_data[7]}},data_ram_r_data[7:0]};
@@ -94,7 +94,6 @@ module WB_stage(
                 RF_w_data_from_RAM<={{24{data_ram_r_data[31]}},data_ram_r_data[31:24]};
             else 
                 RF_w_data_from_RAM<=32'b0;
-        end
         else 
             RF_w_data_from_RAM<=data_ram_r_data;
     end
@@ -127,7 +126,7 @@ module WB_stage(
         sel_rf_w_data_valid_stage	,//3
         sel_rf_w_en					,//1
 		sel_rf_w_data				,//1
-        sel_data_ram_wd 			,//1
+        sel_data_ram_wd 			,//2
 		data_ram_b_en				,//4
         data_ram_r_data 			,//32
         RegFile_w_addr  			,//5
