@@ -354,7 +354,7 @@ module IPreD_stage(
     assign sel_rf_r_addr_1[0] = inst_add_w | inst_addi_w | inst_sub_w 
                                 | inst_mul_w | inst_mulh_w | inst_mulh_wu
                                 | inst_div_w | inst_div_wu | inst_mod_w | inst_mod_wu
-                                | inst_or | inst_nor | inst_and | inst_andi | inst_xor | inst_xori
+                                | inst_or | inst_ori | inst_nor | inst_and | inst_andi | inst_xor | inst_xori
                                 | inst_srl_w | inst_sll_w | inst_sra_w 
                                 | inst_srli_w | inst_slli_w | inst_srai_w
                                 | inst_slt | inst_sltu | inst_slti | inst_sltui
