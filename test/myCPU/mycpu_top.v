@@ -58,6 +58,7 @@ module mycpu_top(
 
     wire [`ID_TO_IF_BUS_WD-1:0]     ID_to_IF_bus    ;
     wire [`ID_TO_IPD_BUS_WD-1:0]    ID_to_IPD_bus   ;
+	wire [31:0]						IPD_to_BU_bus	;
 
 	wire[`EXE_TO_BY_BUS_WD-1:0]		EXE_to_BY_bus	;
 	wire[`MEM_TO_BY_BUS_WD-1:0]		MEM_to_BY_bus	;
@@ -93,6 +94,7 @@ module mycpu_top(
 	    .IF_to_IPD_bus      (IF_to_IPD_bus),
 	    .IPD_to_ID_bus      (IPD_to_ID_bus),
         .ID_to_IPD_bus      (ID_to_IPD_bus),
+		.IPD_to_BU_bus		(IPD_to_BU_bus),
         //inst RAM
         .inst_ram_r_data    (inst_sram_rdata),
 	
@@ -116,6 +118,8 @@ module mycpu_top(
     
 	    .WB_to_ID_bus       (WB_to_ID_bus),  
 		.BY_to_ID_bus		(BY_to_ID_bus),
+
+		.IPD_to_BU_bus		(IPD_to_BU_bus),
 
 	    //流水线控制
 	    .EXE_allow_in       (EXE_allow_in),

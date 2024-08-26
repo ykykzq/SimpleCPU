@@ -22,6 +22,8 @@ module ID_stage(
 
 	input  wire[`BY_TO_ID_BUS_WD-1:0]	BY_to_ID_bus,
 
+	input  wire[31:0]					IPD_to_BU_bus,
+
 	//流水线控制
 	input  wire							EXE_allow_in,
 	input  wire							IPD_to_ID_valid,
@@ -171,6 +173,7 @@ module ID_stage(
 	//////////////////////////////////////////////////////////
 	/// 检验分支预测正确性
 
+	assign pred_PC = IPD_to_BU_bus;
 	BranchUnit BU(
 		.reset				(reset			),
 		.inst_type			(inst_type		),
@@ -314,7 +317,6 @@ module ID_stage(
 		    sel_data_ram_en	            ,//1
             inst_type                   ,//44
 		    alu_op			            ,//19
-            pred_PC                     ,//32
             inst_PC                     ,//32
             immediate                   ,//32
             RegFile_w_addr              ,//5

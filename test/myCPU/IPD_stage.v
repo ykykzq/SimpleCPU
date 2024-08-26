@@ -16,6 +16,8 @@ module IPreD_stage(
 	output wire[`IPD_TO_ID_BUS_WD-1:0]	IPD_to_ID_bus,
 
     input  wire[`ID_TO_IPD_BUS_WD-1:0]  ID_to_IPD_bus,
+
+    input  wire[31:0]                   IPD_to_BU_bus,
     //inst RAM
     input  wire[31:0]					inst_ram_r_data,
 	
@@ -491,7 +493,7 @@ module IPreD_stage(
 							| inst_srli_w | inst_slli_w | inst_srai_w 
                             | inst_srl_w | inst_sll_w |inst_sra_w
 							| inst_slt | inst_sltu | inst_slti | inst_sltui
-							| inst_jirl | inst_beq | inst_bne
+							| inst_jirl | inst_beq | inst_bne | inst_bge | inst_bgeu | inst_blt | inst_bltu
 							| inst_st_w | inst_st_h | inst_st_b
                             | inst_ld_w | inst_ld_h | inst_ld_b;
 	assign sel_alu_bu_src1[0] = inst_pcaddu12i | inst_bl;
@@ -513,7 +515,7 @@ module IPreD_stage(
 							| inst_or | inst_nor | inst_and | inst_xor
                             | inst_srl_w | inst_sll_w | inst_sra_w
 							| inst_slt | inst_sltu
-                            | inst_beq | inst_bne; 
+                            | inst_beq | inst_bne | inst_bge | inst_bgeu | inst_blt | inst_bltu; 
 	assign sel_alu_bu_src2[0]=   inst_addi_w | inst_ori | inst_andi | inst_xori
                             | inst_srli_w | inst_slli_w | inst_srai_w
                             | inst_slti | inst_sltui
@@ -621,7 +623,6 @@ module IPreD_stage(
 			IF_to_IPD_reg<=IF_to_IPD_reg;
 	end
     assign {
-        pred_PC		,//32
 		inst_PC 	 //32
 		    		 //
     } = IF_to_IPD_reg;
@@ -645,11 +646,12 @@ module IPreD_stage(
 		    sel_data_ram_en	            ,//1
             inst_type                   ,//44
 		    alu_op			            ,//19
-            pred_PC                     ,//32
             inst_PC                     ,//32
             immediate                   ,//32
             RegFile_w_addr              ,//5
             RegFile_r_addr2             ,//5
             RegFile_r_addr1              //5
     };
+
+    assign IPD_to_BU_bus=inst_PC;
 endmodule
