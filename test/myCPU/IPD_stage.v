@@ -292,9 +292,9 @@ module IPreD_stage(
     /*
     指令与用到的寄存器列表
         +-----------+----+----+-----+-------+
-        | inst      | rk | rj | rd  | GR[1] |
+        | inst      | rj | rk | rd  | GR[1] |
         +-----------+----+----+-----+-------+
-        | addi.w    |    | R  | W   |       |
+        | addi.w    | R  |    | W   |       |
         | add.w     | R  | R  | W   |       |
         | sub.w     | R  | R  | W   |       |
         | mul.w     | R  | R  | W   |       |
@@ -305,80 +305,81 @@ module IPreD_stage(
         | mod.w     | R  | R  | W   |       |
         | mod.wu    | R  | R  | W   |       |
         | or        | R  | R  | W   |       |
-        | ori       |    | R  | W   |       |
+        | ori       | R  |    | W   |       |
         | nor       | R  | R  | W   |       |
-        | andi      |    | R  | W   |       |
+        | andi      | R  |    | W   |       |
         | and       | R  | R  | W   |       |
         | xor       | R  | R  | W   |       |
-        | xori      |    | R  | W   |       |
+        | xori      | R  |    | W   |       |
         | srl.w     | R  | R  | W   |       |
-        | srli.w    |    | R  | W   |       |
+        | srli.w    | R  |    | W   |       |
         | sll.w     | R  | R  | W   |       |
-        | slli.w    |    | R  | W   |       |
+        | slli.w    | R  |    | W   |       |
         | sra.w     | R  | R  | W   |       |
-        | srai.w    |    | R  | W   |       |
+        | srai.w    | R  |    | W   |       |
         | lu12i.w   |    |    | W   |       |
         | pcaddu12i |    |    | W   |       |
         | slt       | R  | R  | W   |       |
-        | slti      |    | R  | W   |       |
+        | slti      | R  |    | W   |       |
         | sltu      | R  | R  | W   |       |
-        | sltui     |    | R  | W   |       |
-        | jirl      |    | R  | W   |       |
+        | sltui     | R  |    | W   |       |
+        | jirl      | R  |    | W   |       |
         | b         |    |    |     |       |
-        | beq       |    | R  | R   |       |
-        | bne       |    | R  | R   |       |
-        | bge       |    | R  | R   |       |
-        | bgeu      |    | R  | R   |       |
+        | beq       | R  |    | R   |       |
+        | bne       | R  |    | R   |       |
+        | bge       | R  |    | R   |       |
+        | bgeu      | R  |    | R   |       |
         | bl        |    |    |     |  W    |
-        | blt       |    | R  | R   |       |
-        | bltu      |    | R  | R   |       |
-        | st.w      |    | R  | R   |       |
-        | ld.w      |    | R  | W   |       |
-        | st.h      |    | R  | R   |       |
-        | ld.h      |    | R  | W   |       |
-        | st.b      |    | R  | R   |       |
-        | ld.b      |    | R  | W   |       |
+        | blt       | R  |    | R   |       |
+        | bltu      | R  |    | R   |       |
+        | st.w      | R  |    | R   |       |
+        | ld.w      | R  |    | W   |       |
+        | st.h      | R  |    | R   |       |
+        | ld.h      | R  |    | W   |       |
+        | st.b      | R  |    | R   |       |
+        | ld.b      | R  |    | W   |       |
         +-----------+----+----+-----+-------+
-    如果读rk、rj，则分别为1、2。如果读rj、rd，则对应的分别为1、2。
     */
 
     /*
         +-----------------+------------+
         | sel_rf_r_addr_1 | r_addr_1   |
         +-----------------+------------+
-        | 2'b10           | rk         |
+        | 2'b10           | undefined  |
         | 2'b01           | rj         |
         | 2'b00           | 0(default) |
         +-----------------+------------+
     */
-    assign sel_rf_r_addr_1[1] =  inst_add_w | inst_sub_w 
-                                | inst_mul_w | inst_mulh_w | inst_mulh_wu 
+    assign sel_rf_r_addr_1[1] = 1'b0;
+    assign sel_rf_r_addr_1[0] = inst_add_w | inst_addi_w | inst_sub_w 
+                                | inst_mul_w | inst_mulh_w | inst_mulh_wu
                                 | inst_div_w | inst_div_wu | inst_mod_w | inst_mod_wu
-                                | inst_or | inst_nor | inst_and | inst_xor | inst_slt | inst_sltu
-                                | inst_srl_w | inst_sll_w | inst_sra_w;
-    assign sel_rf_r_addr_1[0] = inst_addi_w | inst_ori | inst_andi | inst_xori | inst_slti | inst_sltui
+                                | inst_or | inst_nor | inst_and | inst_andi | inst_xor | inst_xori
+                                | inst_srl_w | inst_sll_w | inst_sra_w 
                                 | inst_srli_w | inst_slli_w | inst_srai_w
-                                | inst_jirl | inst_beq | inst_bne | inst_bge | inst_bgeu | inst_blt | inst_bltu
-                                | inst_st_w | inst_ld_w | inst_st_h | inst_ld_h | inst_st_b | inst_ld_b;
-    assign RegFile_r_addr1    = sel_rf_r_addr_1[1]?rk:
-                                sel_rf_r_addr_1[0]?rj:5'b0;
+                                | inst_slt | inst_sltu | inst_slti | inst_sltui
+                                | inst_jirl | inst_beq | inst_bne | inst_bge | inst_bgeu | inst_blt | inst_bltu 
+                                | inst_st_w | inst_st_h | inst_st_b | inst_ld_w | inst_ld_h | inst_ld_b;
+    assign RegFile_r_addr1    = sel_rf_r_addr_1[0]?rj:5'b0;
 
     /*
         +-----------------+------------+
         | sel_rf_r_addr_2 | r_addr_2   |
         +-----------------+------------+
-        | 2'b10           | rj         |
+        | 2'b10           | rk         |
         | 2'b01           | rd         |
         | 2'b00           | 0(default) |
         +-----------------+------------+
     */
-    assign sel_rf_r_addr_2[1] = inst_add_w | inst_sub_w | inst_mul_w | inst_mulh_w | inst_mulh_wu
+    assign sel_rf_r_addr_2[1] =  inst_add_w | inst_sub_w 
+                                | inst_mul_w | inst_mulh_w | inst_mulh_wu 
                                 | inst_div_w | inst_div_wu | inst_mod_w | inst_mod_wu
                                 | inst_or | inst_nor | inst_and | inst_xor 
-                                | inst_srl_w | inst_sll_w | inst_sra_w | inst_slt | inst_sltu;
-    assign sel_rf_r_addr_2[0] = inst_beq | inst_bne | inst_bge | inst_bgeu | inst_blt | inst_bltu 
+                                | inst_srl_w | inst_sll_w | inst_sra_w
+                                | inst_slt | inst_sltu;
+    assign sel_rf_r_addr_2[0] = inst_beq | inst_bne | inst_bge | inst_bgeu | inst_blt | inst_bltu
                                 | inst_st_w | inst_st_h | inst_st_b;
-    assign RegFile_r_addr2    = sel_rf_r_addr_2[1]?rj:
+    assign RegFile_r_addr2    = sel_rf_r_addr_2[1]?rk:
                                 sel_rf_r_addr_2[0]?rd:5'b0;
 
     /*

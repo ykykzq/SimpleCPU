@@ -73,8 +73,8 @@ wire        adder_cin;
 wire [31:0] adder_result;
 wire        adder_cout;
 
-assign adder_a   = alu_src2;
-assign adder_b   = (op_sub | op_slt | op_sltu) ? ~alu_src1 : alu_src1;  //src2 - src1 rj-rk
+assign adder_a   = alu_src1;
+assign adder_b   = (op_sub | op_slt | op_sltu) ? ~alu_src2 : alu_src2;  //src2 - src1 rj-rk
 assign adder_cin = (op_sub | op_slt | op_sltu) ? 1'b1      : 1'b0;
 assign {adder_cout, adder_result} = adder_a + adder_b + adder_cin;
 
@@ -83,8 +83,8 @@ assign add_sub_result = adder_result;
 
 // SLT result
 assign slt_result[31:1] = 31'b0;   //rj < rk 1
-assign slt_result[0]    = (alu_src2[31] & ~alu_src1[31])
-                        | ((alu_src2[31] ^~ alu_src1[31]) & adder_result[31]);
+assign slt_result[0]    = (alu_src1[31] & ~alu_src2[31])
+                        | ((alu_src1[31] ^~ alu_src2[31]) & adder_result[31]);
 
 // SLTU result
 assign sltu_result[31:1] = 31'b0;

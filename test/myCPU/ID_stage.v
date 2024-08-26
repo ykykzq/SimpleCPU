@@ -194,19 +194,19 @@ module ID_stage(
 	always@(*)
 	begin
 		if(sel_alu_bu_src1[1])
-			if(RegFile_r_addr1==EXE_RegFile_w_addr && EXE_sel_rf_w_en)
+			if(RegFile_r_addr1==EXE_RegFile_w_addr && EXE_sel_rf_w_en && EXE_valid)
 				if(EXE_sel_RF_w_data_valid)
 					// 可以从EXE阶段旁路该值
 					alu_bu_src1<=EXE_RegFile_w_data;
 				else 
 					// 代表阻塞
 					alu_bu_src1<=32'b0;
-			else if(RegFile_r_addr1==MEM_RegFile_w_addr && MEM_sel_rf_w_en)
+			else if(RegFile_r_addr1==MEM_RegFile_w_addr && MEM_sel_rf_w_en && MEM_valid)
 				if(MEM_sel_RF_w_data_valid)
 					alu_bu_src1<=MEM_RegFile_w_data;
 				else
 					alu_bu_src1<=32'b0;
-			else if(RegFile_r_addr1==WB_RegFile_w_addr && WB_sel_rf_w_en)
+			else if(RegFile_r_addr1==WB_RegFile_w_addr && WB_sel_rf_w_en && WB_valid)
 				if(WB_sel_RF_w_data_valid)
 					alu_bu_src1<=WB_RegFile_w_data;
 				else

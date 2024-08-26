@@ -46,19 +46,19 @@ module WakeUP(
 	always@(*)
 	begin
 		if(sel_alu_bu_src1[1])
-			if(RegFile_r_addr1==EXE_RegFile_W_addr && EXE_sel_rf_w_en)
+			if(RegFile_r_addr1==EXE_RegFile_W_addr && EXE_sel_rf_w_en && EXE_valid)
 				if(EXE_sel_RF_W_Data_valid)
 					// 可以从EXE阶段旁路该值
 					src_1_ready<=1'b1;
 				else 
 					// 若EXE阶段还未产生写入数据，则无法通过旁路获得该值。
 					src_1_ready<=1'b0;
-			else if(RegFile_r_addr1==MEM_RegFile_W_addr && MEM_sel_rf_w_en)
+			else if(RegFile_r_addr1==MEM_RegFile_W_addr && MEM_sel_rf_w_en && MEM_valid)
 				if(MEM_sel_RF_W_Data_valid)
 					src_1_ready<=1'b1;
 				else
 					src_1_ready<=1'b0;
-			else if(RegFile_r_addr1==WB_RegFile_W_addr && WB_sel_rf_w_en)
+			else if(RegFile_r_addr1==WB_RegFile_W_addr && WB_sel_rf_w_en && WB_valid)
 				if(WB_sel_rf_w_en)
 					src_1_ready<=1'b1;
 				else

@@ -74,7 +74,7 @@ module BranchUnit(
     }=inst_type;
 
     // 计算真正的PC
-    assign is_branch=(inst_jirl | inst_b | inst_beq | inst_bne | inst_bl);
+    assign is_branch=(inst_jirl | inst_b | inst_beq | inst_bne | inst_bl | inst_bge | inst_bgeu | inst_blt | inst_bltu);
     always@(*)
     begin
         if(reset)
