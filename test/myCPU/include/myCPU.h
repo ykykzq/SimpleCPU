@@ -2,11 +2,11 @@
     `define MYCPU_H
 
 	// 指令类型，用独热码区分不同指令
-	`define INST_TYPE_WD		26
+	`define INST_TYPE_WD		42
 
 	// 流水线间数据通信
 	`define IF_TO_IPD_BUS_WD 	64
-    `define IPD_TO_ID_BUS_WD 	162
+    `define IPD_TO_ID_BUS_WD 	178
     `define ID_TO_EXE_BUS_WD 	153
     `define EXE_TO_MEM_BUS_WD	79
     `define MEM_TO_WB_BUS_WD 	111

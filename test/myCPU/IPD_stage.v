@@ -43,7 +43,7 @@ module IPreD_stage(
 
     // 指令类型
     wire [`INST_TYPE_WD-1: 0]	inst_type;
-    //加减
+    // 常规算数运算
     wire    inst_addi_w     ;
     wire    inst_add_w      ;
     wire    inst_sub_w      ;
@@ -53,24 +53,40 @@ module IPreD_stage(
     wire    inst_andi       ;
     wire    inst_and        ;
     wire    inst_xor        ;
+    wire    inst_xori       ;
+    wire    inst_srl_w      ;
     wire    inst_srli_w     ;
+    wire    inst_sll_w      ;
     wire    inst_slli_w     ;
+    wire    inst_sra_w      ;
     wire    inst_srai_w     ;
     wire    inst_lu12i_w    ;
     wire    inst_pcaddu12i  ;
     wire    inst_slt        ;
+    wire    inst_slti       ;
     wire    inst_sltu       ;
+    wire    inst_sltui      ;
     // 乘除
     wire    inst_mul_w      ;
+    wire    inst_mulh_w     ;
+    wire    inst_mulh_wu    ;
+    wire    inst_div_w      ;
+    wire    inst_mod_w      ;
     // 跳转   
     wire    inst_jirl       ;
     wire    inst_b          ;
     wire    inst_beq        ;
     wire    inst_bne        ;
+    wire    inst_bge        ;
+    wire    inst_bgeu       ;
     wire    inst_bl         ;
+    wire    inst_blt        ;
+    wire    inst_bltu       ;
     // 访存
     wire    inst_st_w       ;
     wire    inst_ld_w       ;
+    wire    inst_st_h       ;
+    wire    inst_ld_h       ;
     wire    inst_st_b       ;
     wire    inst_ld_b       ;
 
@@ -156,7 +172,7 @@ module IPreD_stage(
     assign opcode_07b=inst[31:25];
     assign opcode_06b=inst[31:26];
 
-    //算数逻辑运算
+    // 算数逻辑运算
     assign inst_addi_w      = opcode_10b==10'b000_0000_1010;
     assign inst_add_w       = opcode_17b==17'b0_0000_0000_0010_0000;
     assign inst_sub_w       = opcode_17b==17'b0_0000_0000_0010_0010;
@@ -166,30 +182,46 @@ module IPreD_stage(
     assign inst_andi        = opcode_10b==10'b00_0000_1101;
     assign inst_and         = opcode_17b==17'b0_0000_0000_0010_1001;
     assign inst_xor         = opcode_17b==17'b0_0000_0000_0010_1011;
+    assign inst_xori        = opcode_10b==10'b00_0000_1111;
+    assign inst_srl_w       = opcode_17b==17'b0_0000_0000_0010_1111;
     assign inst_srli_w      = opcode_17b==17'b0_0000_0000_1000_1001;
+    assign inst_sll_w       = opcode_17b==17'b0_0000_0000_0010_1110;
     assign inst_slli_w      = opcode_17b==17'b0_0000_0000_1000_0001;
+    assign inst_sra_w       = opcode_17b==17'b0_0000_0000_0011_0000;
     assign inst_srai_w      = opcode_17b==17'b0_0000_0000_1001_0001;
     assign inst_lu12i_w     = opcode_07b==6'b000_1010;
     assign inst_pcaddu12i   = opcode_07b==6'b000_1110;
     assign inst_slt         = opcode_17b==17'b0_0000_0000_0010_0100;
+    assign inst_slti        = opcode_10b==10'b00_0000_1000;
     assign inst_sltu        = opcode_17b==17'b0_0000_0000_0010_0101;
-    //乘除             
+    assign inst_sltui       = opcode_10b==10'b00_0000_1001;
+    // 乘除             
     assign inst_mul_w       = opcode_17b==17'b0_0000_0000_0011_1000;
-    //分支跳转                
+    assign inst_mulh_w      = opcode_17b==17'b0_0000_0000_0011_1001;
+    assign inst_mulh_wu     = opcode_17b==17'b0_0000_0000_0011_1010;
+    assign inst_div_w       = opcode_17b==17'b0_0000_0000_0100_0000;
+    assign inst_mod_w       = opcode_17b==17'b0_0000_0000_0100_0001;
+    // 分支跳转                
     assign inst_jirl        = opcode_06b==6'b01_0011;
     assign inst_b           = opcode_06b==6'b01_0100;
     assign inst_beq         = opcode_06b==6'b01_0110;
     assign inst_bne         = opcode_06b==6'b01_0111;
+    assign inst_bge         = opcode_06b==6'b01_1001;
+    assign inst_bgeu        = opcode_06b==6'b01_1011;
     assign inst_bl          = opcode_06b==6'b01_0101;
-    //访存
+    assign inst_blt         = opcode_06b==6'b01_1000;
+    assign inst_bltu        = opcode_06b==6'b01_1010;
+    // 访存
     assign inst_st_w        = opcode_10b==10'b00_1010_0110;
     assign inst_ld_w        = opcode_10b==10'b00_1010_0010;
+    assign inst_st_h        = opcode_10b==10'b00_1010_0101;
+    assign inst_ld_h        = opcode_10b==10'b00_1010_0001;
     assign inst_st_b        = opcode_10b==10'b00_1010_0100;
     assign inst_ld_b        = opcode_10b==10'b00_1010_0000;
 
 
     assign inst_type        ={
-            //加减
+            // 常规算数运算
             inst_addi_w     ,
             inst_add_w      ,
             inst_sub_w      ,
@@ -199,24 +231,40 @@ module IPreD_stage(
             inst_andi       ,
             inst_and        ,
             inst_xor        ,
+            inst_xori       ,
+            inst_srl_w      ,
             inst_srli_w     ,
+            inst_sll_w      ,
             inst_slli_w     ,
+            inst_sra_w      ,
             inst_srai_w     ,
             inst_lu12i_w    ,
             inst_pcaddu12i  ,
             inst_slt        ,
+            inst_slti       ,
             inst_sltu       ,
+            inst_sltui      ,
             // 乘除
             inst_mul_w      ,
+            inst_mulh_w     ,
+            inst_mulh_wu    ,
+            inst_div_w      ,
+            inst_mod_w      ,
             // 跳转   
             inst_jirl       ,
             inst_b          ,
             inst_beq        ,
             inst_bne        ,
+            inst_bge        ,
+            inst_bgeu       ,
             inst_bl         ,
+            inst_blt        ,
+            inst_bltu       ,
             // 访存
             inst_st_w       ,
             inst_ld_w       ,
+            inst_st_h       ,
+            inst_ld_h       ,
             inst_st_b       ,
             inst_ld_b       
     };
@@ -476,7 +524,7 @@ module IPreD_stage(
 		    sel_data_ram_wd	            ,//1
 		    sel_data_ram_we	            ,//1
 		    sel_data_ram_en	            ,//1
-            inst_type                   ,//26
+            inst_type                   ,//42
 		    alu_op			            ,//12
             pred_PC                     ,//32
             inst_PC                     ,//32
