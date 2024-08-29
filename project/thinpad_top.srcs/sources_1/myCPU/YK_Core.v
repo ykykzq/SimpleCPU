@@ -78,7 +78,9 @@ module YK_Core(
     
 	    //流水线控制
 	    .IPD_allow_in       (IPD_allow_in),
-	    .IF_to_IPD_valid    (IF_to_IPD_valid)
+	    .IF_to_IPD_valid    (IF_to_IPD_valid),
+
+		.sel_strcture_hazard(sel_strcture_hazard)
     );
 
     IPreD_stage IPreD_stage(

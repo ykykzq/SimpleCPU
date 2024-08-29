@@ -25,7 +25,9 @@ module IF_stage(
     
 	//流水线控制
 	input  wire							IPD_allow_in,
-	output wire							IF_to_IPD_valid
+	output wire							IF_to_IPD_valid,
+
+	input  wire 						sel_strcture_hazard
 );
 	// PC相关
 	wire [31: 0]		PC_plus_4		;
@@ -59,10 +61,10 @@ module IF_stage(
 	end
 	
 	// 控制流水线行为
-	assign IF_ready_go=1'b1;// 当前取指在一周期内一定能完成
-	assign IF_allow_in=(~IF_valid) | (IF_ready_go & IPD_allow_in);
-	assign Pre_to_IF_valid=~reset;
-	assign IF_to_IPD_valid=IF_valid & IF_ready_go;
+	assign IF_ready_go 		= ~sel_strcture_hazard;
+	assign IF_allow_in 		= (~IF_valid) | (IF_ready_go & IPD_allow_in);
+	assign Pre_to_IF_valid	= ~reset;
+	assign IF_to_IPD_valid	= IF_valid & IF_ready_go;
 	
 	/////////////////////////////////////////////////
 	/// 分支预测

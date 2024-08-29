@@ -94,6 +94,7 @@
 
 1. 在《CPU设计实战》中，`Inst RAM`与`Data RAM`实际上是分开的，不需要考虑结构冒险。然而在NSCSCC中，`Base RAM`与`Ext RAM`均可被读、写、执行，同时两个`RAM`均只有一个读端口。因此在`IF`与`ID`两个流水级在同一拍访问同个RAM时，会发生结构冒险。（参见：[哈佛架构与冯诺依曼架构](https://blog.csdn.net/zhuimeng_ruili/article/details/103485093)）
 2. 本工程在[v4.0](https://github.com/ykykzq/SimpleCPU/commit/79788504854dc162ad1f232458a28d9f5c64e550)版本通过《CPU设计实战》之后，不再对`test`目录下的处理器核进行更改，而是将代码复制到所给的模板中，面向NSCSCC大赛要求做进一步的工作。这里主要完成：编写一个`MMU`，与之前写好的处理器核（命名为`YK_Core`）一起，组成`myCPU_top`模块；该`MMU`负责地址映射，并处理串口输入输出，同时检测是否发生`RAM`的结构冒险。
+3. 本工程使用的IP核有FIFO Generator，其配置为Common Clock Builitin FIFO实现，读模式为First Word Fall Through，对于数据读写端口，宽度为8位（串口宽度），深度为512，其他配置保持默认。
 
 ## 推荐书籍
 
