@@ -101,7 +101,7 @@ module EXE_stage(
 	/// 生成Data RAM信号
 
 	assign data_ram_en=sel_data_ram_en;
-	assign data_ram_addr=alu_result;
+	assign data_ram_addr=data_ram_addr_from_alu;
 
 	assign data_ram_addr_from_alu=alu_result;
 

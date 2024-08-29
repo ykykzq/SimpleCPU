@@ -17,7 +17,7 @@
 - [x] 通过《CPU设计实战》exp8、9（commit：[v2.0](https://github.com/ykykzq/SimpleCPU/commit/6e12934ad4ada67a1a4f0eae59e8954e9a2666b5)、[v2.1](https://github.com/ykykzq/SimpleCPU/commit/d00fffc3704908f9dc4b94863b6e44d64e6c84ea)）
 - [x] 添加用户态指令，支持40+条
 - [x] 通过《CPU设计实战》exp10（commit：[v3.0](https://github.com/ykykzq/SimpleCPU/commit/69767304f6b3c4f273a12e56c64c6ca434f232fe)）
-- [ ] 通过《CPU设计实战》exp11
+- [x] 通过《CPU设计实战》exp11（commit：[v4.0](https://github.com/ykykzq/SimpleCPU/commit/79788504854dc162ad1f232458a28d9f5c64e550)）
 - [ ] 根据NSCSCC大赛要求，添加更多指令
 - [ ] 根据大赛要求，添加串口通信功能，添加MMU模块
 - [ ] 调试使通过三级功能测试与性能测试
