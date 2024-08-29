@@ -27,7 +27,7 @@ module EXE_stage(
 	output wire							data_ram_en,
 	output wire[31:0]					data_ram_addr,
 	output wire[3:0]					data_ram_w_en,
-	output wire[31:0]					data_ram_w_data
+	output reg [31:0]					data_ram_w_data
     );
 	
 	// 当前指令的PC
@@ -101,7 +101,7 @@ module EXE_stage(
 	/// 生成Data RAM信号
 
 	assign data_ram_en=sel_data_ram_en;
-	assign data_ram_addr={alu_result[31:2],2'b0};
+	assign data_ram_addr=alu_result;
 
 	assign data_ram_addr_from_alu=alu_result;
 
@@ -122,7 +122,7 @@ module EXE_stage(
 				else 
 					data_ram_b_en<=4'b0000;//不会走到的分支
 			end
-		if(sel_data_ram_wd[0])
+		else if(sel_data_ram_wd[0])
 			begin
 				// 如果长度为half-word(16bit)
 				if(data_ram_addr_from_alu[1:0]==2'b00)
@@ -137,12 +137,45 @@ module EXE_stage(
 					data_ram_b_en<=4'b0000;//不会走到的分支
 			end
 		else 
-			data_ram_b_en=4'b1111;// 若是一个word(32bit)
+			data_ram_b_en<=4'b1111;// 若是一个word(32bit)
 	end
 	// 若是不读Data RAM，全0即可
 	assign data_ram_w_en = sel_data_ram_we?data_ram_b_en:4'b0000;
+
 	// 写回的数据
-	assign data_ram_w_data = data_ram_wdata;
+	always@(*)
+	begin
+		if(sel_data_ram_wd[1])
+			begin
+				// 如果长度为byte(8bit)
+				if(data_ram_addr_from_alu[1:0]==2'b00)
+					data_ram_w_data<={24'b0,data_ram_wdata[7:0]};
+				else if(data_ram_addr_from_alu[1:0]==2'b01)
+					data_ram_w_data<={16'b0,data_ram_wdata[7:0],8'b0};
+				else if(data_ram_addr_from_alu[1:0]==2'b10)
+					data_ram_w_data<={8'b0,data_ram_wdata[7:0],16'b0};
+				else if(data_ram_addr_from_alu[1:0]==2'b11)
+					data_ram_w_data<={data_ram_wdata[7:0],24'b0};
+				else 
+					data_ram_w_data<=32'b0;//不会走到的分支
+			end
+		else if(sel_data_ram_wd[0])
+			begin
+				// 如果长度为half-word(16bit)
+				if(data_ram_addr_from_alu[1:0]==2'b00)
+					data_ram_w_data<={16'b0,data_ram_wdata[15:0]};
+				else if(data_ram_addr_from_alu[1:0]==2'b01)
+					data_ram_w_data<={data_ram_wdata[15:0],16'b0};
+				else if(data_ram_addr_from_alu[1:0]==2'b10)
+					data_ram_w_data<={data_ram_wdata[15:0],16'b0};
+				else if(data_ram_addr_from_alu[1:0]==2'b11)
+					data_ram_w_data<={data_ram_wdata[15:0],16'b0};
+				else 
+					data_ram_w_data<=32'b0;//不会走到的分支
+			end
+		else 
+			data_ram_w_data<=data_ram_wdata;// 若是一个word(32bit)
+	end
 
 	///////////////////////////////////////////////////////
 	/// 流水级数据交互
