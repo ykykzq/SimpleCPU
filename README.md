@@ -2,11 +2,13 @@
 
 ## 概述
 
-本仓库于2024.8进行了重置，将工程从MIPS版本调整为LoongArch版本。参考了2022年龙芯杯大赛[作品](https://github.com/fluctlight001/cpu_for_nscscc2022_single)，该作品是一个七级流水线CPU。
+本仓库于2024.8进行了重置，将工程从`MIPS`版本调整为`LoongArch`版本，并命名为`YK_Core`。
 
-本工程使用Verilog语言描述了一个六级流水线CPU，六个流水级分别为IF、IPreD、ID、EXE、MEM、WB。CPU基于LoongArch指令集，支持运算、访存、分支跳转等大部分用户态指令，具体支持的指令参见[这里](./docs/指令控制信号.xlsx)。该工程还支持串口，通过UART协议与外界进行通信。其他技术要求，可以参见[龙芯杯大赛](http://www.nscscc.com)技术方案。
+本工程使用Verilog语言描述了一个六级流水线CPU，六个流水级分别为`IF`、`IPreD`、`ID`、`EXE`、`MEM`、`WB`，各个流水级的功能参加源代码与相关文档。CPU基于`LoongArch`指令集，支持运算、访存、分支跳转等四十余条用户态指令，具体支持的指令参见[这里](./docs/指令控制信号.xlsx)。该工程还支持串口，通过`UART`协议与外界进行通信。其他技术要求，可以参见[龙芯杯大赛](http://www.nscscc.com)技术方案。
 
 工程使用的综合工具为Vivado 2019.2，尽管如此，仍然可以使用低版本Vivado工具，通过新建一个工程并添加Verilog源代码的方式进行综合。
+
+作品参考了2022年龙芯杯大赛[作品](https://github.com/fluctlight001/cpu_for_nscscc2022_single)，该作品是一个七级流水线CPU。
 
 ## TODO List
 
@@ -84,7 +86,14 @@
 
 至此，你已经完成了NSCSCC的基本要求，现在你可以添加一些进阶内容。
 
-- [ ] 流水级拆分、i-cache添加、特权态指令......
+- [ ] 流水级拆分、i-cache添加、特权态指令、虚拟内存......
+
+## Tips
+
+注意到完成《CPU设计实战》中的相关实验后，CPU核心是无法直接嵌入到NSCSCC提供的模板中的，仍然需要完成一系列工作，这里给出一些提示。
+
+1. 在《CPU设计实战》中，`Inst RAM`与`Data RAM`实际上是分开的，不需要考虑结构冒险。然而在NSCSCC中，`Base RAM`与`Ext RAM`均可被读、写、执行，同时两个`RAM`均只有一个读端口。因此在`IF`与`ID`两个流水级在同一拍访问同个RAM时，会发生结构冒险。（参见：[哈佛架构与冯诺依曼架构](https://blog.csdn.net/zhuimeng_ruili/article/details/103485093)）
+2. 本工程在[v4.0](https://github.com/ykykzq/SimpleCPU/commit/79788504854dc162ad1f232458a28d9f5c64e550)版本通过《CPU设计实战》之后，不再对`test`目录下的处理器核进行更改，而是将代码复制到所给的模板中，面向NSCSCC大赛要求做进一步的工作。这里主要完成：编写一个`MMU`，与之前写好的处理器核（命名为`YK_Core`）一起，组成`myCPU_top`模块；该`MMU`负责地址映射，并处理串口输入输出，同时检测是否发生`RAM`的结构冒险。
 
 ## 推荐书籍
 
