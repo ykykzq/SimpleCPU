@@ -77,7 +77,7 @@ module IF_stage(
 	always@(posedge clk)
 	begin
 		if(reset)
-			PC<=32'h1c000000-4'b1000;// 考虑到rst后第一周期无效，再加上给Inst RAM的是next_PC，故-8
+			PC<=32'h8000_0000-4'b1000;// 考虑到rst后第一周期无效，再加上给Inst RAM的是next_PC，故-8
 		else if(IF_allow_in & Pre_to_IF_valid)
 			PC<=next_PC;
 		else 

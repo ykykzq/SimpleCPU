@@ -15,13 +15,13 @@ module MMU(
     input  wire [ 3:0] inst_sram_we,
     input  wire [31:0] inst_sram_addr,
     input  wire [31:0] inst_sram_wdata,
-    output wire [31:0] inst_sram_rdata,
+    output reg  [31:0] inst_sram_rdata,
     // data sram interface
     input  wire        data_sram_en,
     input  wire [ 3:0] data_sram_we,
     input  wire [31:0] data_sram_addr,
     input  wire [31:0] data_sram_wdata,
-    output wire [31:0] data_sram_rdata,
+    output reg  [31:0] data_sram_rdata,
 
     // BaseRAM信号
     inout  wire[31:0] base_ram_data,  //BaseRAM数据，低8位与CPLD串口控制器共享
@@ -59,12 +59,12 @@ module MMU(
 	// 接收队列
 	wire 		RxD_FIFO_w_en;
 	wire 		RxD_FIFO_full;
-	wire 		RxD_FIFO_r_en;
+	reg  		RxD_FIFO_r_en;
 	wire[7:0] 	RxD_FIFO_data_out;
 	wire		RxD_FIFO_empty;
 	// 发送队列
-	wire 		TxD_FIFO_w_en;
-	wire[7:0] 	TxD_FIFO_data_in;
+	reg  		TxD_FIFO_w_en;
+	reg [7:0] 	TxD_FIFO_data_in;
 	wire 		TxD_FIFO_full;
 	wire 		TxD_FIFO_r_en;
 	wire		TxD_FIFO_empty;
@@ -74,6 +74,10 @@ module MMU(
     wire[3:0]   sel_MEM_data_source;
     // IF读写数据来源
     wire[3:0]   sel_IF_data_source;
+
+    // 两个物理RAM的数据REG
+    reg[31:0]   base_ram_data_reg;
+    reg[31:0]   ext_ram_data_reg;
 
     /////////////////////////////////////////////////////////////////////
     /// 地址映射目标信号生成
@@ -121,24 +125,25 @@ module MMU(
     always@(posedge clk)
     begin
         if(reset)
-            base_ram_data<=32'bz;
-        else if(sel_IF_data_source[1] & inst_sram_we!=4'b0 & inst_sram_en)
-            base_ram_data<=inst_sram_wdata;
+            base_ram_data_reg<=32'b0;
         else if(sel_MEM_data_source[1] & data_sram_we!=4'b0 & data_sram_en)
-            base_ram_data<=data_sram_wdata;
+            base_ram_data_reg<=data_sram_wdata;
+        else if(sel_IF_data_source[1] & inst_sram_we!=4'b0 & inst_sram_en)
+            base_ram_data_reg<=inst_sram_wdata;
         else 
-            base_ram_data<=32'bz;
+            base_ram_data_reg<=32'b0;
     end
+    assign base_ram_data=base_ram_we_n?32'bz:base_ram_data_reg;
 
     // Base RAM地址
     always@(posedge clk)
     begin
         if(reset)
             base_ram_addr<=32'b0;
-        else if(sel_IF_data_source[1] & inst_sram_en)
-            base_ram_addr<=inst_sram_addr[21:2];
         else if(sel_MEM_data_source[1] & data_sram_en)
             base_ram_addr<=data_sram_addr[21:2];
+        else if(sel_IF_data_source[1] & inst_sram_en)
+            base_ram_addr<=inst_sram_addr[21:2];
         else 
             base_ram_addr<=32'b0;
     end
@@ -148,10 +153,16 @@ module MMU(
     begin
         if(reset)
             base_ram_be_n <= 4'b0000;
-        else if(sel_IF_data_source[1] & inst_sram_en)
-            base_ram_be_n <= ~inst_sram_we;
         else if(sel_MEM_data_source[1] & data_sram_en)
-            base_ram_be_n <= ~data_sram_we;
+            if(data_sram_we!=4'b0000)
+                base_ram_be_n <= ~data_sram_we;
+            else
+                base_ram_be_n <= 4'b0000;
+        else if(sel_IF_data_source[1] & inst_sram_en)
+            if(inst_sram_we!=4'b0000)
+                base_ram_be_n <= ~inst_sram_we;
+            else
+                base_ram_be_n <= 4'b0000;
         else 
             base_ram_be_n <= 4'b0000;
     end
@@ -161,9 +172,9 @@ module MMU(
     begin
         if(reset)
             base_ram_ce_n <= 1'b1;
-        else if(sel_IF_data_source[1] & inst_sram_en)
-            base_ram_ce_n <= 1'b0;
         else if(sel_MEM_data_source[1] & data_sram_en)
+            base_ram_ce_n <= 1'b0;
+        else if(sel_IF_data_source[1] & inst_sram_en)
             base_ram_ce_n <= 1'b0;
         else 
             base_ram_ce_n <= 1'b1;
@@ -174,15 +185,15 @@ module MMU(
     begin
         if(reset)
             base_ram_oe_n <= 1'b1;
-        else if(sel_IF_data_source[1] & inst_sram_en)
-            if(inst_sram_we==4'b0)
-                base_ram_oe_n <= 1'b0;
-            else 
-                base_ram_oe_n <= 1'b1;
         else if(sel_MEM_data_source[1] & data_sram_en)
-            if(data_sram_we==4'b0)
+            if(data_sram_we==4'b0000)
                 base_ram_oe_n <= 1'b0;
             else
+                base_ram_oe_n <= 1'b1;
+        else if(sel_IF_data_source[1] & inst_sram_en)
+            if(inst_sram_we==4'b0000)
+                base_ram_oe_n <= 1'b0;
+            else 
                 base_ram_oe_n <= 1'b1;
         else 
             base_ram_oe_n <= 1'b1;
@@ -193,16 +204,16 @@ module MMU(
     begin
         if(reset)
             base_ram_we_n <= 1'b1;
-        else if(sel_IF_data_source[1] & inst_sram_en)
-            if(inst_sram_we==4'b0)
-                base_ram_we_n <= 1'b0;
-            else 
-                base_ram_we_n <= 1'b1;
         else if(sel_MEM_data_source[1] & data_sram_en)
-            if(data_sram_we==4'b0)
-                base_ram_we_n <= 1'b0;
-            else
+            if(data_sram_we==4'b0000)
                 base_ram_we_n <= 1'b1;
+            else
+                base_ram_we_n <= 1'b0;
+        else if(sel_IF_data_source[1] & inst_sram_en)
+            if(inst_sram_we==4'b0000)
+                base_ram_we_n <= 1'b1;
+            else 
+                base_ram_we_n <= 1'b0;
         else 
             base_ram_we_n <= 1'b1;
     end
@@ -214,24 +225,25 @@ module MMU(
     always@(posedge clk)
     begin
         if(reset)
-            ext_ram_data<=32'bz;
-        else if(sel_IF_data_source[0] & inst_sram_we!=4'b0 & inst_sram_en)
-            ext_ram_data<=inst_sram_wdata;
+            ext_ram_data_reg<=32'b0;
         else if(sel_MEM_data_source[0] & data_sram_we!=4'b0 & data_sram_en)
-            ext_ram_data<=data_sram_wdata;
+            ext_ram_data_reg<=data_sram_wdata;
+        else if(sel_IF_data_source[0] & inst_sram_we!=4'b0 & inst_sram_en)
+            ext_ram_data_reg<=inst_sram_wdata;
         else 
-            ext_ram_data<=32'bz;
+            ext_ram_data_reg<=32'b0;
     end
+    assign ext_ram_data=ext_ram_we_n?32'bz:ext_ram_data_reg;
 
     // Ext RAM 地址
     always@(posedge clk)
     begin
         if(reset)
             ext_ram_addr<=32'b0;
-        else if(sel_IF_data_source[0] & inst_sram_en)
-            ext_ram_addr<=inst_sram_addr[21:2];
         else if(sel_MEM_data_source[0] & data_sram_en)
             ext_ram_addr<=data_sram_addr[21:2];
+        else if(sel_IF_data_source[0] & inst_sram_en)
+            ext_ram_addr<=inst_sram_addr[21:2];
         else 
             ext_ram_addr<=32'b0;
     end
@@ -241,10 +253,16 @@ module MMU(
     begin
         if(reset)
             ext_ram_be_n <= 4'b0000;
-        else if(sel_IF_data_source[0] & inst_sram_en)
-            ext_ram_be_n <= ~inst_sram_we;
         else if(sel_MEM_data_source[0] & data_sram_en)
-            ext_ram_be_n <= ~data_sram_we;
+            if(data_sram_we!=4'b0000)
+                ext_ram_be_n <= ~data_sram_we;
+            else 
+                ext_ram_be_n <= 4'b0000;
+        else if(sel_IF_data_source[0] & inst_sram_en)
+            if(inst_sram_we!=4'b0000)
+                ext_ram_be_n <= ~inst_sram_we;
+            else 
+                ext_ram_be_n <= 4'b0000;
         else 
             ext_ram_be_n <= 4'b0000;
     end
@@ -254,9 +272,9 @@ module MMU(
     begin
         if(reset)
             ext_ram_ce_n <= 1'b1;
-        else if(sel_IF_data_source[0] & inst_sram_en)
-            ext_ram_ce_n <= 1'b0;
         else if(sel_MEM_data_source[0] & data_sram_en)
+            ext_ram_ce_n <= 1'b0;
+        else if(sel_IF_data_source[0] & inst_sram_en)
             ext_ram_ce_n <= 1'b0;
         else 
             ext_ram_ce_n <= 1'b1;
@@ -266,19 +284,19 @@ module MMU(
     always@(posedge clk)
     begin
         if(reset)
-            base_ram_oe_n <= 1'b1;
-        else if(sel_IF_data_source[1] & inst_sram_en)
-            if(inst_sram_we==4'b0)
-                base_ram_oe_n <= 1'b0;
-            else 
-                base_ram_oe_n <= 1'b1;
-        else if(sel_MEM_data_source[1] & data_sram_en)
-            if(data_sram_we==4'b0)
-                base_ram_oe_n <= 1'b0;
+            ext_ram_oe_n <= 1'b1;
+        else if(sel_MEM_data_source[0] & data_sram_en)
+            if(data_sram_we==4'b0000)
+                ext_ram_oe_n <= 1'b0;
             else
-                base_ram_oe_n <= 1'b1;
+                ext_ram_oe_n <= 1'b1;
+        else if(sel_IF_data_source[0] & inst_sram_en)
+            if(inst_sram_we==4'b0000)
+                ext_ram_oe_n <= 1'b0;
+            else 
+                ext_ram_oe_n <= 1'b1;
         else 
-            base_ram_oe_n <= 1'b1;
+            ext_ram_oe_n <= 1'b1;
     end
 
 
@@ -287,16 +305,16 @@ module MMU(
     begin
         if(reset)
             ext_ram_we_n <= 1'b1;
-        else if(sel_IF_data_source[0] & inst_sram_en)
-            if(inst_sram_we==4'b0)
-                ext_ram_we_n <= 1'b0;
-            else 
-                ext_ram_we_n <= 1'b1;
         else if(sel_MEM_data_source[0] & data_sram_en)
-            if(data_sram_we==4'b0)
-                ext_ram_we_n <= 1'b0;
-            else
+            if(data_sram_we==4'b0000)
                 ext_ram_we_n <= 1'b1;
+            else
+                ext_ram_we_n <= 1'b0;
+        else if(sel_IF_data_source[0] & inst_sram_en)
+            if(inst_sram_we==4'b0000)
+                ext_ram_we_n <= 1'b1;
+            else 
+                ext_ram_we_n <= 1'b0;
         else 
             ext_ram_we_n <= 1'b1;
     end
@@ -333,7 +351,11 @@ module MMU(
     end
 
     // 处理结构冒险
-    assign sel_strcture_hazard = sel_IF_data_source==sel_MEM_data_source;
+    assign sel_strcture_hazard =      (sel_IF_data_source[3]&sel_MEM_data_source[3])
+                                    | (sel_IF_data_source[2]&sel_MEM_data_source[2])
+                                    | (sel_IF_data_source[1]&sel_MEM_data_source[1])
+                                    | (sel_IF_data_source[0]&sel_MEM_data_source[0])
+                                    & (inst_sram_en & data_sram_en);
 
     //////////////////////////////////////////////////////////////////////
     /// 串口收发
@@ -341,8 +363,8 @@ module MMU(
 	async_receiver #(.ClkFrequency(10_000_000),.Baud(9600)) //接收模块，9600无检验位
 		ext_uart_r(
 			.clk				(clk            ),
-			.RxD				(RxD)           ,//串口输入
-			.RxD_data_ready		(RxD_data_ready),//数据接收到标志
+			.RxD				(rxd            ),//串口输入
+			.RxD_data_ready		(RxD_data_ready ),//数据接收到标志
 			.RxD_clear			(RxD_clear      ),//清除接收标志
 			.RxD_data			(RxD_data       )//接收到的一字节数据
 		);
@@ -370,10 +392,10 @@ module MMU(
 		.dout		(TxD_data           ),//传递给串口待发送的数据
 		.empty		(TxD_FIFO_empty     )//判空标志
 	);
-	async_transmitter #(.ClkFrequency(55000000),.Baud(9600)) //发送模块，9600无检验位
+	async_transmitter #(.ClkFrequency(10_000_000),.Baud(9600)) //发送模块，9600无检验位
 		ext_uart_t(
 			.clk		(clk        ),
-			.TxD		(TxD        ),//串口输出
+			.TxD		(txd        ),//串口输出
 			.TxD_busy	(TxD_busy   ),//发送器忙状态指示
 			.TxD_start	(TxD_start  ),//开始发送信号
 			.TxD_data	(TxD_data   )//待发送的数据
@@ -391,12 +413,12 @@ module MMU(
         if(reset)
             RxD_FIFO_r_en <= 1'b0;
        else if(sel_IF_data_source[2] & inst_sram_en)
-            if(inst_sram_we==4'b0)
+            if(inst_sram_we==4'b0000)
                 RxD_FIFO_r_en <= 1'b1;
             else 
                 RxD_FIFO_r_en <= 1'b0;
         else if(sel_MEM_data_source[2] & data_sram_en)
-            if(data_sram_we==4'b0)
+            if(data_sram_we==4'b0000)
                 RxD_FIFO_r_en <= 1'b1;
             else
                 RxD_FIFO_r_en <= 1'b0;
@@ -411,12 +433,12 @@ module MMU(
         if(reset)
             TxD_FIFO_w_en <= 1'b0;
        else if(sel_IF_data_source[2] & inst_sram_en)
-            if(inst_sram_we==4'b0)
+            if(inst_sram_we==4'b0000)
                 TxD_FIFO_w_en <= 1'b0;
             else 
                 TxD_FIFO_w_en <= 1'b1;
         else if(sel_MEM_data_source[2] & data_sram_en)
-            if(data_sram_we==4'b0)
+            if(data_sram_we==4'b0000)
                 TxD_FIFO_w_en <= 1'b0;
             else
                 TxD_FIFO_w_en <= 1'b1;
@@ -429,12 +451,12 @@ module MMU(
         if(reset)
             TxD_FIFO_data_in <= 8'b0;
        else if(sel_IF_data_source[2] & inst_sram_en)
-            if(inst_sram_we==4'b0)
+            if(inst_sram_we==4'b0000)
                 TxD_FIFO_data_in <= 8'b0;
             else 
-                TxD_FIFO_data_in <= data_sram_wdata[7:0];
+                TxD_FIFO_data_in <= inst_sram_wdata[7:0];
         else if(sel_MEM_data_source[2] & data_sram_en)
-            if(data_sram_we==4'b0)
+            if(data_sram_we==4'b0000)
                 TxD_FIFO_data_in <= 8'b0;
             else
                 TxD_FIFO_data_in <= data_sram_wdata[7:0];

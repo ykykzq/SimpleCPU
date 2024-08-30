@@ -37,9 +37,6 @@ module IPreD_stage(
     // IF/IPD REG
     reg [`IF_TO_IPD_BUS_WD-1:0] IF_to_IPD_reg   ;
 
-    // PC与分支预测相关
-    wire [31: 0]    pred_PC         ;
-
     wire            br_taken_cancel ;
     wire [31: 0]    PC_fromID       ;
 

@@ -116,10 +116,10 @@ assign mul_s_h_result =   signed_prod[63:32];
 assign mul_u_h_result = unsigned_prod[63:32];
 
 // DIV & MOD result
-assign mod_u_result = alu_src1 % alu_src2;
-assign mod_s_result = $signed(alu_src1) % $signed(alu_src2);
-assign div_u_result = alu_src1 / alu_src2;
-assign div_s_result = $signed(alu_src1) / $signed(alu_src2);
+assign mod_u_result = 32'b0;//alu_src1 % alu_src2;
+assign mod_s_result = 32'b0;//$signed(alu_src1) % $signed(alu_src2);
+assign div_u_result = 32'b0;//alu_src1 / alu_src2;
+assign div_s_result = 32'b0;//$signed(alu_src1) / $signed(alu_src2);
 
 // final result mux
 assign alu_result = ({32{op_add|op_sub}} & add_sub_result)

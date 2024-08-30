@@ -183,7 +183,7 @@ module ID_stage(
     	.BranchUnit_src1	(alu_bu_src1	),
 		.src_1_ready		(alu_src_1_ready),
     	.BranchUnit_src2	(alu_bu_src2	),
-		.src_2_ready		(alu_src_1_ready),
+		.src_2_ready		(alu_src_2_ready),
 		.offset				(immediate		),
 		.inst_PC			(inst_PC		),
 	
