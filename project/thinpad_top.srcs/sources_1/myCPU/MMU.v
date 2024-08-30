@@ -55,6 +55,8 @@ module MMU(
     wire[7:0] 	TxD_data;//要发送的数据
 	wire 		TxD_busy;
 	wire 		TxD_start;
+
+    wire[1:0]   SerialPort_state;
 	
 	// 接收队列
 	wire 		RxD_FIFO_w_en;
@@ -324,6 +326,20 @@ module MMU(
 
     always@(*)
     begin
+        if(sel_IF_data_source[3])
+            inst_sram_rdata <= {30'b0,SerialPort_state};
+        else if(sel_IF_data_source[2])
+            inst_sram_rdata <= {24'b0,RxD_FIFO_data_out};
+        else if(sel_IF_data_source[1])
+            inst_sram_rdata <= base_ram_data;
+        else if(sel_IF_data_source[0])
+            inst_sram_rdata <= ext_ram_data;
+        else
+            inst_sram_rdata <= 32'b0;
+    end
+    
+    always@(*)
+    begin
         if(sel_MEM_data_source[3])
             data_sram_rdata <= {30'b0,SerialPort_state};
         else if(sel_MEM_data_source[2])
@@ -336,19 +352,7 @@ module MMU(
             data_sram_rdata <=0;
     end
 
-     always@(*)
-    begin
-        if(sel_IF_data_source[3])
-            inst_sram_rdata <= {30'b0,SerialPort_state};
-        else if(sel_IF_data_source[2])
-            inst_sram_rdata <= {24'b0,RxD_FIFO_data_out};
-        else if(sel_IF_data_source[1])
-            inst_sram_rdata <= base_ram_data;
-        else if(sel_IF_data_source[0])
-            inst_sram_rdata <= ext_ram_data;
-        else
-            inst_sram_rdata <= 32'b0;
-    end
+    
 
     // 处理结构冒险
     assign sel_strcture_hazard =      (sel_IF_data_source[3]&sel_MEM_data_source[3])

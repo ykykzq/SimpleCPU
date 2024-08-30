@@ -17,7 +17,7 @@ module IPreD_stage(
 
     input  wire[`ID_TO_IPD_BUS_WD-1:0]  ID_to_IPD_bus,
 
-    output  wire[31:0]                   IPD_to_BU_bus,
+    output  wire[31:0]                  IPD_to_BU_bus,
     //inst RAM
     input  wire[31:0]					inst_ram_r_data,
 	
@@ -595,8 +595,6 @@ module IPreD_stage(
 		inst_PC 	 //32
 		    		 //
     } = IF_to_IPD_reg;
-
-    assign inst=inst_ram_r_data;
 
     assign {
 		br_taken_cancel	,//32

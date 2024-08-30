@@ -20,8 +20,8 @@
 - [x] 添加用户态指令，支持40+条
 - [x] 通过《CPU设计实战》exp10（commit：[v3.0](https://github.com/ykykzq/SimpleCPU/commit/69767304f6b3c4f273a12e56c64c6ca434f232fe)）
 - [x] 通过《CPU设计实战》exp11（commit：[v4.0](https://github.com/ykykzq/SimpleCPU/commit/79788504854dc162ad1f232458a28d9f5c64e550)）
-- [ ] 根据NSCSCC大赛要求，添加更多指令
-- [ ] 根据大赛要求，添加串口通信功能，添加MMU模块
+- [x] 根据NSCSCC大赛要求，添加更多指令
+- [x] 根据大赛要求，添加串口通信功能，添加MMU模块
 - [ ] 调试使通过三级功能测试与性能测试
 
 ## 系统结构（待更新）
