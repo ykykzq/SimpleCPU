@@ -107,7 +107,6 @@ module IPreD_stage(
     wire [21: 0]                opcode_22b      ;
     wire [16: 0]                opcode_17b      ;
     wire [ 9: 0]                opcode_10b      ;
-    wire [ 7: 0]                opcode_08b      ;
     wire [ 6: 0]                opcode_07b      ;
     wire [ 5: 0]                opcode_06b      ;
 
@@ -184,7 +183,6 @@ module IPreD_stage(
     assign opcode_22b=inst[31:10];
     assign opcode_17b=inst[31:15];
     assign opcode_10b=inst[31:22];
-    assign opcode_08b=inst[31:24];
     assign opcode_07b=inst[31:25];
     assign opcode_06b=inst[31:26];
 

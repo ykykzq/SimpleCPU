@@ -1,10 +1,9 @@
 #Clock
-set_property -dict {PACKAGE_PIN K21 IOSTANDARD LVCMOS33} [get_ports clk_50M] ;#50MHz main clock in
-set_property -dict {PACKAGE_PIN H21 IOSTANDARD LVCMOS33} [get_ports clk_11M0592] ;#11.0592MHz clock for UART
-set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets clk_11M0592_IBUF]
-
 create_clock -period 20.000 -name clk_50M -waveform {0.000 10.000} [get_ports clk_50M]
 create_clock -period 90.422 -name clk_11M0592 -waveform {0.000 45.211} [get_ports clk_11M0592]
+
+set_property -dict {PACKAGE_PIN K21 IOSTANDARD LVCMOS33} [get_ports clk_50M] ;#50MHz main clock in
+set_property -dict {PACKAGE_PIN H21 IOSTANDARD LVCMOS33} [get_ports clk_11M0592] ;#11.0592MHz clock for UART
 
 #Touch Button
 set_property -dict {PACKAGE_PIN T2 IOSTANDARD LVCMOS33} [get_ports touch_btn[0]] ;#BTN1
@@ -287,3 +286,30 @@ set_property CFGBVS VCCO [current_design]
 set_property CONFIG_VOLTAGE 3.3 [current_design]
 set_property BITSTREAM.GENERAL.COMPRESS TRUE [current_design]
 
+# Add by ANJF:
+
+set cpu_clk [get_clocks -of_objects  [get_pins clock_gen/clk_out1]]
+set uart_delay 10
+set ram_input_delay 17
+set ram_output_delay 12
+
+set_input_delay -clock $cpu_clk $ram_input_delay [get_ports base_ram_data[*]] 
+set_input_delay -clock $cpu_clk $ram_input_delay [get_ports ext_ram_data[*]] 
+
+set_input_delay -clock $cpu_clk $ram_output_delay [get_ports reset_btn] 
+
+set_output_delay -clock $cpu_clk $ram_output_delay [get_ports base_ram_addr[*]] 
+set_output_delay -clock $cpu_clk $ram_output_delay [get_ports base_ram_be_n[*]] 
+set_output_delay -clock $cpu_clk $ram_output_delay [get_ports base_ram_data[*]] 
+set_output_delay -clock $cpu_clk $ram_output_delay [get_ports base_ram_oe_n] 
+set_output_delay -clock $cpu_clk $ram_output_delay [get_ports base_ram_we_n] 
+set_output_delay -clock $cpu_clk $ram_output_delay [get_ports ext_ram_addr[*]] 
+set_output_delay -clock $cpu_clk $ram_output_delay [get_ports ext_ram_be_n[*]] 
+set_output_delay -clock $cpu_clk $ram_output_delay [get_ports ext_ram_data[*]] 
+set_output_delay -clock $cpu_clk $ram_output_delay [get_ports ext_ram_oe_n] 
+set_output_delay -clock $cpu_clk $ram_output_delay [get_ports ext_ram_we_n] 
+set_output_delay -clock $cpu_clk $ram_output_delay [get_ports ext_ram_ce_n] 
+set_output_delay -clock $cpu_clk $ram_output_delay [get_ports leds[*]] 
+
+set_input_delay  -clock $cpu_clk $uart_delay [get_ports rxd] 
+set_output_delay -clock $cpu_clk $uart_delay [get_ports txd] 

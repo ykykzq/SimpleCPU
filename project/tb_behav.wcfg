@@ -12,18 +12,19 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="2508000fs"></ZoomStartTime>
-      <ZoomEndTime time="4028001fs"></ZoomEndTime>
-      <Cursor1Time time="2964000fs"></Cursor1Time>
+      <ZoomStartTime time="1740000fs"></ZoomStartTime>
+      <ZoomEndTime time="3265001fs"></ZoomEndTime>
+      <Cursor1Time time="1971000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="263"></NameColumnWidth>
-      <ValueColumnWidth column_width="85"></ValueColumnWidth>
+      <ValueColumnWidth column_width="80"></ValueColumnWidth>
    </column_width_setting>
    <WVObjectSize size="9" />
-   <wvobject fp_name="group165" type="group">
+   <wvobject fp_name="group1745" type="group">
       <obj_property name="label">MMU</obj_property>
       <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
       <wvobject fp_name="/tb/dut/myCPU_top/MMU/clk" type="logic">
          <obj_property name="ElementShortName">clk</obj_property>
          <obj_property name="ObjectShortName">clk</obj_property>
@@ -32,7 +33,7 @@
          <obj_property name="ElementShortName">reset</obj_property>
          <obj_property name="ObjectShortName">reset</obj_property>
       </wvobject>
-      <wvobject fp_name="group99" type="group">
+      <wvobject fp_name="group1746" type="group">
          <obj_property name="label">inst_ram</obj_property>
          <obj_property name="DisplayName">label</obj_property>
          <obj_property name="isExpanded"></obj_property>
@@ -56,15 +57,10 @@
             <obj_property name="ElementShortName">inst_sram_rdata[31:0]</obj_property>
             <obj_property name="ObjectShortName">inst_sram_rdata[31:0]</obj_property>
          </wvobject>
-         <wvobject fp_name="/tb/dut/myCPU_top/MMU/sel_IF_data_source" type="array">
-            <obj_property name="ElementShortName">sel_IF_data_source[3:0]</obj_property>
-            <obj_property name="ObjectShortName">sel_IF_data_source[3:0]</obj_property>
-         </wvobject>
       </wvobject>
-      <wvobject fp_name="group100" type="group">
+      <wvobject fp_name="group1747" type="group">
          <obj_property name="label">data_ram</obj_property>
          <obj_property name="DisplayName">label</obj_property>
-         <obj_property name="isExpanded"></obj_property>
          <wvobject fp_name="/tb/dut/myCPU_top/MMU/data_sram_en" type="logic">
             <obj_property name="ElementShortName">data_sram_en</obj_property>
             <obj_property name="ObjectShortName">data_sram_en</obj_property>
@@ -85,22 +81,18 @@
             <obj_property name="ElementShortName">data_sram_rdata[31:0]</obj_property>
             <obj_property name="ObjectShortName">data_sram_rdata[31:0]</obj_property>
          </wvobject>
-         <wvobject fp_name="/tb/dut/myCPU_top/MMU/sel_MEM_data_source" type="array">
-            <obj_property name="ElementShortName">sel_MEM_data_source[3:0]</obj_property>
-            <obj_property name="ObjectShortName">sel_MEM_data_source[3:0]</obj_property>
-         </wvobject>
       </wvobject>
-      <wvobject fp_name="group101" type="group">
+      <wvobject fp_name="group1748" type="group">
          <obj_property name="label">base_ram</obj_property>
          <obj_property name="DisplayName">label</obj_property>
          <obj_property name="isExpanded"></obj_property>
-         <wvobject fp_name="/tb/dut/myCPU_top/MMU/base_ram_addr" type="array">
-            <obj_property name="ElementShortName">base_ram_addr[19:0]</obj_property>
-            <obj_property name="ObjectShortName">base_ram_addr[19:0]</obj_property>
-         </wvobject>
          <wvobject fp_name="/tb/dut/myCPU_top/MMU/base_ram_data" type="array">
             <obj_property name="ElementShortName">base_ram_data[31:0]</obj_property>
             <obj_property name="ObjectShortName">base_ram_data[31:0]</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb/dut/myCPU_top/MMU/base_ram_addr" type="array">
+            <obj_property name="ElementShortName">base_ram_addr[19:0]</obj_property>
+            <obj_property name="ObjectShortName">base_ram_addr[19:0]</obj_property>
          </wvobject>
          <wvobject fp_name="/tb/dut/myCPU_top/MMU/base_ram_be_n" type="array">
             <obj_property name="ElementShortName">base_ram_be_n[3:0]</obj_property>
@@ -119,7 +111,7 @@
             <obj_property name="ObjectShortName">base_ram_we_n</obj_property>
          </wvobject>
       </wvobject>
-      <wvobject fp_name="group102" type="group">
+      <wvobject fp_name="group1749" type="group">
          <obj_property name="label">ext_ram</obj_property>
          <obj_property name="DisplayName">label</obj_property>
          <obj_property name="isExpanded"></obj_property>
@@ -147,14 +139,6 @@
             <obj_property name="ElementShortName">ext_ram_we_n</obj_property>
             <obj_property name="ObjectShortName">ext_ram_we_n</obj_property>
          </wvobject>
-      </wvobject>
-      <wvobject fp_name="/tb/dut/myCPU_top/MMU/base_ram_data_reg" type="array">
-         <obj_property name="ElementShortName">base_ram_data_reg[31:0]</obj_property>
-         <obj_property name="ObjectShortName">base_ram_data_reg[31:0]</obj_property>
-      </wvobject>
-      <wvobject fp_name="/tb/dut/myCPU_top/MMU/ext_ram_data_reg" type="array">
-         <obj_property name="ElementShortName">ext_ram_data_reg[31:0]</obj_property>
-         <obj_property name="ObjectShortName">ext_ram_data_reg[31:0]</obj_property>
       </wvobject>
       <wvobject fp_name="/tb/dut/myCPU_top/MMU/txd" type="logic">
          <obj_property name="ElementShortName">txd</obj_property>
@@ -191,6 +175,10 @@
       <wvobject fp_name="/tb/dut/myCPU_top/MMU/TxD_start" type="logic">
          <obj_property name="ElementShortName">TxD_start</obj_property>
          <obj_property name="ObjectShortName">TxD_start</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb/dut/myCPU_top/MMU/SerialPort_state" type="array">
+         <obj_property name="ElementShortName">SerialPort_state[1:0]</obj_property>
+         <obj_property name="ObjectShortName">SerialPort_state[1:0]</obj_property>
       </wvobject>
       <wvobject fp_name="/tb/dut/myCPU_top/MMU/RxD_FIFO_w_en" type="logic">
          <obj_property name="ElementShortName">RxD_FIFO_w_en</obj_property>
@@ -232,9 +220,29 @@
          <obj_property name="ElementShortName">TxD_FIFO_empty</obj_property>
          <obj_property name="ObjectShortName">TxD_FIFO_empty</obj_property>
       </wvobject>
-      <wvobject fp_name="/tb/dut/myCPU_top/MMU/SerialPort_state" type="logic">
-         <obj_property name="ElementShortName">SerialPort_state</obj_property>
-         <obj_property name="ObjectShortName">SerialPort_state</obj_property>
+      <wvobject fp_name="/tb/dut/myCPU_top/MMU/sel_MEM_data_source" type="array">
+         <obj_property name="ElementShortName">sel_MEM_data_source[3:0]</obj_property>
+         <obj_property name="ObjectShortName">sel_MEM_data_source[3:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb/dut/myCPU_top/MMU/sel_IF_data_source" type="array">
+         <obj_property name="ElementShortName">sel_IF_data_source[3:0]</obj_property>
+         <obj_property name="ObjectShortName">sel_IF_data_source[3:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb/dut/myCPU_top/MMU/base_ram_w_data_reg" type="array">
+         <obj_property name="ElementShortName">base_ram_w_data_reg[31:0]</obj_property>
+         <obj_property name="ObjectShortName">base_ram_w_data_reg[31:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb/dut/myCPU_top/MMU/ext_ram_w_data_reg" type="array">
+         <obj_property name="ElementShortName">ext_ram_w_data_reg[31:0]</obj_property>
+         <obj_property name="ObjectShortName">ext_ram_w_data_reg[31:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb/dut/myCPU_top/MMU/base_ram_r_data" type="logic">
+         <obj_property name="ElementShortName">base_ram_r_data</obj_property>
+         <obj_property name="ObjectShortName">base_ram_r_data</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb/dut/myCPU_top/MMU/ext_ram_r_data" type="logic">
+         <obj_property name="ElementShortName">ext_ram_r_data</obj_property>
+         <obj_property name="ObjectShortName">ext_ram_r_data</obj_property>
       </wvobject>
    </wvobject>
    <wvobject fp_name="group124" type="group">

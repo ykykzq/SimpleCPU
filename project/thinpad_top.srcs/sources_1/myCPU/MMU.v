@@ -25,19 +25,19 @@ module MMU(
 
     // BaseRAM信号
     inout  wire[31:0] base_ram_data,  //BaseRAM数据，低8位与CPLD串口控制器共享
-    output reg[19:0] base_ram_addr, //BaseRAM地址
-    output reg[3:0] base_ram_be_n,  //BaseRAM字节使能，低有效。如果不使用字节使能，请保持为0
-    output reg base_ram_ce_n,       //BaseRAM片选，低有效
-    output reg base_ram_oe_n,       //BaseRAM读使能，低有效
-    output reg base_ram_we_n,       //BaseRAM写使能，低有效
+    output wire[19:0] base_ram_addr, //BaseRAM地址
+    output wire[3:0] base_ram_be_n,  //BaseRAM字节使能，低有效。如果不使用字节使能，请保持为0
+    output wire base_ram_ce_n,       //BaseRAM片选，低有效
+    output wire base_ram_oe_n,       //BaseRAM读使能，低有效
+    output wire base_ram_we_n,       //BaseRAM写使能，低有效
 
     // ExtRAM信号
     inout  wire[31:0] ext_ram_data,  //ExtRAM数据
-    output reg[19:0] ext_ram_addr, //ExtRAM地址
-    output reg[3:0] ext_ram_be_n,  //ExtRAM字节使能，低有效。如果不使用字节使能，请保持为0
-    output reg ext_ram_ce_n,       //ExtRAM片选，低有效
-    output reg ext_ram_oe_n,       //ExtRAM读使能，低有效
-    output reg ext_ram_we_n,       //ExtRAM写使能，低有效
+    output wire[19:0] ext_ram_addr, //ExtRAM地址
+    output wire[3:0] ext_ram_be_n,  //ExtRAM字节使能，低有效。如果不使用字节使能，请保持为0
+    output wire ext_ram_ce_n,       //ExtRAM片选，低有效
+    output wire ext_ram_oe_n,       //ExtRAM读使能，低有效
+    output wire ext_ram_we_n,       //ExtRAM写使能，低有效
 
     // 直连串口信号
     output wire txd,  //直连串口发送端
@@ -61,12 +61,12 @@ module MMU(
 	// 接收队列
 	wire 		RxD_FIFO_w_en;
 	wire 		RxD_FIFO_full;
-	reg  		RxD_FIFO_r_en;
+	wire  		RxD_FIFO_r_en;
 	wire[7:0] 	RxD_FIFO_data_out;
 	wire		RxD_FIFO_empty;
 	// 发送队列
-	reg  		TxD_FIFO_w_en;
-	reg [7:0] 	TxD_FIFO_data_in;
+	wire  		TxD_FIFO_w_en;
+	wire [7:0] 	TxD_FIFO_data_in;
 	wire 		TxD_FIFO_full;
 	wire 		TxD_FIFO_r_en;
 	wire		TxD_FIFO_empty;
@@ -77,9 +77,12 @@ module MMU(
     // IF读写数据来源
     wire[3:0]   sel_IF_data_source;
 
-    // 两个物理RAM的数据REG
-    reg[31:0]   base_ram_data_reg;
-    reg[31:0]   ext_ram_data_reg;
+    // 两个物理RAM的写数据缓存
+    wire[31:0]   base_ram_w_data;
+    wire[31:0]   ext_ram_w_data;
+    // 两个物理RAM的读数据筛选
+    wire[31:0]  base_ram_r_data;
+    wire[31:0]  ext_ram_r_data;
 
     /////////////////////////////////////////////////////////////////////
     /// 地址映射目标信号生成
@@ -123,231 +126,97 @@ module MMU(
     /// Base RAM信号生成
 
 
-    // Base RAM读写数据
-    always@(posedge clk)
-    begin
-        if(reset)
-            base_ram_data_reg<=32'b0;
-        else if(sel_MEM_data_source[1] & data_sram_we!=4'b0 & data_sram_en)
-            base_ram_data_reg<=data_sram_wdata;
-        else if(sel_IF_data_source[1] & inst_sram_we!=4'b0 & inst_sram_en)
-            base_ram_data_reg<=inst_sram_wdata;
-        else 
-            base_ram_data_reg<=32'b0;
-    end
-    assign base_ram_data=base_ram_we_n?32'bz:base_ram_data_reg;
+    // Base RAM写数据
+    assign base_ram_w_data =    (sel_MEM_data_source[1] & data_sram_we!=4'b0 & data_sram_en)?data_sram_wdata:
+                                (sel_IF_data_source[1] & inst_sram_we!=4'b0 & inst_sram_en)?inst_sram_wdata:32'b0;
+
+    assign base_ram_data = base_ram_we_n?32'bz:base_ram_w_data;
 
     // Base RAM地址
-    always@(posedge clk)
-    begin
-        if(reset)
-            base_ram_addr<=32'b0;
-        else if(sel_MEM_data_source[1] & data_sram_en)
-            base_ram_addr<=data_sram_addr[21:2];
-        else if(sel_IF_data_source[1] & inst_sram_en)
-            base_ram_addr<=inst_sram_addr[21:2];
-        else 
-            base_ram_addr<=32'b0;
-    end
+    assign base_ram_addr =  (sel_MEM_data_source[1] & data_sram_en)?data_sram_addr[21:2]:
+                            (sel_IF_data_source[1] & inst_sram_en)?inst_sram_addr[21:2]:20'b0;
 
     // Base RAM字节使能信号，低电平有效
-    always@(posedge clk)
-    begin
-        if(reset)
-            base_ram_be_n <= 4'b0000;
-        else if(sel_MEM_data_source[1] & data_sram_en)
-            if(data_sram_we!=4'b0000)
-                base_ram_be_n <= ~data_sram_we;
-            else
-                base_ram_be_n <= 4'b0000;
-        else if(sel_IF_data_source[1] & inst_sram_en)
-            if(inst_sram_we!=4'b0000)
-                base_ram_be_n <= ~inst_sram_we;
-            else
-                base_ram_be_n <= 4'b0000;
-        else 
-            base_ram_be_n <= 4'b0000;
-    end
+    assign base_ram_be_n =  (sel_MEM_data_source[1] & data_sram_en & data_sram_we!=4'b0000)?~data_sram_we:
+                            (sel_IF_data_source[1] & inst_sram_en & inst_sram_we!=4'b0000)?~inst_sram_we:4'b0000;
 
     // Base RAM片选信号，低电平有效
-    always@(posedge clk)
-    begin
-        if(reset)
-            base_ram_ce_n <= 1'b1;
-        else if(sel_MEM_data_source[1] & data_sram_en)
-            base_ram_ce_n <= 1'b0;
-        else if(sel_IF_data_source[1] & inst_sram_en)
-            base_ram_ce_n <= 1'b0;
-        else 
-            base_ram_ce_n <= 1'b1;
-    end
+    assign base_ram_ce_n =  (sel_MEM_data_source[1] & data_sram_en)?1'b0:
+                            (sel_IF_data_source[1] & inst_sram_en)?1'b0:1'b1;
 
     // Base RAM读使能信号，低电平有效
-    always@(posedge clk)
-    begin
-        if(reset)
-            base_ram_oe_n <= 1'b1;
-        else if(sel_MEM_data_source[1] & data_sram_en)
-            if(data_sram_we==4'b0000)
-                base_ram_oe_n <= 1'b0;
-            else
-                base_ram_oe_n <= 1'b1;
-        else if(sel_IF_data_source[1] & inst_sram_en)
-            if(inst_sram_we==4'b0000)
-                base_ram_oe_n <= 1'b0;
-            else 
-                base_ram_oe_n <= 1'b1;
-        else 
-            base_ram_oe_n <= 1'b1;
-    end
+    assign base_ram_oe_n =  (sel_MEM_data_source[1] & data_sram_en & data_sram_we==4'b0000)?1'b0:
+                            (sel_IF_data_source[1] & inst_sram_en & inst_sram_we==4'b0000)?1'b0:1'b1;
 
     // Base RAM写使能信号，低电平有效
-    always@(posedge clk)
-    begin
-        if(reset)
-            base_ram_we_n <= 1'b1;
-        else if(sel_MEM_data_source[1] & data_sram_en)
-            if(data_sram_we==4'b0000)
-                base_ram_we_n <= 1'b1;
-            else
-                base_ram_we_n <= 1'b0;
-        else if(sel_IF_data_source[1] & inst_sram_en)
-            if(inst_sram_we==4'b0000)
-                base_ram_we_n <= 1'b1;
-            else 
-                base_ram_we_n <= 1'b0;
-        else 
-            base_ram_we_n <= 1'b1;
-    end
+    assign base_ram_we_n =  (sel_MEM_data_source[1] & data_sram_en & data_sram_we!=4'b0000)?1'b0:
+                            (sel_IF_data_source[1] & inst_sram_en & inst_sram_we!=4'b0000)?1'b0:1'b1;
 
     ////////////////////////////////////////////////////////////////////////
     /// Ext RAM 控制信号生成
 
-    // Ext RAM 读写数据
-    always@(posedge clk)
-    begin
-        if(reset)
-            ext_ram_data_reg<=32'b0;
-        else if(sel_MEM_data_source[0] & data_sram_we!=4'b0 & data_sram_en)
-            ext_ram_data_reg<=data_sram_wdata;
-        else if(sel_IF_data_source[0] & inst_sram_we!=4'b0 & inst_sram_en)
-            ext_ram_data_reg<=inst_sram_wdata;
-        else 
-            ext_ram_data_reg<=32'b0;
-    end
-    assign ext_ram_data=ext_ram_we_n?32'bz:ext_ram_data_reg;
+    // Ext RAM 写数据
+    assign ext_ram_w_data =     (sel_MEM_data_source[0] & data_sram_we!=4'b0 & data_sram_en)?data_sram_wdata:
+                                (sel_IF_data_source[0] & inst_sram_we!=4'b0 & inst_sram_en)?inst_sram_wdata:32'b0;
+
+    assign ext_ram_data=ext_ram_we_n?32'bz:ext_ram_w_data;
 
     // Ext RAM 地址
-    always@(posedge clk)
-    begin
-        if(reset)
-            ext_ram_addr<=32'b0;
-        else if(sel_MEM_data_source[0] & data_sram_en)
-            ext_ram_addr<=data_sram_addr[21:2];
-        else if(sel_IF_data_source[0] & inst_sram_en)
-            ext_ram_addr<=inst_sram_addr[21:2];
-        else 
-            ext_ram_addr<=32'b0;
-    end
+    assign ext_ram_addr =   (sel_MEM_data_source[0] & data_sram_en)?data_sram_addr[21:2]:
+                            (sel_IF_data_source[0] & inst_sram_en)?inst_sram_addr[21:2]:20'b0;
 
     // Ext RAM 字节使能信号，低电平有效
-    always@(posedge clk)
-    begin
-        if(reset)
-            ext_ram_be_n <= 4'b0000;
-        else if(sel_MEM_data_source[0] & data_sram_en)
-            if(data_sram_we!=4'b0000)
-                ext_ram_be_n <= ~data_sram_we;
-            else 
-                ext_ram_be_n <= 4'b0000;
-        else if(sel_IF_data_source[0] & inst_sram_en)
-            if(inst_sram_we!=4'b0000)
-                ext_ram_be_n <= ~inst_sram_we;
-            else 
-                ext_ram_be_n <= 4'b0000;
-        else 
-            ext_ram_be_n <= 4'b0000;
-    end
+    assign ext_ram_be_n =   (sel_MEM_data_source[0] & data_sram_en & data_sram_we!=4'b0000)?~data_sram_we:
+                            (sel_IF_data_source[0] & inst_sram_en & inst_sram_we!=4'b0000)?~inst_sram_we:4'b0;
 
     // Ext RAM 片选信号，低电平有效
-    always@(posedge clk)
-    begin
-        if(reset)
-            ext_ram_ce_n <= 1'b1;
-        else if(sel_MEM_data_source[0] & data_sram_en)
-            ext_ram_ce_n <= 1'b0;
-        else if(sel_IF_data_source[0] & inst_sram_en)
-            ext_ram_ce_n <= 1'b0;
-        else 
-            ext_ram_ce_n <= 1'b1;
-    end
+    assign ext_ram_ce_n =   (sel_MEM_data_source[0] & data_sram_en)?1'b0:
+                            (sel_IF_data_source[0] & inst_sram_en)?1'b0:1'b1;
 
     // Ext RAM 读使能信号，低电平有效
-    always@(posedge clk)
-    begin
-        if(reset)
-            ext_ram_oe_n <= 1'b1;
-        else if(sel_MEM_data_source[0] & data_sram_en)
-            if(data_sram_we==4'b0000)
-                ext_ram_oe_n <= 1'b0;
-            else
-                ext_ram_oe_n <= 1'b1;
-        else if(sel_IF_data_source[0] & inst_sram_en)
-            if(inst_sram_we==4'b0000)
-                ext_ram_oe_n <= 1'b0;
-            else 
-                ext_ram_oe_n <= 1'b1;
-        else 
-            ext_ram_oe_n <= 1'b1;
-    end
+    assign ext_ram_oe_n =   (sel_MEM_data_source[0] & data_sram_en & data_sram_we==4'b0000)?1'b0:
+                            (sel_IF_data_source[0] & inst_sram_en & inst_sram_we==4'b0000)?1'b0:1'b1;
 
 
     // Ext RAM 写使能信号，低电平有效
-    always@(posedge clk)
-    begin
-        if(reset)
-            ext_ram_we_n <= 1'b1;
-        else if(sel_MEM_data_source[0] & data_sram_en)
-            if(data_sram_we==4'b0000)
-                ext_ram_we_n <= 1'b1;
-            else
-                ext_ram_we_n <= 1'b0;
-        else if(sel_IF_data_source[0] & inst_sram_en)
-            if(inst_sram_we==4'b0000)
-                ext_ram_we_n <= 1'b1;
-            else 
-                ext_ram_we_n <= 1'b0;
-        else 
-            ext_ram_we_n <= 1'b1;
-    end
+    assign ext_ram_we_n =   (sel_MEM_data_source[0] & data_sram_en & data_sram_we!=4'b0000)?1'b0:
+                            (sel_IF_data_source[0] & inst_sram_en & inst_sram_we!=4'b0000)?1'b0:1'b1;
 
     ///////////////////////////////////////////////////////////////////////
     /// 处理Data RAM与Inst RAM读取内容；处理结构冒险
 
-    always@(*)
+    assign base_ram_r_data = base_ram_oe_n?32'b0:base_ram_data;
+    assign ext_ram_r_data  = ext_ram_oe_n?32'b0:ext_ram_data;
+
+
+    always@(posedge clk)
     begin
-        if(sel_IF_data_source[3])
+        if(reset)
+            inst_sram_rdata <= 32'b0;
+        else if(sel_IF_data_source[3])
             inst_sram_rdata <= {30'b0,SerialPort_state};
         else if(sel_IF_data_source[2])
             inst_sram_rdata <= {24'b0,RxD_FIFO_data_out};
         else if(sel_IF_data_source[1])
-            inst_sram_rdata <= base_ram_data;
+            inst_sram_rdata <= base_ram_r_data;
         else if(sel_IF_data_source[0])
-            inst_sram_rdata <= ext_ram_data;
+            inst_sram_rdata <= ext_ram_r_data;
         else
             inst_sram_rdata <= 32'b0;
     end
     
-    always@(*)
+    always@(posedge clk)
     begin
-        if(sel_MEM_data_source[3])
+        if(reset)
+            data_sram_rdata <=0;
+        else if(sel_MEM_data_source[3])
             data_sram_rdata <= {30'b0,SerialPort_state};
         else if(sel_MEM_data_source[2])
             data_sram_rdata <= {24'b0,RxD_FIFO_data_out};
         else if(sel_MEM_data_source[1])
-            data_sram_rdata <= base_ram_data;
+            data_sram_rdata <= base_ram_r_data;
         else if(sel_MEM_data_source[0])
-            data_sram_rdata <= ext_ram_data;
+            data_sram_rdata <= ext_ram_r_data;
         else
             data_sram_rdata <=0;
     end
@@ -412,61 +281,18 @@ module MMU(
 	assign RxD_clear = RxD_data_ready &(~RxD_FIFO_full); 	
 	assign RxD_FIFO_w_en=RxD_data_ready;
 
-    always@(posedge clk)
-    begin
-        if(reset)
-            RxD_FIFO_r_en <= 1'b0;
-       else if(sel_IF_data_source[2] & inst_sram_en)
-            if(inst_sram_we==4'b0000)
-                RxD_FIFO_r_en <= 1'b1;
-            else 
-                RxD_FIFO_r_en <= 1'b0;
-        else if(sel_MEM_data_source[2] & data_sram_en)
-            if(data_sram_we==4'b0000)
-                RxD_FIFO_r_en <= 1'b1;
-            else
-                RxD_FIFO_r_en <= 1'b0;
-        else 
-            RxD_FIFO_r_en <= 1'b0;
-    end 
+    assign RxD_FIFO_r_en =  (sel_IF_data_source[2] & inst_sram_en & inst_sram_we==4'b0000)?1'b1:
+                            (sel_MEM_data_source[2] & data_sram_en & data_sram_we==4'b0000)?1'b1:1'b0;
 	
     // 串口发送端口逻辑
 	assign TxD_start=(~TxD_busy)&(~TxD_FIFO_empty);
-    always@(posedge clk)
-    begin
-        if(reset)
-            TxD_FIFO_w_en <= 1'b0;
-       else if(sel_IF_data_source[2] & inst_sram_en)
-            if(inst_sram_we==4'b0000)
-                TxD_FIFO_w_en <= 1'b0;
-            else 
-                TxD_FIFO_w_en <= 1'b1;
-        else if(sel_MEM_data_source[2] & data_sram_en)
-            if(data_sram_we==4'b0000)
-                TxD_FIFO_w_en <= 1'b0;
-            else
-                TxD_FIFO_w_en <= 1'b1;
-        else 
-            TxD_FIFO_w_en <= 1'b0;
-    end 
 
-    always@(posedge clk)
-    begin
-        if(reset)
-            TxD_FIFO_data_in <= 8'b0;
-       else if(sel_IF_data_source[2] & inst_sram_en)
-            if(inst_sram_we==4'b0000)
-                TxD_FIFO_data_in <= 8'b0;
-            else 
-                TxD_FIFO_data_in <= inst_sram_wdata[7:0];
-        else if(sel_MEM_data_source[2] & data_sram_en)
-            if(data_sram_we==4'b0000)
-                TxD_FIFO_data_in <= 8'b0;
-            else
-                TxD_FIFO_data_in <= data_sram_wdata[7:0];
-        else 
-            TxD_FIFO_data_in <= 8'b0;
-    end 
+    assign TxD_FIFO_w_en =  (sel_IF_data_source[2] & inst_sram_en & inst_sram_we!=4'b0000)?1'b1:
+                            (sel_MEM_data_source[2] & data_sram_en & data_sram_we!=4'b0000)?1'b1:1'b0;
+
+    assign TxD_FIFO_data_in =   (sel_IF_data_source[2] & inst_sram_en & inst_sram_we!=4'b0000)?inst_sram_wdata[7:0]:
+                                (sel_MEM_data_source[2] & data_sram_en & data_sram_we!=4'b0000)?data_sram_wdata[7:0]:8'b0;
+
 	assign TxD_FIFO_r_en=TxD_start;
 	
 
