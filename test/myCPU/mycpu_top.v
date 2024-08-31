@@ -52,7 +52,8 @@ module mycpu_top(
     wire [`IF_TO_IPD_BUS_WD-1:0]    IF_to_IPD_bus   ;
     wire [`IPD_TO_ID_BUS_WD-1:0]    IPD_to_ID_bus   ;
     wire [`ID_TO_EXE_BUS_WD-1:0]    ID_to_EXE_bus   ;
-    wire [`EXE_TO_MEM_BUS_WD-1:0]   EXE_to_MEM_bus  ;
+    wire [`EXE_TO_PMEM_BUS_WD-1:0]	EXE_to_PMEM_bus	;
+	wire [`PMEM_TO_MEM_BUS_WD-1:0]	PMEM_to_MEM_bus	;
     wire [`MEM_TO_WB_BUS_WD-1:0]    MEM_to_WB_bus   ;
     wire [`WB_to_ID_bus_WD-1:0]     WB_to_ID_bus    ;
 
@@ -61,6 +62,7 @@ module mycpu_top(
 	wire [31:0]						IPD_to_BU_bus	;
 
 	wire[`EXE_TO_BY_BUS_WD-1:0]		EXE_to_BY_bus	;
+	wire[`PMEM_TO_BY_BUS_WD-1:0]	PMEM_to_BY_bus	;
 	wire[`MEM_TO_BY_BUS_WD-1:0]		MEM_to_BY_bus	;
 	wire[`WB_TO_BY_BUS_WD-1:0]		WB_to_BY_bus	;
 	wire[`BY_TO_ID_BUS_WD-1:0]		BY_to_ID_bus	;
@@ -134,37 +136,54 @@ module mycpu_top(
 	
 	    // 流水线数据传送
 	    .ID_to_EXE_bus      (ID_to_EXE_bus),
-	    .EXE_to_MEM_bus     (EXE_to_MEM_bus),
+	    .EXE_to_PMEM_bus    (EXE_to_PMEM_bus),
 		.EXE_to_BY_bus		(EXE_to_BY_bus),
     
 	    // 流水线控制
-	    .MEM_allow_in       (MEM_allow_in),
-	    .EXE_to_MEM_valid   (EXE_to_MEM_valid),
+	    .PMEM_allow_in      (PMEM_allow_in),
+	    .EXE_to_PMEM_valid  (EXE_to_PMEM_valid),
 	    .ID_to_EXE_valid    (ID_to_EXE_valid),
-	    .EXE_allow_in       (EXE_allow_in),
-	
-	    // 连接Data RAM
+	    .EXE_allow_in       (EXE_allow_in)
+    );
+
+	PreMEM_stage PreMEM_stage(
+    	.clk				(clk),
+		.reset				(reset),
+
+		// 流水级数据交互()
+		.EXE_to_PMEM_bus	(EXE_to_PMEM_bus),
+		.PMEM_to_MEM_bus	(PMEM_to_MEM_bus),
+
+		.PMEM_to_BY_bus		(PMEM_to_BY_bus),
+
+		//流水线控制
+		.EXE_to_PMEM_valid	(EXE_to_PMEM_valid),
+		.PMEM_allow_in		(PMEM_allow_in),
+		.MEM_allow_in		(MEM_allow_in),
+		.PMEM_to_MEM_valid	(PMEM_to_MEM_valid),
+
+		// 连接Data RAM
 	    .data_ram_en        (data_sram_en),
 	    .data_ram_addr      (data_sram_addr),
 	    .data_ram_w_en      (data_sram_we),
 	    .data_ram_w_data    (data_sram_wdata)
-    );
+);
 
     MEM_stage MEM_stage(
         .clk                (clk),
 	    .reset              (reset),
 	
-	// 流水级数据交互
-	    .EXE_to_MEM_bus     (EXE_to_MEM_bus),
+		// 流水级数据交互
+	    .PMEM_to_MEM_bus    (PMEM_to_MEM_bus),
 	    .MEM_to_WB_bus      (MEM_to_WB_bus),
 
 		.MEM_to_BY_bus		(MEM_to_BY_bus),
 	
-    // 来自Data RAM的数据
+    	// 来自Data RAM的数据
 	    .data_ram_r_data    (data_sram_rdata),
 	
-	//流水线控制
-	    .EXE_to_MEM_valid   (EXE_to_MEM_valid),
+		//流水线控制
+	    .PMEM_to_MEM_valid  (PMEM_to_MEM_valid),
 	    .MEM_allow_in       (MEM_allow_in),
 	    .WB_allow_in        (WB_allow_in),
 	    .MEM_to_WB_valid    (MEM_to_WB_valid)
@@ -197,6 +216,7 @@ module mycpu_top(
 	Bypassing Bypassing(
 	// 流水线数据交互，需要包括ID阶段之后所有阶段的信息
 	.EXE_to_BY_bus			(EXE_to_BY_bus),
+	.PMEM_to_BY_bus			(PMEM_to_BY_bus),
 	.MEM_to_BY_bus			(MEM_to_BY_bus),
 	.WB_to_BY_bus			(WB_to_BY_bus),
 	

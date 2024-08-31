@@ -13,21 +13,15 @@ module EXE_stage(
 	
 	// 流水线数据传送
 	input  wire[`ID_TO_EXE_BUS_WD-1:0]	ID_to_EXE_bus,
-	output wire[`EXE_TO_MEM_BUS_WD-1:0]	EXE_to_MEM_bus,
+	output wire[`EXE_TO_PMEM_BUS_WD-1:0]EXE_to_PMEM_bus,
 
 	output wire[`EXE_TO_BY_BUS_WD-1:0]	EXE_to_BY_bus,
 	
 	// 流水线控制
-	input  wire							MEM_allow_in,
-	output wire							EXE_to_MEM_valid,
+	input  wire							PMEM_allow_in,
+	output wire							EXE_to_PMEM_valid,
 	input  wire							ID_to_EXE_valid,
-	output wire							EXE_allow_in,
-	
-	// 连接Data RAM
-	output wire							data_ram_en,
-	output wire[31:0]					data_ram_addr,
-	output wire[3:0]					data_ram_w_en,
-	output reg [31:0]					data_ram_w_data
+	output wire							EXE_allow_in
     );
 	
 	// 当前指令的PC
@@ -51,9 +45,7 @@ module EXE_stage(
 	wire sel_data_ram_we;
 	wire sel_data_ram_extend;
 	wire [ 1: 0]	sel_data_ram_wd;
-	reg  [ 3: 0]	data_ram_b_en;
 	wire [31: 0]	data_ram_wdata;
-	wire [31: 0]	data_ram_addr_from_alu;
 
 	// 旁路阶段所需控制信号
 	wire [ 2: 0]    sel_rf_w_data_valid_stage;
@@ -70,8 +62,8 @@ module EXE_stage(
 
 	// 目前的运算均能在一周期内完成
     assign EXE_ready_go=1'b1;
-	assign EXE_allow_in=(~EXE_valid)|(EXE_ready_go & MEM_allow_in);
-	assign EXE_to_MEM_valid=EXE_ready_go&EXE_valid;
+	assign EXE_allow_in=(~EXE_valid)|(EXE_ready_go & PMEM_allow_in);
+	assign EXE_to_PMEM_valid=EXE_ready_go&EXE_valid;
     always@(posedge clk)
     begin
         if(reset)
@@ -97,86 +89,7 @@ module EXE_stage(
 	/// 旁路信号生成
 
 	assign EXE_sel_rf_w_data_valid = EXE_ready_go & EXE_valid & sel_rf_w_data_valid_stage[0];
-	/////////////////////////////////////////////////////
-	/// 生成Data RAM信号
-
-	assign data_ram_en=sel_data_ram_en;
-	assign data_ram_addr=data_ram_addr_from_alu;
-
-	assign data_ram_addr_from_alu=alu_result;
-
-	// 字节使能
-	always@(*)
-	begin
-		if(sel_data_ram_wd[1])
-			begin
-				// 如果长度为byte(8bit)
-				if(data_ram_addr_from_alu[1:0]==2'b00)
-					data_ram_b_en<=4'b0001;
-				else if(data_ram_addr_from_alu[1:0]==2'b01)
-					data_ram_b_en<=4'b0010;
-				else if(data_ram_addr_from_alu[1:0]==2'b10)
-					data_ram_b_en<=4'b0100;
-				else if(data_ram_addr_from_alu[1:0]==2'b11)
-					data_ram_b_en<=4'b1000;
-				else 
-					data_ram_b_en<=4'b0000;//不会走到的分支
-			end
-		else if(sel_data_ram_wd[0])
-			begin
-				// 如果长度为half-word(16bit)
-				if(data_ram_addr_from_alu[1:0]==2'b00)
-					data_ram_b_en<=4'b0011;
-				else if(data_ram_addr_from_alu[1:0]==2'b01)
-					data_ram_b_en<=4'b1100;
-				else if(data_ram_addr_from_alu[1:0]==2'b10)
-					data_ram_b_en<=4'b1100;
-				else if(data_ram_addr_from_alu[1:0]==2'b11)
-					data_ram_b_en<=4'b1100;
-				else 
-					data_ram_b_en<=4'b0000;//不会走到的分支
-			end
-		else 
-			data_ram_b_en<=4'b1111;// 若是一个word(32bit)
-	end
-	// 若是不读Data RAM，全0即可
-	assign data_ram_w_en = sel_data_ram_we?data_ram_b_en:4'b0000;
-
-	// 写回的数据
-	always@(*)
-	begin
-		if(sel_data_ram_wd[1])
-			begin
-				// 如果长度为byte(8bit)
-				if(data_ram_addr_from_alu[1:0]==2'b00)
-					data_ram_w_data<={24'b0,data_ram_wdata[7:0]};
-				else if(data_ram_addr_from_alu[1:0]==2'b01)
-					data_ram_w_data<={16'b0,data_ram_wdata[7:0],8'b0};
-				else if(data_ram_addr_from_alu[1:0]==2'b10)
-					data_ram_w_data<={8'b0,data_ram_wdata[7:0],16'b0};
-				else if(data_ram_addr_from_alu[1:0]==2'b11)
-					data_ram_w_data<={data_ram_wdata[7:0],24'b0};
-				else 
-					data_ram_w_data<=32'b0;//不会走到的分支
-			end
-		else if(sel_data_ram_wd[0])
-			begin
-				// 如果长度为half-word(16bit)
-				if(data_ram_addr_from_alu[1:0]==2'b00)
-					data_ram_w_data<={16'b0,data_ram_wdata[15:0]};
-				else if(data_ram_addr_from_alu[1:0]==2'b01)
-					data_ram_w_data<={data_ram_wdata[15:0],16'b0};
-				else if(data_ram_addr_from_alu[1:0]==2'b10)
-					data_ram_w_data<={data_ram_wdata[15:0],16'b0};
-				else if(data_ram_addr_from_alu[1:0]==2'b11)
-					data_ram_w_data<={data_ram_wdata[15:0],16'b0};
-				else 
-					data_ram_w_data<=32'b0;//不会走到的分支
-			end
-		else 
-			data_ram_w_data<=data_ram_wdata;// 若是一个word(32bit)
-	end
-
+	
 	///////////////////////////////////////////////////////
 	/// 流水级数据交互
 
@@ -190,6 +103,7 @@ module EXE_stage(
 		else
 			ID_to_EXE_reg<=ID_to_EXE_reg;
 	end
+	
 	assign  {
 		sel_rf_w_data_valid_stage	,//3
 		sel_rf_w_en					,//1
@@ -207,13 +121,15 @@ module EXE_stage(
 	}=ID_to_EXE_reg;
 	
 	// 发送
-	assign EXE_to_MEM_bus = {
+	assign EXE_to_PMEM_bus = {
 		sel_rf_w_data_valid_stage	,//3
 		sel_rf_w_en					,//1
 		sel_rf_w_data				,//1
 		sel_data_ram_wd				,//2
 		sel_data_ram_extend			,//1
-		data_ram_b_en				,//4
+        sel_data_ram_we				,//1
+        sel_data_ram_en				,//1
+        data_ram_wdata				,//32
 		RegFile_w_addr				,//5
 		alu_result					,//32
 		inst_PC						 //32

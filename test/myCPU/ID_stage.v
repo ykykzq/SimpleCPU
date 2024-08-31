@@ -94,6 +94,11 @@ module ID_stage(
 	wire 			MEM_sel_RF_w_data_valid	;
 	wire 			MEM_sel_rf_w_en			;
 	wire [31: 0]	MEM_RegFile_w_data		;
+	// 旁路-PMEM
+	wire [ 4: 0]	PMEM_RegFile_w_addr		;
+	wire 			PMEM_sel_RF_w_data_valid;
+	wire 			PMEM_sel_rf_w_en		;
+	wire [31: 0]	PMEM_RegFile_w_data		;
 	// 旁路-WB
 	wire [ 4: 0]	WB_RegFile_w_addr		;
 	wire [31: 0]	WB_RegFile_w_data		;
@@ -144,6 +149,11 @@ module ID_stage(
 		EXE_sel_RF_w_data_valid		,//1
 		EXE_valid					,//1
 		EXE_sel_rf_w_en				,//1
+		// PMEM阶段信号
+		PMEM_RegFile_w_addr			,//5
+		PMEM_sel_RF_w_data_valid	,//1
+		PMEM_valid					,//1
+		PMEM_sel_rf_w_en			,//1
 		// MEM阶段信号
 		MEM_RegFile_w_addr			,//5
 		MEM_sel_RF_w_data_valid		,//1
@@ -205,6 +215,11 @@ module ID_stage(
 				else 
 					// 代表阻塞
 					alu_bu_src1<=32'b0;
+			else if(RegFile_r_addr1==PMEM_RegFile_w_addr && PMEM_sel_rf_w_en && PMEM_valid)
+				if(PMEM_sel_RF_w_data_valid)
+					alu_bu_src1<=PMEM_RegFile_w_data;
+				else
+					alu_bu_src1<=32'b0;
 			else if(RegFile_r_addr1==MEM_RegFile_w_addr && MEM_sel_rf_w_en && MEM_valid)
 				if(MEM_sel_RF_w_data_valid)
 					alu_bu_src1<=MEM_RegFile_w_data;
@@ -235,6 +250,11 @@ module ID_stage(
 					alu_bu_src2<=EXE_RegFile_w_data;
 				else 
 					// 代表阻塞
+					alu_bu_src2<=32'b0;
+			else if(RegFile_r_addr2==PMEM_RegFile_w_addr && PMEM_sel_rf_w_en && PMEM_valid)
+				if(PMEM_sel_RF_w_data_valid)
+					alu_bu_src2<=PMEM_RegFile_w_data;
+				else
 					alu_bu_src2<=32'b0;
 			else if(RegFile_r_addr2==MEM_RegFile_w_addr && MEM_sel_rf_w_en && MEM_valid)
 				if(MEM_sel_RF_w_data_valid)
@@ -272,6 +292,11 @@ module ID_stage(
 					data_ram_wdata<=EXE_RegFile_w_data;
 				else 
 					// 代表阻塞
+					data_ram_wdata<=32'b0;
+			else if(RegFile_r_addr2==PMEM_RegFile_w_addr && PMEM_sel_rf_w_en && PMEM_valid)
+				if(PMEM_sel_RF_w_data_valid)
+					data_ram_wdata<=PMEM_RegFile_w_data;
+				else
 					data_ram_wdata<=32'b0;
 			else if(RegFile_r_addr2==MEM_RegFile_w_addr && MEM_sel_rf_w_en && MEM_valid)
 				if(MEM_sel_RF_w_data_valid)
@@ -334,6 +359,12 @@ module ID_stage(
 		EXE_sel_RF_w_data_valid		,//1
 		EXE_valid					,//1
 		EXE_sel_rf_w_en				,//1
+		// PMEM阶段信号
+		PMEM_RegFile_w_addr			,//5
+		PMEM_RegFile_w_data			,//32
+		PMEM_sel_RF_w_data_valid	,//1
+		PMEM_valid					,//1
+		PMEM_sel_rf_w_en			,//1
 		// MEM阶段信号
 		MEM_RegFile_w_addr			,//5
 		MEM_RegFile_w_data			,//32
