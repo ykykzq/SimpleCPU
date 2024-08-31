@@ -17,7 +17,7 @@ module IPreD_stage(
 
     input  wire[`ID_TO_IPD_BUS_WD-1:0]  ID_to_IPD_bus,
 
-    output  wire[31:0]                   IPD_to_BU_bus,
+    output  wire[31:0]                  IPD_to_BU_bus,
     //inst RAM
     input  wire[31:0]					inst_ram_r_data,
 	

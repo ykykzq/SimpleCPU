@@ -90,14 +90,14 @@ module MMU(
 
     /*
     MEM阶段读取数据的来源
-        +-------------+-------------------+
+        +---------------------+-------------------+
         | sel_MEM_data_source | Data Source       |
-        +-------------+-------------------+
-        | 4'b1000     | Serial Port State |
-        | 4'b0100     | Serial Port Data  |
-        | 4'b0010     | Base RAM          |
-        | 4'b0001     | Ext RAM           |
-        +-------------+-------------------+
+        +---------------------+-------------------+
+        | 4'b1000             | Serial Port State |
+        | 4'b0100             | Serial Port Data  |
+        | 4'b0010             | Base RAM          |
+        | 4'b0001             | Ext RAM           |
+        +---------------------+-------------------+
     */
     assign sel_MEM_data_source[3] = data_sram_addr==32'hBFD0_03FC;
     assign sel_MEM_data_source[2] = data_sram_addr==32'hBFD0_03F8;
@@ -106,14 +106,14 @@ module MMU(
 
     /*
     IF阶段读取数据的来源
-        +------------+-------------------+
+        +--------------------+-------------------+
         | sel_IF_data_source | Data Source       |
-        +------------+-------------------+
-        | 4'b1000    | Serial Port State |
-        | 4'b0100    | Serial Port Data  |
-        | 4'b0010    | Base RAM          |
-        | 4'b0001    | Ext RAM           |
-        +------------+-------------------+
+        +--------------------+-------------------+
+        | 4'b1000            | Serial Port State |
+        | 4'b0100            | Serial Port Data  |
+        | 4'b0010            | Base RAM          |
+        | 4'b0001            | Ext RAM           |
+        +--------------------+-------------------+
 
     */
     assign sel_IF_data_source[3] = inst_sram_addr==32'hBFD0_03FC;

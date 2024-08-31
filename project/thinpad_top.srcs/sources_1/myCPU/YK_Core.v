@@ -62,6 +62,13 @@ module YK_Core(
 	wire[`WB_TO_BY_BUS_WD-1:0]		WB_to_BY_bus	;
 	wire[`BY_TO_ID_BUS_WD-1:0]		BY_to_ID_bus	;
 
+
+	// debug 接口
+	wire [31:0] 					debug_wb_pc     ;
+    wire [3:0] 						debug_wb_rf_we  ;
+    wire [4:0] 						debug_wb_rf_wnum;
+    wire [31:0] 					debug_wb_rf_wdata;
+
 	//////////////////////////////////////////////////////////////
 	/// 七级流水线
     IF_stage IF_stage(
