@@ -22,20 +22,26 @@ module WakeUP(
 	output reg							src_2_ready
     );
 	// EXE
-	wire [ 4: 0]	EXE_RegFile_W_addr	;
-	wire 	EXE_sel_RF_W_Data_valid		;
+	wire [ 4: 0]	EXE_RegFile_w_addr	;
+	wire 	EXE_sel_RF_w_data_valid		;
 	wire	EXE_valid					;
 	wire 	EXE_sel_rf_w_en				;
 
 	// MEM
-	wire [ 4: 0]MEM_RegFile_W_addr		;
-	wire MEM_sel_RF_W_Data_valid		;
+	wire [ 4: 0]MEM_RegFile_w_addr		;
+	wire MEM_sel_RF_w_data_valid		;
 	wire MEM_valid						;
 	wire MEM_sel_rf_w_en				;
 
+	// PMEM
+	wire [ 4: 0]PMEM_RegFile_w_addr		;
+	wire PMEM_sel_RF_w_data_valid		;
+	wire PMEM_valid						;
+	wire PMEM_sel_rf_w_en				;
+
 	// WB
-	wire [ 4: 0]	WB_RegFile_W_addr	;
-	wire WB_sel_RF_W_Data_valid			;
+	wire [ 4: 0]	WB_RegFile_w_addr	;
+	wire WB_sel_RF_w_data_valid			;
 	wire WB_valid						;
 	wire WB_sel_rf_w_en				 	;
 
@@ -46,19 +52,24 @@ module WakeUP(
 	always@(*)
 	begin
 		if(sel_alu_bu_src1[1])
-			if(RegFile_r_addr1==EXE_RegFile_W_addr && EXE_sel_rf_w_en && EXE_valid)
-				if(EXE_sel_RF_W_Data_valid)
+			if(RegFile_r_addr1==EXE_RegFile_w_addr && EXE_sel_rf_w_en && EXE_valid)
+				if(EXE_sel_RF_w_data_valid)
 					// 可以从EXE阶段旁路该值
 					src_1_ready<=1'b1;
 				else 
 					// 若EXE阶段还未产生写入数据，则无法通过旁路获得该值。
 					src_1_ready<=1'b0;
-			else if(RegFile_r_addr1==MEM_RegFile_W_addr && MEM_sel_rf_w_en && MEM_valid)
-				if(MEM_sel_RF_W_Data_valid)
+			else if(RegFile_r_addr1==PMEM_RegFile_w_addr && PMEM_sel_rf_w_en && PMEM_valid)
+				if(PMEM_sel_RF_w_data_valid)
 					src_1_ready<=1'b1;
 				else
 					src_1_ready<=1'b0;
-			else if(RegFile_r_addr1==WB_RegFile_W_addr && WB_sel_rf_w_en && WB_valid)
+			else if(RegFile_r_addr1==MEM_RegFile_w_addr && MEM_sel_rf_w_en && MEM_valid)
+				if(MEM_sel_RF_w_data_valid)
+					src_1_ready<=1'b1;
+				else
+					src_1_ready<=1'b0;
+			else if(RegFile_r_addr1==WB_RegFile_w_addr && WB_sel_rf_w_en && WB_valid)
 				if(WB_sel_rf_w_en)
 					src_1_ready<=1'b1;
 				else
@@ -75,19 +86,24 @@ module WakeUP(
 	always@(*)
 	begin
 		if(sel_alu_bu_src2[1])
-			if(RegFile_r_addr2==EXE_RegFile_W_addr && EXE_sel_rf_w_en && EXE_valid)
-				if(EXE_sel_RF_W_Data_valid)
+			if(RegFile_r_addr2==EXE_RegFile_w_addr && EXE_sel_rf_w_en && EXE_valid)
+				if(EXE_sel_RF_w_data_valid)
 					// 可以从EXE阶段旁路该值
 					src_2_ready<=1'b1;
 				else 
 					// 若EXE阶段还未产生写入数据，则无法通过旁路获得该值。
 					src_2_ready<=1'b0;
-			else if(RegFile_r_addr2==MEM_RegFile_W_addr && MEM_sel_rf_w_en && MEM_valid)
-				if(MEM_sel_RF_W_Data_valid)
+			else if(RegFile_r_addr2==PMEM_RegFile_w_addr && PMEM_sel_rf_w_en && PMEM_valid)
+				if(PMEM_sel_RF_w_data_valid)
 					src_2_ready<=1'b1;
 				else
 					src_2_ready<=1'b0;
-			else if(RegFile_r_addr2==WB_RegFile_W_addr && WB_sel_rf_w_en && WB_valid)
+			else if(RegFile_r_addr2==MEM_RegFile_w_addr && MEM_sel_rf_w_en && MEM_valid)
+				if(MEM_sel_RF_w_data_valid)
+					src_2_ready<=1'b1;
+				else
+					src_2_ready<=1'b0;
+			else if(RegFile_r_addr2==WB_RegFile_w_addr && WB_sel_rf_w_en && WB_valid)
 				if(WB_sel_rf_w_en)
 					src_2_ready<=1'b1;
 				else
@@ -107,18 +123,23 @@ module WakeUP(
 	// BY_to_WK_bus中应该包括从ID阶段之后 所有阶段 的寄存器写入信息，包括：是否写入、写入寄存器号、是否已经准备好写入数据
 	assign {
 		// EXE阶段信号
-		EXE_RegFile_W_addr			,//5
-		EXE_sel_RF_W_Data_valid		,//1
+		EXE_RegFile_w_addr			,//5
+		EXE_sel_RF_w_data_valid		,//1
 		EXE_valid					,//1
 		EXE_sel_rf_w_en				,//1
+		// PMEM阶段信号
+		PMEM_RegFile_w_addr			,//5
+		PMEM_sel_RF_w_data_valid	,//1
+		PMEM_valid					,//1
+		PMEM_sel_rf_w_en			,//1
 		// MEM阶段信号
-		MEM_RegFile_W_addr			,//5
-		MEM_sel_RF_W_Data_valid		,//1
+		MEM_RegFile_w_addr			,//5
+		MEM_sel_RF_w_data_valid		,//1
 		MEM_valid					,//1
 		MEM_sel_rf_w_en				,//1
 		// WB阶段信号		
-		WB_RegFile_W_addr			,//5
-		WB_sel_RF_W_Data_valid		,//1
+		WB_RegFile_w_addr			,//5
+		WB_sel_RF_w_data_valid		,//1
 		WB_valid					,//1
 		WB_sel_rf_w_en				 //1
 	}=BY_to_WK_bus;

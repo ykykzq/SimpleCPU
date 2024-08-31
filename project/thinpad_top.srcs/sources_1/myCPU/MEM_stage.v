@@ -1,7 +1,7 @@
 /**
  * @file MEM_stage.v
  * @author ykykzq
- * @brief 流水线第五级，完成访存行为
+ * @brief 流水线第六级，完成访存行为
  * @version 0.1
  * @date 2024-08-13
  *
@@ -12,7 +12,7 @@ module MEM_stage(
 	input  wire							reset,
 	
 	// 流水级数据交互
-	input  wire[`EXE_TO_MEM_BUS_WD-1:0]	EXE_to_MEM_bus,
+	input  wire[`PMEM_TO_MEM_BUS_WD-1:0]PMEM_to_MEM_bus,
 	output wire[`MEM_TO_WB_BUS_WD-1:0]	MEM_to_WB_bus,
 
 	output wire[`MEM_TO_BY_BUS_WD-1:0]	MEM_to_BY_bus,
@@ -21,7 +21,7 @@ module MEM_stage(
 	input  wire[31:0]					data_ram_r_data,
 	
 	//流水线控制
-	input  wire							EXE_to_MEM_valid,
+	input  wire							PMEM_to_MEM_valid,
 	output wire							MEM_allow_in,
 	input  wire							WB_allow_in,
 	output wire							MEM_to_WB_valid
@@ -33,8 +33,8 @@ module MEM_stage(
 	wire MEM_ready_go;
 	reg  MEM_valid;
 
-    // EXE/MEM REG
-    reg [`EXE_TO_MEM_BUS_WD-1:0]    EXE_to_MEM_reg;
+    // PMEM/MEM REG
+    reg [`PMEM_TO_MEM_BUS_WD-1:0]    PMEM_to_MEM_reg;
 
 	// 旁路所需控制信号
 	wire [ 2: 0]    sel_rf_w_data_valid_stage;
@@ -61,16 +61,10 @@ module MEM_stage(
 		if(reset)
 			MEM_valid<=1'b0;
 		else if(MEM_allow_in)
-			MEM_valid<=EXE_to_MEM_valid;
+			MEM_valid<=PMEM_to_MEM_valid;
 		else
 			MEM_valid<=MEM_valid;
 	end
-
-    //////////////////////////////////////////////
-    /// 访存
-
-    // TODO:若为异步读RAM，需要把地址计算与控制信号逻辑移到此处
-
 
 	/////////////////////////////////////////////////
 	/// 旁路信号生成
@@ -84,11 +78,11 @@ module MEM_stage(
     always@(posedge clk)
 	begin
 		if(reset)
-			EXE_to_MEM_reg<=0;
-		else if(EXE_to_MEM_valid & MEM_allow_in)
-			EXE_to_MEM_reg<=EXE_to_MEM_bus;
+			PMEM_to_MEM_reg<=0;
+		else if(PMEM_to_MEM_valid & MEM_allow_in)
+			PMEM_to_MEM_reg<=PMEM_to_MEM_bus;
 		else
-			EXE_to_MEM_reg<=EXE_to_MEM_reg;
+			PMEM_to_MEM_reg<=PMEM_to_MEM_bus;
 	end
     assign {
 		sel_rf_w_data_valid_stage	,//3
@@ -100,7 +94,7 @@ module MEM_stage(
 		RegFile_w_addr				,//5
 		alu_result					,//32
 		inst_PC						 //32
-	}=EXE_to_MEM_reg;
+	}=PMEM_to_MEM_reg;
 
     // 发送
     assign MEM_to_WB_bus = {

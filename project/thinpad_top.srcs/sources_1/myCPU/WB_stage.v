@@ -18,6 +18,12 @@ module WB_stage(
 
     output wire[`WB_TO_BY_BUS_WD-1:0]	WB_to_BY_bus,
 	
+	// 使用golden_trace工具debug的接口
+	output [31:0] 						debug_wb_pc     ,
+    output [3:0] 						debug_wb_rf_wen ,
+    output [4:0] 						debug_wb_rf_wnum,
+    output [31:0] 						debug_wb_rf_wdata,
+	
 	// 流水线控制
 	input  wire							MEM_to_WB_valid,
 	output wire							WB_allow_in
@@ -170,5 +176,13 @@ module WB_stage(
         WB_valid                ,//1
 		sel_rf_w_en 		     //1
     };
+
+    ////////////////////////////////////////////
+    /// Debug接口
+
+    assign debug_wb_pc          = inst_PC;
+    assign debug_wb_rf_wen      = {4{RegFile_w_en}};
+    assign debug_wb_rf_wnum     = RegFile_w_addr;
+    assign debug_wb_rf_wdata    = RegFile_w_data;
 	
 endmodule

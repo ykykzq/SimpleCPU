@@ -8,7 +8,8 @@
 	`define IF_TO_IPD_BUS_WD 	32
     `define IPD_TO_ID_BUS_WD 	159
     `define ID_TO_EXE_BUS_WD 	162
-    `define EXE_TO_MEM_BUS_WD	81
+    `define EXE_TO_PMEM_BUS_WD	111
+	`define PMEM_TO_MEM_BUS_WD	81
     `define MEM_TO_WB_BUS_WD 	113
 	`define WB_to_ID_bus_WD 	38
 
@@ -17,12 +18,13 @@
     
 	// 旁路与流水级通信
 	`define EXE_TO_BY_BUS_WD	40
+	`define PMEM_TO_BY_BUS_WD	43
 	`define MEM_TO_BY_BUS_WD	82
 	`define WB_TO_BY_BUS_WD		40
 
-	`define BY_TO_ID_BUS_WD		120
+	`define BY_TO_ID_BUS_WD		160
 	
 	// Wake UP模块与流水级通信
-	`define BY_TO_WK_BUS_WD		24
+	`define BY_TO_WK_BUS_WD		32
 
 `endif

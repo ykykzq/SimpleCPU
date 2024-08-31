@@ -22,7 +22,7 @@
 - [x] 通过《CPU设计实战》exp11（commit：[v4.0](https://github.com/ykykzq/SimpleCPU/commit/79788504854dc162ad1f232458a28d9f5c64e550)）
 - [x] 根据NSCSCC大赛要求，添加更多指令
 - [x] 根据大赛要求，添加串口通信功能，添加MMU模块
-- [x] 拆分MEM流水级，改成七级流水线
+- [x] 拆分MEM流水级，改成七级流水线（commit：[v5.0](https://github.com/ykykzq/SimpleCPU/commit/8827e840047636707783b38004ab3535a086322e)）
 - [ ] 调试使通过三级功能测试与性能测试
 
 ## 系统结构（待更新）

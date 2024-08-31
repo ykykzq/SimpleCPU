@@ -17,7 +17,7 @@ module IPreD_stage(
 
     input  wire[`ID_TO_IPD_BUS_WD-1:0]  ID_to_IPD_bus,
 
-    output  wire[31:0]                  IPD_to_BU_bus,
+    output  wire[31:0]                   IPD_to_BU_bus,
     //inst RAM
     input  wire[31:0]					inst_ram_r_data,
 	
@@ -37,6 +37,7 @@ module IPreD_stage(
     // IF/IPD REG
     reg [`IF_TO_IPD_BUS_WD-1:0] IF_to_IPD_reg   ;
 
+    // PC与分支预测相关
     wire            br_taken_cancel ;
     wire [31: 0]    PC_fromID       ;
 
@@ -107,6 +108,7 @@ module IPreD_stage(
     wire [21: 0]                opcode_22b      ;
     wire [16: 0]                opcode_17b      ;
     wire [ 9: 0]                opcode_10b      ;
+    wire [ 7: 0]                opcode_08b      ;
     wire [ 6: 0]                opcode_07b      ;
     wire [ 5: 0]                opcode_06b      ;
 
@@ -183,6 +185,7 @@ module IPreD_stage(
     assign opcode_22b=inst[31:10];
     assign opcode_17b=inst[31:15];
     assign opcode_10b=inst[31:22];
+    assign opcode_08b=inst[31:24];
     assign opcode_07b=inst[31:25];
     assign opcode_06b=inst[31:26];
 
@@ -593,6 +596,8 @@ module IPreD_stage(
 		inst_PC 	 //32
 		    		 //
     } = IF_to_IPD_reg;
+
+    assign inst=inst_ram_r_data;
 
     assign {
 		br_taken_cancel	,//32
