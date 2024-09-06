@@ -1,0 +1,27 @@
+language: c
+before_install:
+  - sudo apt-get install -yy qemu-system-mips expect python3-pip
+  - sudo pip3 install pyserial
+  - curl -sc /tmp/gcokie 'https://drive.google.com/uc?export=download&id=1Mo5hGcCg1zm8Ca0KQB-G5PNI3fXfAAmR'
+  - getcode="$(awk '/_warning_/ {print $NF}' /tmp/gcokie)"
+  - curl -s -C - -LOJb /tmp/gcokie "https://drive.google.com/uc?export=download&confirm=${getcode}&id=1Mo5hGcCg1zm8Ca0KQB-G5PNI3fXfAAmR"
+  - tar -xf Codescape.GNU.Tools.Package.2016.05-06.for.MIPS.MTI.Bare.Metal.CentOS-5.x86_64.tar.gz
+script:
+  - export PATH=$PATH:$PWD/mips-mti-elf/2016.05-06/bin
+  - make GCCPREFIX=mips-mti-elf- ON_FPGA=y -C kernel/ all show-utest
+  - |
+    if [[ -n "$TRAVIS_TAG" ]]; then
+      mkdir "$TRAVIS_TAG/kernel"
+      cp kernel/kernel.bin "$TRAVIS_TAG/kernel/kernel-fpga.bin"
+      cp kernel/kernel.elf "$TRAVIS_TAG/kernel/kernel-fpga.elf"
+    fi 
+  - make GCCPREFIX=mips-mti-elf- ON_FPGA=n EN_INT=y EN_TLB=y -C kernel/
+  - |
+    if [[ -n "$TRAVIS_TAG" ]]; then
+      cp kernel/kernel.elf "$TRAVIS_TAG/kernel/kernel-qemu-int-tlb.elf"
+    fi
+  - travis_wait 1 make EN_INT=y EN_TLB=y sim -C kernel || true
+  - "./.test-script"
+addons:
+  apt:
+    update: true
