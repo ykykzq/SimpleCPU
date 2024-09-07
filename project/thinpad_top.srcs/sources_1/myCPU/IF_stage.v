@@ -27,6 +27,7 @@ module IF_stage(
 	//流水线控制
 	input  wire							IPD_allow_in,
 	output wire							IF_to_IPD_valid,
+	output wire							IF_allow_in,
 
 	input  wire 						sel_strcture_hazard
 );

@@ -28,6 +28,8 @@ module YK_Core(
 
 
     // 流水级控制
+	wire 			IF_allow_in		;
+
     wire            IPD_allow_in    ;
     wire            IF_to_IPD_valid ;
 
@@ -87,6 +89,7 @@ module YK_Core(
         .inst_ram_w_data    (inst_sram_wdata),//实际上用不到指令RAM的写
     
         //流水线控制
+		.IF_allow_in		(IF_allow_in),
         .IPD_allow_in       (IPD_allow_in),
         .IF_to_IPD_valid    (IF_to_IPD_valid),
 
@@ -127,6 +130,7 @@ module YK_Core(
 		.IPD_to_BU_bus		(IPD_to_BU_bus),
 
 	    //流水线控制
+		.IF_allow_in		(IF_allow_in),
 	    .EXE_allow_in       (EXE_allow_in),
 	    .IPD_to_ID_valid    (IPD_to_ID_valid),
 	    .ID_allow_in        (ID_allow_in),

@@ -25,6 +25,7 @@ module ID_stage(
 	input  wire[31:0]					IPD_to_BU_bus,
 
 	//流水线控制
+	input  wire							IF_allow_in,
 	input  wire							EXE_allow_in,
 	input  wire							IPD_to_ID_valid,
 	output wire							ID_allow_in,
@@ -326,7 +327,10 @@ module ID_stage(
 			IPD_to_ID_reg<=0;
 		else if(br_taken_cancel)
 			// 分支预测错误，flush掉
-			IPD_to_ID_reg<=0;
+			if(IF_allow_in)
+				IPD_to_ID_reg<=0;
+			else
+				IPD_to_ID_reg<=IPD_to_ID_reg;
 		else if(IPD_to_ID_valid & ID_allow_in)
 			IPD_to_ID_reg<=IPD_to_ID_bus;
 		else

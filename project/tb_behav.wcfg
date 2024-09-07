@@ -12,12 +12,12 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="21609800fs"></ZoomStartTime>
-      <ZoomEndTime time="21917801fs"></ZoomEndTime>
-      <Cursor1Time time="21747800fs"></Cursor1Time>
+      <ZoomStartTime time="0fs"></ZoomStartTime>
+      <ZoomEndTime time="194285001fs"></ZoomEndTime>
+      <Cursor1Time time="194285000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="256"></NameColumnWidth>
+      <NameColumnWidth column_width="246"></NameColumnWidth>
       <ValueColumnWidth column_width="72"></ValueColumnWidth>
    </column_width_setting>
    <WVObjectSize size="10" />
@@ -249,7 +249,6 @@
    <wvobject fp_name="group124" type="group">
       <obj_property name="label">IF</obj_property>
       <obj_property name="DisplayName">label</obj_property>
-      <obj_property name="isExpanded"></obj_property>
       <wvobject fp_name="/tb/dut/myCPU_top/YK_Core/IF_stage/clk" type="logic">
          <obj_property name="ElementShortName">clk</obj_property>
          <obj_property name="ObjectShortName">clk</obj_property>
@@ -1099,7 +1098,7 @@
          <obj_property name="ObjectShortName">WB_sel_rf_w_en</obj_property>
       </wvobject>
    </wvobject>
-   <wvobject fp_name="group1777" type="group">
+   <wvobject fp_name="group493" type="group">
       <obj_property name="label">BU</obj_property>
       <obj_property name="DisplayName">label</obj_property>
       <wvobject fp_name="/tb/dut/myCPU_top/YK_Core/ID_stage/BU/reset" type="logic">
@@ -1113,6 +1112,10 @@
       <wvobject fp_name="/tb/dut/myCPU_top/YK_Core/ID_stage/BU/pred_PC" type="array">
          <obj_property name="ElementShortName">pred_PC[31:0]</obj_property>
          <obj_property name="ObjectShortName">pred_PC[31:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb/dut/myCPU_top/YK_Core/ID_stage/BU/IF_allow_in" type="logic">
+         <obj_property name="ElementShortName">IF_allow_in</obj_property>
+         <obj_property name="ObjectShortName">IF_allow_in</obj_property>
       </wvobject>
       <wvobject fp_name="/tb/dut/myCPU_top/YK_Core/ID_stage/BU/BranchUnit_src1" type="array">
          <obj_property name="ElementShortName">BranchUnit_src1[31:0]</obj_property>
@@ -1137,6 +1140,10 @@
       <wvobject fp_name="/tb/dut/myCPU_top/YK_Core/ID_stage/BU/inst_PC" type="array">
          <obj_property name="ElementShortName">inst_PC[31:0]</obj_property>
          <obj_property name="ObjectShortName">inst_PC[31:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb/dut/myCPU_top/YK_Core/ID_stage/BU/BU_to_PC_ready" type="logic">
+         <obj_property name="ElementShortName">BU_to_PC_ready</obj_property>
+         <obj_property name="ObjectShortName">BU_to_PC_ready</obj_property>
       </wvobject>
       <wvobject fp_name="/tb/dut/myCPU_top/YK_Core/ID_stage/BU/next_PC" type="array">
          <obj_property name="ElementShortName">next_PC[31:0]</obj_property>
