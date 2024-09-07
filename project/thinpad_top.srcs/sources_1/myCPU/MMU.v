@@ -220,10 +220,10 @@ module MMU(
     
 
     // 处理结构冒险
-    assign sel_strcture_hazard =      (sel_IF_data_source[3]&sel_MEM_data_source[3])
+    assign sel_strcture_hazard =    ( (sel_IF_data_source[3]&sel_MEM_data_source[3])
                                     | (sel_IF_data_source[2]&sel_MEM_data_source[2])
                                     | (sel_IF_data_source[1]&sel_MEM_data_source[1])
-                                    | (sel_IF_data_source[0]&sel_MEM_data_source[0])
+                                    | (sel_IF_data_source[0]&sel_MEM_data_source[0]) )
                                     & (inst_sram_en & data_sram_en);
 
     //////////////////////////////////////////////////////////////////////
