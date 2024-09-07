@@ -18,8 +18,6 @@ module IPreD_stage(
     input  wire[`ID_TO_IPD_BUS_WD-1:0]  ID_to_IPD_bus,
 
     output  wire[31:0]                  IPD_to_BU_bus,
-    //inst RAM
-    input  wire[31:0]					inst_ram_r_data,
 	
 	//流水线控制
 	input  wire							ID_allow_in,
@@ -27,7 +25,8 @@ module IPreD_stage(
 	output wire							IPD_allow_in,
 	output wire							IPD_to_ID_valid
 );
-    // 当前指令的PC
+    // 当前指令及PC
+    wire [31: 0]    inst_ram_r_data;
 	wire [31: 0]	inst_PC;
 
     // 流水线控制信号
@@ -584,17 +583,17 @@ module IPreD_stage(
 	begin
         if(reset)
             IF_to_IPD_reg<=0;
-		else if(IF_to_IPD_valid & IPD_allow_in)
-			IF_to_IPD_reg<=IF_to_IPD_bus;
         else if(br_taken_cancel)
 			//预测错误，flush掉
             IF_to_IPD_reg<=0;
+        else if(IF_to_IPD_valid & IPD_allow_in)
+			IF_to_IPD_reg<=IF_to_IPD_bus;
 		else
 			IF_to_IPD_reg<=IF_to_IPD_reg;
 	end
     assign {
-		inst_PC 	 //32
-		    		 //
+		inst_PC 	    ,//32
+		inst_ram_r_data  //
     } = IF_to_IPD_reg;
 
     assign inst=inst_ram_r_data;

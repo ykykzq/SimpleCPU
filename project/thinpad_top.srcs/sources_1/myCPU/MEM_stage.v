@@ -17,9 +17,6 @@ module MEM_stage(
 
 	output wire[`MEM_TO_BY_BUS_WD-1:0]	MEM_to_BY_bus,
 	
-    // 来自Data RAM的数据
-	input  wire[31:0]					data_ram_r_data,
-	
 	//流水线控制
 	input  wire							PMEM_to_MEM_valid,
 	output wire							MEM_allow_in,
@@ -41,6 +38,7 @@ module MEM_stage(
 	wire 			MEM_sel_rf_w_data_valid;
 	
     // 写回阶段的数据与控制信号
+	wire [31: 0]	data_ram_r_data;
     wire [31: 0]    alu_result;
     wire [ 4: 0]    RegFile_w_addr;
     wire [ 3: 0]	data_ram_b_en;
@@ -91,6 +89,7 @@ module MEM_stage(
 		sel_data_ram_wd				,//2
 		sel_data_ram_extend			,//1
 		data_ram_b_en				,//4
+		data_ram_r_data				,//32
 		RegFile_w_addr				,//5
 		alu_result					,//32
 		inst_PC						 //32

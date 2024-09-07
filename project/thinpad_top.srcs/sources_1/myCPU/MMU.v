@@ -189,11 +189,9 @@ module MMU(
     assign ext_ram_r_data  = ext_ram_oe_n?32'b0:ext_ram_data;
 
 
-    always@(posedge clk)
+    always@(*)
     begin
-        if(reset)
-            inst_sram_rdata <= 32'b0;
-        else if(sel_IF_data_source[3])
+        if(sel_IF_data_source[3])
             inst_sram_rdata <= {30'b0,SerialPort_state};
         else if(sel_IF_data_source[2])
             inst_sram_rdata <= {24'b0,RxD_FIFO_data_out};
@@ -205,11 +203,9 @@ module MMU(
             inst_sram_rdata <= 32'b0;
     end
     
-    always@(posedge clk)
+    always@(*)
     begin
-        if(reset)
-            data_sram_rdata <=0;
-        else if(sel_MEM_data_source[3])
+        if(sel_MEM_data_source[3])
             data_sram_rdata <= {30'b0,SerialPort_state};
         else if(sel_MEM_data_source[2])
             data_sram_rdata <= {24'b0,RxD_FIFO_data_out};

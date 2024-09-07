@@ -21,6 +21,7 @@ module IF_stage(
 	output wire							inst_ram_en,//(读)使能
 	output wire[31:0]					inst_ram_addr,
 	output wire[3:0]					inst_ram_w_en,
+    input  wire[31:0]					inst_ram_r_data,
 	output wire[31:0]					inst_ram_w_data,//实际上用不到指令RAM的写
     
 	//流水线控制
@@ -77,7 +78,7 @@ module IF_stage(
 	always@(posedge clk)
 	begin
 		if(reset)
-			PC<=32'h8000_0000-4'b1000;// 考虑到rst后第一周期无效，再加上给Inst RAM的是next_PC，故-8
+			PC<=32'h8000_0000-32'b100;// 考虑到rst后第一周期无效，故-4
 		else if(IF_allow_in & Pre_to_IF_valid)
 			PC<=next_PC;
 		else 
@@ -92,7 +93,7 @@ module IF_stage(
 	/// 取INST
 
 	assign inst_ram_en=1'b1;
-	assign inst_ram_addr=IF_allow_in?next_PC:PC;
+	assign inst_ram_addr=PC;
 	// 不写Inst RAM
 	assign inst_ram_w_data=32'b0;
 	assign inst_ram_w_en=4'b0;
@@ -105,8 +106,8 @@ module IF_stage(
 	}=ID_to_IF_bus;
 
 	assign IF_to_IPD_bus={
-			next_PC		 //32
-						 //32
+			PC			 	,//32
+			inst_ram_r_data	 //32
 		};
 
 endmodule

@@ -83,6 +83,7 @@ module YK_Core(
         .inst_ram_en        (inst_sram_en),//(读)使能
         .inst_ram_addr      (inst_sram_addr),
         .inst_ram_w_en      (inst_sram_we),
+        .inst_ram_r_data    (inst_sram_rdata),
         .inst_ram_w_data    (inst_sram_wdata),//实际上用不到指令RAM的写
     
         //流水线控制
@@ -101,8 +102,6 @@ module YK_Core(
 	    .IPD_to_ID_bus      (IPD_to_ID_bus),
         .ID_to_IPD_bus      (ID_to_IPD_bus),
 		.IPD_to_BU_bus		(IPD_to_BU_bus),
-        //inst RAM
-        .inst_ram_r_data    (inst_sram_rdata),
 	
 	    //流水线控制
 	    .ID_allow_in        (ID_allow_in),
@@ -170,6 +169,7 @@ module YK_Core(
 	    .data_ram_en        (data_sram_en),
 	    .data_ram_addr      (data_sram_addr),
 	    .data_ram_w_en      (data_sram_we),
+	    .data_ram_r_data    (data_sram_rdata),
 	    .data_ram_w_data    (data_sram_wdata)
 );
 
@@ -182,9 +182,6 @@ module YK_Core(
 	    .MEM_to_WB_bus      (MEM_to_WB_bus),
 
 		.MEM_to_BY_bus		(MEM_to_BY_bus),
-	
-    	// 来自Data RAM的数据
-	    .data_ram_r_data    (data_sram_rdata),
 	
 		//流水线控制
 	    .PMEM_to_MEM_valid  (PMEM_to_MEM_valid),

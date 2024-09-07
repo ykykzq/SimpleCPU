@@ -27,7 +27,9 @@ module PreMEM_stage(
 	output wire							data_ram_en,
 	output wire[31:0]					data_ram_addr,
 	output wire[3:0]					data_ram_w_en,
+	input  wire[31:0]					data_ram_r_data,
 	output reg [31:0]					data_ram_w_data
+	
 );
 	// 当前指令的PC
 	wire [31: 0]	inst_PC;
@@ -198,6 +200,7 @@ module PreMEM_stage(
 		sel_data_ram_wd				,//2
 		sel_data_ram_extend			,//1
 		data_ram_b_en				,//4
+		data_ram_r_data				,//32
 		RegFile_w_addr				,//5
 		alu_result					,//32
 		inst_PC						 //32
