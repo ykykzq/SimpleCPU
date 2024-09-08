@@ -43,15 +43,15 @@
 ├── docs
 │   ├── 指令控制信号.xlsx
 │   ├── LoongArch指令码一览.pdf
-│   ├── 交叉编译
+│   ├── 交叉编译                  # 提供Linux下交叉编译工具链
 │   └── 官方文档
-├── project                      # NSCSCC提供的工程模板
+├── project                      # NSCSCC提供的vivado工程模板
 │   ├── asm
 │   ├── thinpad_top.srcs
 │   │   ├── constrs_1            # 引脚约束文件
-│   │   ├── sim_1                # testbench，本地仿真文件
+│   │   ├── sim_1                # testbench，本地跑NSCSCC测试用
 │   │   └── sources_1
-│   │       ├── ip               # IP核
+│   │       ├── ip               # 工程所使用的IP核
 │   │       ├── myCPU            # 存放CPU源代码🍎
 │   │       └── new
 │   │           ├── SEG7_LUT.v
@@ -98,8 +98,9 @@
 注意到完成《CPU设计实战》中的相关实验后，CPU核心是无法直接嵌入到NSCSCC提供的模板中的，仍然需要完成一系列工作，这里给出一些提示。
 
 1. 在《CPU设计实战》中，`Inst RAM`与`Data RAM`实际上是分开的，不需要考虑结构冒险。然而在NSCSCC中，`Base RAM`与`Ext RAM`均可被读、写、执行，同时两个`RAM`均只有一个读端口。因此在`IF`与`ID`两个流水级在同一拍访问同个RAM时，会发生结构冒险。（参见：[哈佛架构与冯诺依曼架构](https://blog.csdn.net/zhuimeng_ruili/article/details/103485093)）
-2. 本工程在[v4.0](https://github.com/ykykzq/SimpleCPU/commit/79788504854dc162ad1f232458a28d9f5c64e550)版本通过《CPU设计实战》之后，不再对`test`目录下的处理器核进行更改，而是将代码复制到所给的模板中，面向NSCSCC大赛要求做进一步的工作。这里主要完成：编写一个`MMU`，与之前写好的处理器核（命名为`YK_Core`）一起，组成`myCPU_top`模块；该`MMU`负责地址映射，并处理串口输入输出，同时检测是否发生`RAM`的结构冒险。
-3. 本工程使用的IP核有FIFO Generator，其配置为Common Clock Builitin FIFO实现，读模式为First Word Fall Through，对于数据读写端口，宽度为8位（串口宽度），深度为512，其他配置保持默认。
+2. 本工程中`test`目录下的代码**并不是最新代码**，而是在前期使用CPU_CDE环境进行开发与测试时的代码。只能保证通过《CPU设计实战》exp11，其中仍然存在若干没有被检测出的bug，这些bug参见`project`目录下后的后续commit。
+3. 在通过《CPU设计实战》中相关实验之后，仍然面向NSCSCC大赛要求做进一步的工作。主要任务：**1.**编写一个`MMU`，与之前写好的处理器核（本工程中命名为`YK_Core`）一起，组成`myCPU_top`模块；该`MMU`负责地址映射，并处理串口输入输出，同时检测是否发生`RAM`的结构冒险。**2.**将RAM的处理逻辑改为异步，否则容易出现timing loop问题。
+4. 本工程使用的IP核有FIFO Generator，其配置为：Common Clock Builitin FIFO实现，读模式为First Word Fall Through，对于数据读写端口，宽度为8位（串口宽度），深度为512，其他配置保持默认。
 
 ## 推荐书籍
 
