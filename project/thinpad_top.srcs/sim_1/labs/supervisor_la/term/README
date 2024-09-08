@@ -1,0 +1,4 @@
+提供了两个term，term.py是linux环境，term_win.py是windows环境。
+编译工具没有windows版本，所以term_win.py里不能用A命令，且F命令是读bin文件而不是汇编代码文件。
+运行term_win.py不检查编译工具，但term.py需要配置好编译工具，运行报错请查看代码。
+如有问题可反馈到比赛邮箱。

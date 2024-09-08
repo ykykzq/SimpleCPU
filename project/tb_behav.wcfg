@@ -12,12 +12,12 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="0fs"></ZoomStartTime>
-      <ZoomEndTime time="194285001fs"></ZoomEndTime>
-      <Cursor1Time time="194285000fs"></Cursor1Time>
+      <ZoomStartTime time="1647100fs"></ZoomStartTime>
+      <ZoomEndTime time="1959101fs"></ZoomEndTime>
+      <Cursor1Time time="1797500fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="246"></NameColumnWidth>
+      <NameColumnWidth column_width="236"></NameColumnWidth>
       <ValueColumnWidth column_width="72"></ValueColumnWidth>
    </column_width_setting>
    <WVObjectSize size="10" />
@@ -114,7 +114,6 @@
       <wvobject fp_name="group1749" type="group">
          <obj_property name="label">ext_ram</obj_property>
          <obj_property name="DisplayName">label</obj_property>
-         <obj_property name="isExpanded"></obj_property>
          <wvobject fp_name="/tb/dut/myCPU_top/MMU/ext_ram_data" type="array">
             <obj_property name="ElementShortName">ext_ram_data[31:0]</obj_property>
             <obj_property name="ObjectShortName">ext_ram_data[31:0]</obj_property>
@@ -139,10 +138,6 @@
             <obj_property name="ElementShortName">ext_ram_we_n</obj_property>
             <obj_property name="ObjectShortName">ext_ram_we_n</obj_property>
          </wvobject>
-      </wvobject>
-      <wvobject fp_name="/tb/dut/myCPU_top/MMU/txd" type="logic">
-         <obj_property name="ElementShortName">txd</obj_property>
-         <obj_property name="ObjectShortName">txd</obj_property>
       </wvobject>
       <wvobject fp_name="/tb/dut/myCPU_top/MMU/rxd" type="logic">
          <obj_property name="ElementShortName">rxd</obj_property>
@@ -175,6 +170,10 @@
       <wvobject fp_name="/tb/dut/myCPU_top/MMU/TxD_start" type="logic">
          <obj_property name="ElementShortName">TxD_start</obj_property>
          <obj_property name="ObjectShortName">TxD_start</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb/dut/myCPU_top/MMU/txd" type="logic">
+         <obj_property name="ElementShortName">txd</obj_property>
+         <obj_property name="ObjectShortName">txd</obj_property>
       </wvobject>
       <wvobject fp_name="/tb/dut/myCPU_top/MMU/SerialPort_state" type="array">
          <obj_property name="ElementShortName">SerialPort_state[1:0]</obj_property>
@@ -784,9 +783,10 @@
          <obj_property name="ObjectShortName">sel_rf_w_data_valid_stage[2:0]</obj_property>
       </wvobject>
    </wvobject>
-   <wvobject fp_name="group297" type="group">
+   <wvobject fp_name="group500" type="group">
       <obj_property name="label">ID</obj_property>
       <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
       <wvobject fp_name="/tb/dut/myCPU_top/YK_Core/ID_stage/clk" type="logic">
          <obj_property name="ElementShortName">clk</obj_property>
          <obj_property name="ObjectShortName">clk</obj_property>
@@ -827,73 +827,83 @@
          <obj_property name="ElementShortName">IPD_to_BU_bus[31:0]</obj_property>
          <obj_property name="ObjectShortName">IPD_to_BU_bus[31:0]</obj_property>
       </wvobject>
-      <wvobject fp_name="group1383" type="group">
-         <obj_property name="label">PIPELINE_CTRL</obj_property>
-         <obj_property name="DisplayName">label</obj_property>
-         <wvobject fp_name="group1382" type="group">
-            <wvobject fp_name="/tb/dut/myCPU_top/YK_Core/ID_stage/ID_to_EXE_valid" type="logic">
-               <obj_property name="ElementShortName">ID_to_EXE_valid</obj_property>
-               <obj_property name="ObjectShortName">ID_to_EXE_valid</obj_property>
-            </wvobject>
-            <wvobject fp_name="/tb/dut/myCPU_top/YK_Core/ID_stage/ID_ready_go" type="logic">
-               <obj_property name="ElementShortName">ID_ready_go</obj_property>
-               <obj_property name="ObjectShortName">ID_ready_go</obj_property>
-            </wvobject>
-            <wvobject fp_name="/tb/dut/myCPU_top/YK_Core/ID_stage/ID_valid" type="logic">
-               <obj_property name="ElementShortName">ID_valid</obj_property>
-               <obj_property name="ObjectShortName">ID_valid</obj_property>
-            </wvobject>
-            <wvobject fp_name="/tb/dut/myCPU_top/YK_Core/ID_stage/ID_allow_in" type="logic">
-               <obj_property name="ElementShortName">ID_allow_in</obj_property>
-               <obj_property name="ObjectShortName">ID_allow_in</obj_property>
-            </wvobject>
-            <wvobject fp_name="/tb/dut/myCPU_top/YK_Core/ID_stage/IPD_to_ID_valid" type="logic">
-               <obj_property name="ElementShortName">IPD_to_ID_valid</obj_property>
-               <obj_property name="ObjectShortName">IPD_to_ID_valid</obj_property>
-            </wvobject>
-            <wvobject fp_name="/tb/dut/myCPU_top/YK_Core/ID_stage/EXE_allow_in" type="logic">
-               <obj_property name="ElementShortName">EXE_allow_in</obj_property>
-               <obj_property name="ObjectShortName">EXE_allow_in</obj_property>
-            </wvobject>
-         </wvobject>
-      </wvobject>
       <wvobject fp_name="/tb/dut/myCPU_top/YK_Core/ID_stage/inst_PC" type="array">
          <obj_property name="ElementShortName">inst_PC[31:0]</obj_property>
          <obj_property name="ObjectShortName">inst_PC[31:0]</obj_property>
-         <obj_property name="CustomSignalColor">#00FFFF</obj_property>
-         <obj_property name="UseCustomSignalColor">true</obj_property>
       </wvobject>
-      <wvobject fp_name="/tb/dut/myCPU_top/YK_Core/ID_stage/RegFile_r_addr1" type="array">
-         <obj_property name="ElementShortName">RegFile_r_addr1[4:0]</obj_property>
-         <obj_property name="ObjectShortName">RegFile_r_addr1[4:0]</obj_property>
+      <wvobject fp_name="group501" type="group">
+         <obj_property name="label">PIPELINE_CTRL</obj_property>
+         <obj_property name="DisplayName">label</obj_property>
+         <obj_property name="isExpanded"></obj_property>
+         <wvobject fp_name="/tb/dut/myCPU_top/YK_Core/ID_stage/IF_allow_in" type="logic">
+            <obj_property name="ElementShortName">IF_allow_in</obj_property>
+            <obj_property name="ObjectShortName">IF_allow_in</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb/dut/myCPU_top/YK_Core/ID_stage/EXE_allow_in" type="logic">
+            <obj_property name="ElementShortName">EXE_allow_in</obj_property>
+            <obj_property name="ObjectShortName">EXE_allow_in</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb/dut/myCPU_top/YK_Core/ID_stage/IPD_to_ID_valid" type="logic">
+            <obj_property name="ElementShortName">IPD_to_ID_valid</obj_property>
+            <obj_property name="ObjectShortName">IPD_to_ID_valid</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb/dut/myCPU_top/YK_Core/ID_stage/ID_allow_in" type="logic">
+            <obj_property name="ElementShortName">ID_allow_in</obj_property>
+            <obj_property name="ObjectShortName">ID_allow_in</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb/dut/myCPU_top/YK_Core/ID_stage/ID_to_EXE_valid" type="logic">
+            <obj_property name="ElementShortName">ID_to_EXE_valid</obj_property>
+            <obj_property name="ObjectShortName">ID_to_EXE_valid</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb/dut/myCPU_top/YK_Core/ID_stage/ID_ready_go" type="logic">
+            <obj_property name="ElementShortName">ID_ready_go</obj_property>
+            <obj_property name="ObjectShortName">ID_ready_go</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb/dut/myCPU_top/YK_Core/ID_stage/ID_valid" type="logic">
+            <obj_property name="ElementShortName">ID_valid</obj_property>
+            <obj_property name="ObjectShortName">ID_valid</obj_property>
+         </wvobject>
       </wvobject>
-      <wvobject fp_name="/tb/dut/myCPU_top/YK_Core/ID_stage/RegFile_r_addr2" type="array">
-         <obj_property name="ElementShortName">RegFile_r_addr2[4:0]</obj_property>
-         <obj_property name="ObjectShortName">RegFile_r_addr2[4:0]</obj_property>
-      </wvobject>
-      <wvobject fp_name="/tb/dut/myCPU_top/YK_Core/ID_stage/RegFile_r_data1" type="array">
-         <obj_property name="ElementShortName">RegFile_r_data1[31:0]</obj_property>
-         <obj_property name="ObjectShortName">RegFile_r_data1[31:0]</obj_property>
-      </wvobject>
-      <wvobject fp_name="/tb/dut/myCPU_top/YK_Core/ID_stage/RegFile_r_data2" type="array">
-         <obj_property name="ElementShortName">RegFile_r_data2[31:0]</obj_property>
-         <obj_property name="ObjectShortName">RegFile_r_data2[31:0]</obj_property>
-      </wvobject>
-      <wvobject fp_name="/tb/dut/myCPU_top/YK_Core/ID_stage/w_en" type="logic">
-         <obj_property name="ElementShortName">w_en</obj_property>
-         <obj_property name="ObjectShortName">w_en</obj_property>
-      </wvobject>
-      <wvobject fp_name="/tb/dut/myCPU_top/YK_Core/ID_stage/w_data" type="array">
-         <obj_property name="ElementShortName">w_data[31:0]</obj_property>
-         <obj_property name="ObjectShortName">w_data[31:0]</obj_property>
-      </wvobject>
-      <wvobject fp_name="/tb/dut/myCPU_top/YK_Core/ID_stage/w_addr" type="array">
-         <obj_property name="ElementShortName">w_addr[4:0]</obj_property>
-         <obj_property name="ObjectShortName">w_addr[4:0]</obj_property>
-      </wvobject>
-      <wvobject fp_name="/tb/dut/myCPU_top/YK_Core/ID_stage/RegFile_w_addr" type="array">
-         <obj_property name="ElementShortName">RegFile_w_addr[4:0]</obj_property>
-         <obj_property name="ObjectShortName">RegFile_w_addr[4:0]</obj_property>
+      <wvobject fp_name="group503" type="group">
+         <obj_property name="label">REGFILE</obj_property>
+         <obj_property name="DisplayName">label</obj_property>
+         <wvobject fp_name="group502" type="group">
+            <obj_property name="label">New Group 22</obj_property>
+            <obj_property name="DisplayName">label</obj_property>
+            <obj_property name="isExpanded"></obj_property>
+            <wvobject fp_name="/tb/dut/myCPU_top/YK_Core/ID_stage/RegFile_r_addr1" type="array">
+               <obj_property name="ElementShortName">RegFile_r_addr1[4:0]</obj_property>
+               <obj_property name="ObjectShortName">RegFile_r_addr1[4:0]</obj_property>
+            </wvobject>
+            <wvobject fp_name="/tb/dut/myCPU_top/YK_Core/ID_stage/RegFile_r_addr2" type="array">
+               <obj_property name="ElementShortName">RegFile_r_addr2[4:0]</obj_property>
+               <obj_property name="ObjectShortName">RegFile_r_addr2[4:0]</obj_property>
+            </wvobject>
+            <wvobject fp_name="/tb/dut/myCPU_top/YK_Core/ID_stage/RegFile_r_data1" type="array">
+               <obj_property name="ElementShortName">RegFile_r_data1[31:0]</obj_property>
+               <obj_property name="ObjectShortName">RegFile_r_data1[31:0]</obj_property>
+            </wvobject>
+            <wvobject fp_name="/tb/dut/myCPU_top/YK_Core/ID_stage/RegFile_r_data2" type="array">
+               <obj_property name="ElementShortName">RegFile_r_data2[31:0]</obj_property>
+               <obj_property name="ObjectShortName">RegFile_r_data2[31:0]</obj_property>
+            </wvobject>
+            <wvobject fp_name="/tb/dut/myCPU_top/YK_Core/ID_stage/RegFile_w_addr" type="array">
+               <obj_property name="ElementShortName">RegFile_w_addr[4:0]</obj_property>
+               <obj_property name="ObjectShortName">RegFile_w_addr[4:0]</obj_property>
+            </wvobject>
+            <wvobject fp_name="/tb/dut/myCPU_top/YK_Core/ID_stage/w_en" type="logic">
+               <obj_property name="ElementShortName">w_en</obj_property>
+               <obj_property name="ObjectShortName">w_en</obj_property>
+            </wvobject>
+            <wvobject fp_name="/tb/dut/myCPU_top/YK_Core/ID_stage/w_data" type="array">
+               <obj_property name="ElementShortName">w_data[31:0]</obj_property>
+               <obj_property name="ObjectShortName">w_data[31:0]</obj_property>
+            </wvobject>
+            <wvobject fp_name="/tb/dut/myCPU_top/YK_Core/ID_stage/w_addr" type="array">
+               <obj_property name="ElementShortName">w_addr[4:0]</obj_property>
+               <obj_property name="ObjectShortName">w_addr[4:0]</obj_property>
+            </wvobject>
+         </wvobject>
       </wvobject>
       <wvobject fp_name="/tb/dut/myCPU_top/YK_Core/ID_stage/immediate" type="array">
          <obj_property name="ElementShortName">immediate[31:0]</obj_property>
@@ -962,8 +972,6 @@
       <wvobject fp_name="/tb/dut/myCPU_top/YK_Core/ID_stage/br_taken_cancel" type="logic">
          <obj_property name="ElementShortName">br_taken_cancel</obj_property>
          <obj_property name="ObjectShortName">br_taken_cancel</obj_property>
-         <obj_property name="CustomSignalColor">#FFA500</obj_property>
-         <obj_property name="UseCustomSignalColor">true</obj_property>
       </wvobject>
       <wvobject fp_name="/tb/dut/myCPU_top/YK_Core/ID_stage/BY_to_WK_bus" type="array">
          <obj_property name="ElementShortName">BY_to_WK_bus[31:0]</obj_property>
@@ -976,10 +984,14 @@
       <wvobject fp_name="/tb/dut/myCPU_top/YK_Core/ID_stage/alu_src_1_ready" type="logic">
          <obj_property name="ElementShortName">alu_src_1_ready</obj_property>
          <obj_property name="ObjectShortName">alu_src_1_ready</obj_property>
+         <obj_property name="CustomSignalColor">#FAAFBE</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
       </wvobject>
       <wvobject fp_name="/tb/dut/myCPU_top/YK_Core/ID_stage/alu_src_2_ready" type="logic">
          <obj_property name="ElementShortName">alu_src_2_ready</obj_property>
          <obj_property name="ObjectShortName">alu_src_2_ready</obj_property>
+         <obj_property name="CustomSignalColor">#FAAFBE</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
       </wvobject>
       <wvobject fp_name="/tb/dut/myCPU_top/YK_Core/ID_stage/EXE_RegFile_w_addr" type="array">
          <obj_property name="ElementShortName">EXE_RegFile_w_addr[4:0]</obj_property>
@@ -1013,6 +1025,22 @@
          <obj_property name="ElementShortName">MEM_RegFile_w_data[31:0]</obj_property>
          <obj_property name="ObjectShortName">MEM_RegFile_w_data[31:0]</obj_property>
       </wvobject>
+      <wvobject fp_name="/tb/dut/myCPU_top/YK_Core/ID_stage/PMEM_RegFile_w_addr" type="array">
+         <obj_property name="ElementShortName">PMEM_RegFile_w_addr[4:0]</obj_property>
+         <obj_property name="ObjectShortName">PMEM_RegFile_w_addr[4:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb/dut/myCPU_top/YK_Core/ID_stage/PMEM_sel_RF_w_data_valid" type="logic">
+         <obj_property name="ElementShortName">PMEM_sel_RF_w_data_valid</obj_property>
+         <obj_property name="ObjectShortName">PMEM_sel_RF_w_data_valid</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb/dut/myCPU_top/YK_Core/ID_stage/PMEM_sel_rf_w_en" type="logic">
+         <obj_property name="ElementShortName">PMEM_sel_rf_w_en</obj_property>
+         <obj_property name="ObjectShortName">PMEM_sel_rf_w_en</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb/dut/myCPU_top/YK_Core/ID_stage/PMEM_RegFile_w_data" type="array">
+         <obj_property name="ElementShortName">PMEM_RegFile_w_data[31:0]</obj_property>
+         <obj_property name="ObjectShortName">PMEM_RegFile_w_data[31:0]</obj_property>
+      </wvobject>
       <wvobject fp_name="/tb/dut/myCPU_top/YK_Core/ID_stage/WB_RegFile_w_addr" type="array">
          <obj_property name="ElementShortName">WB_RegFile_w_addr[4:0]</obj_property>
          <obj_property name="ObjectShortName">WB_RegFile_w_addr[4:0]</obj_property>
@@ -1032,6 +1060,10 @@
       <wvobject fp_name="/tb/dut/myCPU_top/YK_Core/ID_stage/EXE_valid" type="logic">
          <obj_property name="ElementShortName">EXE_valid</obj_property>
          <obj_property name="ObjectShortName">EXE_valid</obj_property>
+      </wvobject>
+      <wvobject fp_name="/tb/dut/myCPU_top/YK_Core/ID_stage/PMEM_valid" type="logic">
+         <obj_property name="ElementShortName">PMEM_valid</obj_property>
+         <obj_property name="ObjectShortName">PMEM_valid</obj_property>
       </wvobject>
       <wvobject fp_name="/tb/dut/myCPU_top/YK_Core/ID_stage/MEM_valid" type="logic">
          <obj_property name="ElementShortName">MEM_valid</obj_property>
@@ -1113,10 +1145,6 @@
          <obj_property name="ElementShortName">pred_PC[31:0]</obj_property>
          <obj_property name="ObjectShortName">pred_PC[31:0]</obj_property>
       </wvobject>
-      <wvobject fp_name="/tb/dut/myCPU_top/YK_Core/ID_stage/BU/IF_allow_in" type="logic">
-         <obj_property name="ElementShortName">IF_allow_in</obj_property>
-         <obj_property name="ObjectShortName">IF_allow_in</obj_property>
-      </wvobject>
       <wvobject fp_name="/tb/dut/myCPU_top/YK_Core/ID_stage/BU/BranchUnit_src1" type="array">
          <obj_property name="ElementShortName">BranchUnit_src1[31:0]</obj_property>
          <obj_property name="ObjectShortName">BranchUnit_src1[31:0]</obj_property>
@@ -1140,10 +1168,6 @@
       <wvobject fp_name="/tb/dut/myCPU_top/YK_Core/ID_stage/BU/inst_PC" type="array">
          <obj_property name="ElementShortName">inst_PC[31:0]</obj_property>
          <obj_property name="ObjectShortName">inst_PC[31:0]</obj_property>
-      </wvobject>
-      <wvobject fp_name="/tb/dut/myCPU_top/YK_Core/ID_stage/BU/BU_to_PC_ready" type="logic">
-         <obj_property name="ElementShortName">BU_to_PC_ready</obj_property>
-         <obj_property name="ObjectShortName">BU_to_PC_ready</obj_property>
       </wvobject>
       <wvobject fp_name="/tb/dut/myCPU_top/YK_Core/ID_stage/BU/next_PC" type="array">
          <obj_property name="ElementShortName">next_PC[31:0]</obj_property>

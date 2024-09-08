@@ -122,7 +122,10 @@ module ID_stage(
             ID_valid<=IPD_to_ID_valid;
         else if(br_taken_cancel)
             // 分支预测失败，flush
-            ID_valid<=1'b0;
+			if(IF_allow_in)
+            	ID_valid<=1'b0;
+			else 
+				ID_valid<=ID_valid;
         else 
             ID_valid<=ID_valid;
     end
