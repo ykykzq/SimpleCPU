@@ -9,8 +9,10 @@
 `include "myCPU.h"
 module WakeUP(
 	// 源操作数的控制信号与读取的寄存器号
-	input  wire[ 1: 0]					sel_alu_bu_src1,
-	input  wire[ 2: 0]					sel_alu_bu_src2,
+	input  wire[ 1: 0]					sel_alu_src1,
+	input  wire[ 2: 0]					sel_alu_src2,
+	input  wire							sel_bu_src1,
+	input  wire							sel_bu_src2,
 	input  wire[ 4: 0]					RegFile_r_addr1,
 	input  wire[ 4: 0]					RegFile_r_addr2,
 
@@ -18,8 +20,10 @@ module WakeUP(
 	input  wire[`BY_TO_WK_BUS_WD-1:0]	BY_to_WK_bus,
 	
 	// 输出源操作数可以获得信号
-	output reg 							src_1_ready,
-	output reg							src_2_ready
+	output reg 							alu_src_1_ready,
+	output reg							alu_src_2_ready,
+	output reg 							bu_src_1_ready,
+	output reg							bu_src_2_ready
     );
 	// EXE
 	wire [ 4: 0]	EXE_RegFile_w_addr	;
@@ -48,73 +52,139 @@ module WakeUP(
 	/////////////////////////////////////////////////////////////////
 	/// 检测是否已经准备好
 
-	// src_1，当源操作数来自于寄存器，并且流水线中还没有该数据时，数据为未准备好状态
+	// bu_src1
 	always@(*)
 	begin
-		if(sel_alu_bu_src1[1])
+		if(sel_bu_src1)
 			if(RegFile_r_addr1==EXE_RegFile_w_addr && EXE_sel_rf_w_en && EXE_valid)
 				if(EXE_sel_RF_w_data_valid)
 					// 可以从EXE阶段旁路该值
-					src_1_ready<=1'b1;
+					bu_src_1_ready<=1'b1;
 				else 
-					// 若EXE阶段还未产生写入数据，则无法通过旁路获得该值。
-					src_1_ready<=1'b0;
+					// 代表阻塞
+					bu_src_1_ready<=1'b0;
 			else if(RegFile_r_addr1==PMEM_RegFile_w_addr && PMEM_sel_rf_w_en && PMEM_valid)
 				if(PMEM_sel_RF_w_data_valid)
-					src_1_ready<=1'b1;
+					bu_src_1_ready<=1'b1;
 				else
-					src_1_ready<=1'b0;
+					bu_src_1_ready<=1'b0;
 			else if(RegFile_r_addr1==MEM_RegFile_w_addr && MEM_sel_rf_w_en && MEM_valid)
 				if(MEM_sel_RF_w_data_valid)
-					src_1_ready<=1'b1;
+					bu_src_1_ready<=1'b1;
 				else
-					src_1_ready<=1'b0;
+					bu_src_1_ready<=1'b0;
 			else if(RegFile_r_addr1==WB_RegFile_w_addr && WB_sel_rf_w_en && WB_valid)
-				if(WB_sel_rf_w_en)
-					src_1_ready<=1'b1;
+				if(WB_sel_RF_w_data_valid)
+					bu_src_1_ready<=1'b1;
 				else
-					src_1_ready<=1'b0;
+					bu_src_1_ready<=1'b0;
 			else 
-				// 如果后续阶段均不写入该寄存器，则从寄存器堆获得操作数，一定可以准备好
-				src_1_ready<=1'b1;
-		else 
-			// 如果操作数不来自于寄存器堆而是来自于指令PC，一定已经准备好
-			src_1_ready<=1'b1;
+				// 如果后续流水级指令均不写入该寄存器，则从寄存器堆获得操作数
+				bu_src_1_ready<=1'b1;
+		else
+			bu_src_1_ready<=1'b1;
 	end
-
-	// src_2，当源操作数来自于寄存器，并且流水线中还没有该数据时，数据为未准备好状态
+	// bu_src2
 	always@(*)
 	begin
-		if(sel_alu_bu_src2[1])
+		if(sel_bu_src2)
 			if(RegFile_r_addr2==EXE_RegFile_w_addr && EXE_sel_rf_w_en && EXE_valid)
 				if(EXE_sel_RF_w_data_valid)
 					// 可以从EXE阶段旁路该值
-					src_2_ready<=1'b1;
+					bu_src_2_ready<=1'b1;
 				else 
-					// 若EXE阶段还未产生写入数据，则无法通过旁路获得该值。
-					src_2_ready<=1'b0;
+					// 代表阻塞
+					bu_src_2_ready<=1'b0;
 			else if(RegFile_r_addr2==PMEM_RegFile_w_addr && PMEM_sel_rf_w_en && PMEM_valid)
 				if(PMEM_sel_RF_w_data_valid)
-					src_2_ready<=1'b1;
+					bu_src_2_ready<=1'b1;
 				else
-					src_2_ready<=1'b0;
+					bu_src_2_ready<=1'b0;
 			else if(RegFile_r_addr2==MEM_RegFile_w_addr && MEM_sel_rf_w_en && MEM_valid)
 				if(MEM_sel_RF_w_data_valid)
-					src_2_ready<=1'b1;
+					bu_src_2_ready<=1'b1;
 				else
-					src_2_ready<=1'b0;
+					bu_src_2_ready<=1'b0;
 			else if(RegFile_r_addr2==WB_RegFile_w_addr && WB_sel_rf_w_en && WB_valid)
-				if(WB_sel_rf_w_en)
-					src_2_ready<=1'b1;
+				if(WB_sel_RF_w_data_valid)
+					bu_src_2_ready<=1'b1;
 				else
-					src_2_ready<=1'b0;
+					bu_src_2_ready<=1'b0;
+			else 
+				// 如果后续流水级指令均不写入该寄存器，则从寄存器堆获得操作数
+				bu_src_2_ready<=1'b1;
+		else
+			bu_src_2_ready<=1'b1;
+	end
+
+
+	// alu_src_1，当源操作数来自于寄存器，并且流水线中还没有该数据时，数据为未准备好状态
+	always@(*)
+	begin
+		if(sel_alu_src1[1])
+			if(RegFile_r_addr1==EXE_RegFile_w_addr && EXE_sel_rf_w_en && EXE_valid)
+				if(EXE_sel_RF_w_data_valid)
+					// 可以从EXE阶段旁路该值
+					alu_src_1_ready<=1'b1;
+				else 
+					// 若EXE阶段还未产生写入数据，则无法通过旁路获得该值。
+					alu_src_1_ready<=1'b0;
+			else if(RegFile_r_addr1==PMEM_RegFile_w_addr && PMEM_sel_rf_w_en && PMEM_valid)
+				if(PMEM_sel_RF_w_data_valid)
+					alu_src_1_ready<=1'b1;
+				else
+					alu_src_1_ready<=1'b0;
+			else if(RegFile_r_addr1==MEM_RegFile_w_addr && MEM_sel_rf_w_en && MEM_valid)
+				if(MEM_sel_RF_w_data_valid)
+					alu_src_1_ready<=1'b1;
+				else
+					alu_src_1_ready<=1'b0;
+			else if(RegFile_r_addr1==WB_RegFile_w_addr && WB_sel_rf_w_en && WB_valid)
+				if(WB_sel_rf_w_en)
+					alu_src_1_ready<=1'b1;
+				else
+					alu_src_1_ready<=1'b0;
 			else 
 				// 如果后续阶段均不写入该寄存器，则从寄存器堆获得操作数，一定可以准备好
-				src_2_ready<=1'b1;
+				alu_src_1_ready<=1'b1;
+		else 
+			// 如果操作数不来自于寄存器堆而是来自于指令PC，一定已经准备好
+			alu_src_1_ready<=1'b1;
+	end
+
+	// alu_src_2，当源操作数来自于寄存器，并且流水线中还没有该数据时，数据为未准备好状态
+	always@(*)
+	begin
+		if(sel_alu_src2[1])
+			if(RegFile_r_addr2==EXE_RegFile_w_addr && EXE_sel_rf_w_en && EXE_valid)
+				if(EXE_sel_RF_w_data_valid)
+					// 可以从EXE阶段旁路该值
+					alu_src_2_ready<=1'b1;
+				else 
+					// 若EXE阶段还未产生写入数据，则无法通过旁路获得该值。
+					alu_src_2_ready<=1'b0;
+			else if(RegFile_r_addr2==PMEM_RegFile_w_addr && PMEM_sel_rf_w_en && PMEM_valid)
+				if(PMEM_sel_RF_w_data_valid)
+					alu_src_2_ready<=1'b1;
+				else
+					alu_src_2_ready<=1'b0;
+			else if(RegFile_r_addr2==MEM_RegFile_w_addr && MEM_sel_rf_w_en && MEM_valid)
+				if(MEM_sel_RF_w_data_valid)
+					alu_src_2_ready<=1'b1;
+				else
+					alu_src_2_ready<=1'b0;
+			else if(RegFile_r_addr2==WB_RegFile_w_addr && WB_sel_rf_w_en && WB_valid)
+				if(WB_sel_rf_w_en)
+					alu_src_2_ready<=1'b1;
+				else
+					alu_src_2_ready<=1'b0;
+			else 
+				// 如果后续阶段均不写入该寄存器，则从寄存器堆获得操作数，一定可以准备好
+				alu_src_2_ready<=1'b1;
 		else 
 			// 如果是PC+4，也一定可以准备好
 			// 如果操作数不来自于寄存器堆而是来自于指令PC，一定已经准备好
-			src_2_ready<=1'b1;
+			alu_src_2_ready<=1'b1;
 	end
 
 	/////////////////////////////////////////////////////////////////

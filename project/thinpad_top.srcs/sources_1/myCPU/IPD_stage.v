@@ -113,8 +113,10 @@ module IPreD_stage(
 
 
     // 控制信号-ID
-    wire [ 1: 0]                sel_alu_bu_src1    ;
-    wire [ 2: 0]                sel_alu_bu_src2    ;
+    wire [ 1: 0]                sel_alu_src1    ;
+    wire [ 2: 0]                sel_alu_src2    ;
+    wire                        sel_bu_src1     ;
+    wire                        sel_bu_src2     ;
 
     wire [ 1: 0]                sel_rf_r_addr_1    ;
     wire [ 1: 0]                sel_rf_r_addr_2    ;
@@ -378,9 +380,32 @@ module IPreD_stage(
                         (inst_jirl | inst_beq | inst_bne | inst_bge | inst_bgeu | inst_blt | inst_bltu)?{{14{inst[25]}},inst[25:10],2'b0}:
                         (inst_b | inst_bl)?{{4{inst[9]}},inst[ 9: 0],inst[25:10],2'b0}:32'b0;
 
+
+    //////////////////////////////////////////////////////////////
+    /// 决定BranchUnit的源操作数
+
+    /*
+        +-------------+---------+
+        | sel_bu_src1 | BU src1 |
+        +-------------+---------+
+        | 1           | rj      |
+        | 0           | 32'b0   |
+        +-------------+---------+
+    */
+    assign sel_bu_src1 = inst_jirl | inst_beq | inst_bne | inst_bge | inst_bgeu | inst_blt | inst_bltu;
+
+    /*
+        +-------------+---------+
+        | sel_bu_src2 | BU src2 |
+        +-------------+---------+
+        | 1           | rd      |
+        | 0           | 32'b0   |
+        +-------------+---------+
+    */
+
+    assign sel_bu_src2 = inst_beq | inst_bne | inst_bge | inst_bgeu | inst_blt | inst_bltu;
     //////////////////////////////////////////////////////////
 	/// ALU源操作数选择信号（从立即数、寄存器值、inst_PC等中选择）
-    /// 同时该源操作数也是BranchUnit的源操作数
 
 	// ALU执行的计算类型
     assign op_mul_s_l  = inst_mul_w;
@@ -432,7 +457,7 @@ module IPreD_stage(
 	/*
 		// 决定源操作数 （one-hot）
 		+-----------------+-----------------+
-		| sel_alu_bu_src1 | alu_bu_src1     |
+		| sel_alu_src1    | alu_src1        |
 		+-----------------+-----------------+
 		| 2'b10           | RegFile_R_data1 |
 		| 2'b01           | inst_PC         |
@@ -440,7 +465,7 @@ module IPreD_stage(
 		+-----------------+-----------------+
 
 	*/
-	assign sel_alu_bu_src1[1] =  inst_addi_w | inst_add_w | inst_sub_w
+	assign sel_alu_src1[1] =  inst_addi_w | inst_add_w | inst_sub_w
                             | inst_mul_w | inst_mulh_w | inst_mulh_wu 
                             | inst_div_w | inst_div_wu | inst_mod_w | inst_mod_wu
 							| inst_or | inst_nor| inst_and | inst_xor 
@@ -448,16 +473,15 @@ module IPreD_stage(
 							| inst_srli_w | inst_slli_w | inst_srai_w 
                             | inst_srl_w | inst_sll_w |inst_sra_w
 							| inst_slt | inst_sltu | inst_slti | inst_sltui
-							| inst_jirl | inst_beq | inst_bne | inst_bge | inst_bgeu | inst_blt | inst_bltu
 							| inst_st_w | inst_st_h | inst_st_b
                             | inst_ld_w | inst_ld_h | inst_ld_b
                             | inst_ld_bu | inst_ld_hu;
-	assign sel_alu_bu_src1[0] = inst_pcaddu12i | inst_bl;
+	assign sel_alu_src1[0] = inst_pcaddu12i | inst_bl | inst_jirl;
 
     /*
 		// 决定源操作数 one-hot
 		+-----------------+-----------------+
-		| sel_alu_bu_src2 | alu_bu_src2     |
+		| sel_alu_src2    | alu_src2        |
 		+-----------------+-----------------+
 		| 3'b100          | SPECIAL:32'h4   |
         | 3'b010          | RegFile_R_data2 |
@@ -465,17 +489,16 @@ module IPreD_stage(
 		| 3'b000          | 32'b0		    |
 		+-----------------+-----------------+
 	*/
-    assign sel_alu_bu_src2[2] = inst_bl;
-	assign sel_alu_bu_src2[1] =  inst_add_w | inst_sub_w | inst_mul_w | inst_mulh_w | inst_mulh_wu 
+    assign sel_alu_src2[2] = inst_bl | inst_jirl;
+	assign sel_alu_src2[1] =  inst_add_w | inst_sub_w | inst_mul_w | inst_mulh_w | inst_mulh_wu 
                             | inst_div_w | inst_div_wu | inst_mod_w | inst_mod_wu
 							| inst_or | inst_nor | inst_and | inst_xor
                             | inst_srl_w | inst_sll_w | inst_sra_w
-							| inst_slt | inst_sltu
-                            | inst_beq | inst_bne | inst_bge | inst_bgeu | inst_blt | inst_bltu; 
-	assign sel_alu_bu_src2[0]=   inst_addi_w | inst_ori | inst_andi | inst_xori
+							| inst_slt | inst_sltu; 
+	assign sel_alu_src2[0]=   inst_addi_w | inst_ori | inst_andi | inst_xori
                             | inst_srli_w | inst_slli_w | inst_srai_w
                             | inst_slti | inst_sltui
-							| inst_lu12i_w | inst_pcaddu12i | inst_jirl
+							| inst_lu12i_w | inst_pcaddu12i
 							| inst_st_w | inst_st_h |  inst_st_b
                             | inst_ld_w | inst_ld_h | inst_ld_b
                             | inst_ld_bu | inst_ld_hu;
@@ -606,8 +629,10 @@ module IPreD_stage(
     // 发送
     assign IPD_to_ID_bus={
             sel_rf_w_data_valid_stage   ,//3
-            sel_alu_bu_src2             ,//3
-            sel_alu_bu_src1             ,//2
+            sel_alu_src2                ,//3
+            sel_alu_src1                ,//2
+            sel_bu_src1                 ,//1
+            sel_bu_src2                 ,//1
             sel_rf_w_en		            ,//1
 		    sel_rf_w_data	            ,//1
 		    sel_data_ram_wd	            ,//2
