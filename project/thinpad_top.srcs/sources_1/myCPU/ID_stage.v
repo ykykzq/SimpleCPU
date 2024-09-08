@@ -117,7 +117,7 @@ module ID_stage(
 	/// 流水线行为控制
 
 	// 两个操作数都准备好之后可以发射
-    assign ID_ready_go=alu_src_1_ready&alu_src_2_ready;
+    assign ID_ready_go=alu_src_1_ready & alu_src_2_ready & bu_src_1_ready & bu_src_2_ready;
 	assign ID_allow_in=(~ID_valid)|(ID_ready_go & EXE_allow_in);
 	assign ID_to_EXE_valid=ID_ready_go&ID_valid;
     always@(posedge clk)
