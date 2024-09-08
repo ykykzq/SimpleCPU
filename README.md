@@ -28,6 +28,7 @@
 - [x] 根据大赛要求，添加串口通信功能，添加MMU模块
 - [x] 拆分MEM流水级，改成七级流水线（commit：[v5.0](https://github.com/ykykzq/SimpleCPU/commit/8827e840047636707783b38004ab3535a086322e)）
 - [x] 调试使通过三级功能测试与性能测试（commit：[v6.0](https://github.com/ykykzq/SimpleCPU/commit/9279d0921617b95811b0fab053dd8caafe28aa33)）
+- [ ] 补充设计文档、总体架构图等内容
 
 ## 系统结构（待更新）
 
@@ -99,7 +100,7 @@
 
 1. 在《CPU设计实战》中，`Inst RAM`与`Data RAM`实际上是分开的，不需要考虑结构冒险。然而在NSCSCC中，`Base RAM`与`Ext RAM`均可被读、写、执行，同时两个`RAM`均只有一个读端口。因此在`IF`与`ID`两个流水级在同一拍访问同个RAM时，会发生结构冒险。（参见：[哈佛架构与冯诺依曼架构](https://blog.csdn.net/zhuimeng_ruili/article/details/103485093)）
 2. 本工程中`test`目录下的代码**并不是最新代码**，而是在前期使用CPU_CDE环境进行开发与测试时的代码。只能保证通过《CPU设计实战》exp11，其中仍然存在若干没有被检测出的bug，这些bug参见`project`目录下后的后续commit。
-3. 在通过《CPU设计实战》中相关实验之后，仍然面向NSCSCC大赛要求做进一步的工作。主要任务：**1.**编写一个`MMU`，与之前写好的处理器核（本工程中命名为`YK_Core`）一起，组成`myCPU_top`模块；该`MMU`负责地址映射，并处理串口输入输出，同时检测是否发生`RAM`的结构冒险。**2.**将RAM的处理逻辑改为异步，否则容易出现timing loop问题。
+3. 在通过《CPU设计实战》中相关实验之后，仍然面向NSCSCC大赛要求做进一步的工作。主要任务：**1**.编写一个`MMU`，与之前写好的处理器核（本工程中命名为`YK_Core`）一起，组成`myCPU_top`模块；该`MMU`负责地址映射，并处理串口输入输出，同时检测是否发生`RAM`的结构冒险。**2**.将RAM的处理逻辑改为异步，否则容易出现timing loop问题。
 4. 本工程使用的IP核有FIFO Generator，其配置为：Common Clock Builitin FIFO实现，读模式为First Word Fall Through，对于数据读写端口，宽度为8位（串口宽度），深度为512，其他配置保持默认。
 
 ## 推荐书籍
