@@ -15,6 +15,7 @@ module WakeUP(
 	input  wire							sel_bu_src2,
 	input  wire[ 4: 0]					RegFile_r_addr1,
 	input  wire[ 4: 0]					RegFile_r_addr2,
+	input  wire							sel_data_ram_we,
 
 	// 流水线数据交互
 	input  wire[`BY_TO_WK_BUS_WD-1:0]	BY_to_WK_bus,
@@ -23,7 +24,8 @@ module WakeUP(
 	output reg 							alu_src_1_ready,
 	output reg							alu_src_2_ready,
 	output reg 							bu_src_1_ready,
-	output reg							bu_src_2_ready
+	output reg							bu_src_2_ready,
+	output reg 							mem_w_data_ready
     );
 	// EXE
 	wire [ 4: 0]	EXE_RegFile_w_addr	;
@@ -185,6 +187,40 @@ module WakeUP(
 			// 如果是PC+4，也一定可以准备好
 			// 如果操作数不来自于寄存器堆而是来自于指令PC，一定已经准备好
 			alu_src_2_ready<=1'b1;
+	end
+
+
+	// bu_src1
+	always@(*)
+	begin
+		if(sel_data_ram_we)
+			if(RegFile_r_addr2==EXE_RegFile_w_addr && EXE_sel_rf_w_en && EXE_valid)
+				if(EXE_sel_RF_w_data_valid)
+					// 可以从EXE阶段旁路该值
+					mem_w_data_ready<=1'b1;
+				else 
+					// 代表阻塞
+					mem_w_data_ready<=1'b0;
+			else if(RegFile_r_addr2==PMEM_RegFile_w_addr && PMEM_sel_rf_w_en && PMEM_valid)
+				if(PMEM_sel_RF_w_data_valid)
+					mem_w_data_ready<=1'b1;
+				else
+					mem_w_data_ready<=1'b0;
+			else if(RegFile_r_addr2==MEM_RegFile_w_addr && MEM_sel_rf_w_en && MEM_valid)
+				if(MEM_sel_RF_w_data_valid)
+					mem_w_data_ready<=1'b1;
+				else
+					mem_w_data_ready<=1'b0;
+			else if(RegFile_r_addr2==WB_RegFile_w_addr && WB_sel_rf_w_en && WB_valid)
+				if(WB_sel_RF_w_data_valid)
+					mem_w_data_ready<=1'b1;
+				else
+					mem_w_data_ready<=1'b0;
+			else 
+				// 如果后续流水级指令均不写入该寄存器，则从寄存器堆获得操作数
+				mem_w_data_ready<=1'b1;
+		else
+			mem_w_data_ready<=1'b1;
 	end
 
 	/////////////////////////////////////////////////////////////////

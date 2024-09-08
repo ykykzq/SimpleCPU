@@ -191,7 +191,7 @@ module IPreD_stage(
     assign opcode_06b=inst[31:26];
 
     // 算数逻辑运算
-    assign inst_addi_w      = opcode_10b==10'b000_0000_1010;
+    assign inst_addi_w      = opcode_10b==10'b00_0000_1010;
     assign inst_add_w       = opcode_17b==17'b0_0000_0000_0010_0000;
     assign inst_sub_w       = opcode_17b==17'b0_0000_0000_0010_0010;
     assign inst_or          = opcode_17b==17'b0_0000_0000_0010_1010;
