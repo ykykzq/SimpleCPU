@@ -2,9 +2,13 @@
 
 ## 概述
 
-本仓库于2024.8进行了重置，将工程从`MIPS`版本调整为`LoongArch`版本，并命名为`YK_Core`。关于原有`MIPS`版本内容，请查看`nscscc2023-MIPS`分支内容。
+本仓库于2024.8进行了重置，将工程从`MIPS`版本调整为`LoongArch`版本，并命名为`YK_Core`。关于原`MIPS`版本内容，请查看`nscscc2023-MIPS`[分支](https://github.com/ykykzq/SimpleCPU/tree/nscscc2023-MIPS)。
 
-本工程使用Verilog语言描述了一个七级流水线CPU，七个流水级分别为`IF`、`IPreD`、`ID`、`EXE`、`PreMEM`、`MEM`、`WB`，各个流水级的功能参加源代码与相关文档。CPU基于`LoongArch`指令集，支持运算、访存、分支跳转等四十余条用户态指令，具体支持的指令参见[这里](./docs/指令控制信号.xlsx)。该工程还支持串口，通过`UART`协议与外界进行通信。其他技术要求，可以参见[龙芯杯大赛](http://www.nscscc.com)技术方案。
+本工程使用Verilog语言描述了一个七级流水线CPU，七个流水级分别为`IF`、`IPreD`、`ID`、`EXE`、`PreMEM`、`MEM`、`WB`，各个流水级的功能请参见源代码与相关文档。CPU基于`LoongArch`指令集，支持运算、访存、分支跳转等四十余条用户态指令，具体支持的指令参见[这里](./docs/指令控制信号.xlsx)。该工程还支持串口，通过`UART`协议与外界进行通信。其他技术要求，可以参见[龙芯杯大赛](http://www.nscscc.com)技术方案。
+
+> 分这么多流水级只是作者想写一个多级流水线试试，实际上本作品中流水级划分并不一定合理，并不一定带来主频上的收益。
+>
+> 流失级划分*仅供参考*。
 
 工程使用的综合工具为Vivado 2019.2，尽管如此，仍然可以使用低版本Vivado工具，通过新建一个工程并添加Verilog源代码的方式进行综合。
 
@@ -23,7 +27,7 @@
 - [x] 根据NSCSCC大赛要求，添加更多指令
 - [x] 根据大赛要求，添加串口通信功能，添加MMU模块
 - [x] 拆分MEM流水级，改成七级流水线（commit：[v5.0](https://github.com/ykykzq/SimpleCPU/commit/8827e840047636707783b38004ab3535a086322e)）
-- [ ] 调试使通过三级功能测试与性能测试
+- [x] 调试使通过三级功能测试与性能测试（commit：[v6.0](https://github.com/ykykzq/SimpleCPU/commit/9279d0921617b95811b0fab053dd8caafe28aa33)）
 
 ## 系统结构（待更新）
 
