@@ -56,13 +56,13 @@ module thinpad_top(
 /* =========== Demo code begin =========== */
 
 // PLL分频示例
-wire locked, clk_60M, clk_20M;
+wire locked, clk_61M, clk_20M;
 pll_example clock_gen 
  (
   // Clock in ports
   .clk_in1(clk_50M),  // 外部时钟输入
   // Clock out ports
-  .clk_out1(clk_60M), // 时钟输出1，频率在IP配置界面中设置
+  .clk_out1(clk_61M), // 时钟输出1，频率在IP配置界面中设置
   .clk_out2(clk_20M), // 时钟输出2，频率在IP配置界面中设置
   // Status and control signals
   .reset(reset_btn), // PLL复位输入
@@ -70,15 +70,15 @@ pll_example clock_gen
                      // 后级电路复位信号应当由它生成（见下）
  );
 
-reg reset_of_clk60M;
-// 异步复位，同步释放，将locked信号转为后级电路的复位reset_of_clk60M
-always@(posedge clk_60M or negedge locked) begin
-    if(~locked) reset_of_clk60M <= 1'b1;
-    else        reset_of_clk60M <= 1'b0;
+reg reset_of_clk61M;
+// 异步复位，同步释放，将locked信号转为后级电路的复位reset_of_clk61M
+always@(posedge clk_61M or negedge locked) begin
+    if(~locked) reset_of_clk61M <= 1'b1;
+    else        reset_of_clk61M <= 1'b0;
 end
 
-/*always@(posedge clk_60M or posedge reset_of_clk60M) begin
-    if(reset_of_clk60M)begin
+/*always@(posedge clk_61M or posedge reset_of_clk61M) begin
+    if(reset_of_clk61M)begin
         // Your Code
     end
     else begin
@@ -186,8 +186,8 @@ vga #(12, 800, 856, 976, 1040, 600, 637, 643, 666, 1, 1) vga800x600at75 (
     
 
 myCPU_top myCPU_top(
-    .clk                (clk_60M        ),
-    .reset              (reset_of_clk60M),
+    .clk                (clk_61M        ),
+    .reset              (reset_of_clk61M),
 
     //BaseRAM信号
     .base_ram_data      (base_ram_data  ),

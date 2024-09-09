@@ -229,7 +229,7 @@ module MMU(
     //////////////////////////////////////////////////////////////////////
     /// 串口收发
     //接收模块
-	async_receiver #(.ClkFrequency(60_000_000),.Baud(9600)) //接收模块，9600无检验位
+	async_receiver #(.ClkFrequency(61_000_000),.Baud(9600)) //接收模块，9600无检验位
 		ext_uart_r(
 			.clk				(clk            ),
 			.RxD				(rxd            ),//串口输入
@@ -261,7 +261,7 @@ module MMU(
 		.dout		(TxD_data           ),//传递给串口待发送的数据
 		.empty		(TxD_FIFO_empty     )//判空标志
 	);
-	async_transmitter #(.ClkFrequency(60_000_000),.Baud(9600)) //发送模块，9600无检验位
+	async_transmitter #(.ClkFrequency(61_000_000),.Baud(9600)) //发送模块，9600无检验位
 		ext_uart_t(
 			.clk		(clk        ),
 			.TxD		(txd        ),//串口输出
