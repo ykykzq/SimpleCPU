@@ -12,7 +12,7 @@
 
 工程使用的综合工具为Vivado 2019.2，尽管如此，仍然可以使用低版本Vivado工具，通过新建一个工程并添加Verilog源代码的方式进行综合。
 
-作品在`MMU`的设计上参考了2022年龙芯杯大赛[作品](https://github.com/xiazhuo/nscc2022_personal)，该作品是一个基于MIPS32的五级流水线CPU，由 @xiazhuo 完成。
+作品在`MMU`的设计上参考了2022年龙芯杯大赛[作品](https://github.com/xiazhuo/nscc2022_personal)中的`RAM_Serial_ctrl`模块，该作品是一个基于MIPS32的五级流水线CPU，由xiazhuo完成。
 
 ## TODO List
 
@@ -92,7 +92,7 @@
 
 至此，你已经完成了NSCSCC的基本要求，现在你可以添加一些进阶内容。
 
-- [ ] 流水级拆分、i-cache添加、特权态指令、虚拟内存......
+- [ ] 动态分支预测、流水级拆分、i-cache添加、特权态指令、虚拟内存......
 
 ## Tips
 
