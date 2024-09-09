@@ -34,7 +34,7 @@
 
 系统的总体架构如下所示。详细设计参见[模块设计说明文档](./docs/各模块设计文档.md)。
 
-<img src="./images/project.png" alt="project" style="zoom:48%;" />
+<img src="./images/overview.png" alt="project" style="zoom:48%;" />
 
 :bangbang: 注意：如果使用超过五级的流水线结构，将无法在没有旁路与阻塞模块的情况下通过《CPU设计实战》的exp7
 
