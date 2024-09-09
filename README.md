@@ -12,7 +12,7 @@
 
 工程使用的综合工具为Vivado 2019.2，尽管如此，仍然可以使用低版本Vivado工具，通过新建一个工程并添加Verilog源代码的方式进行综合。
 
-作品在`MMU`的设计上参考了2022年龙芯杯大赛[作品](https://github.com/xiazhuo/nscc2022_personal)，该作品是一个基于MIPS32的五级流水线CPU，由XIAZHUO@NWPU完成。
+作品在`MMU`的设计上参考了2022年龙芯杯大赛[作品](https://github.com/xiazhuo/nscc2022_personal)，该作品是一个基于MIPS32的五级流水线CPU，由 @xiazhuo 完成。
 
 ## TODO List
 
