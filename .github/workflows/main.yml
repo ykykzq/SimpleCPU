@@ -62,9 +62,9 @@ jobs:
         test -f project/thinpad_top.runs/impl_1/*.bit || vivado -mode tcl -source .ci-scripts/bits.tcl project/thinpad_top.xpr
         test -f project/thinpad_top.runs/impl_1/*.bit
 
-    # 保存生成的工件
+    # 保存生成的工件，使用 v3 版本的 upload-artifact
     - name: Upload artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: bitstream-files
         path: |
