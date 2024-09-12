@@ -14,37 +14,23 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    container:
+      image: nscscc:2019.2
+
     steps:
-    # 检出代码
     - name: Checkout code
       uses: actions/checkout@v2
 
-    # 设置 LoongArch 工具链
     - name: Set up LoongArch toolchain
       run: |
         export PATH=/opt/loongarch32r-linux-gnusf-2022-05-20/bin:${PATH}
 
-    # 安装 Xilinx Vivado
-    - name: Install Xilinx Vivado 2019.2
-      run: |
-        mkdir -p /opt/xilinx
-        wget https://www.xilinx.com/support/download/index.html -O vivado_installer.tar.gz
-        tar -xzvf vivado_installer.tar.gz -C /opt/xilinx
-        /opt/xilinx/vivado/2019.2/installer/xsetup --silent --agree XilinxEULA --noexec
-
-    # 设置 Xilinx Vivado 环境
-    - name: Source Vivado environment
-      run: source /opt/xilinx/vivado/2019.2/settings64.sh
-
-    # 编译 asm 文件
     - name: Build asm
       run: make -C asm
 
-    # 运行 Linter
     - name: Run linter
       run: python3 ./.ci-scripts/run-linter.py project/thinpad_top.xpr 2>linter.log
 
-    # 检查提交差异并生成比特流
     - name: Check diff and generate bitstream if needed
       run: |
         str="project/thinpad_top.srcs"
@@ -60,13 +46,11 @@ jobs:
           vivado -mode tcl -source .ci-scripts/bits.tcl project/thinpad_top.xpr
         fi
 
-    # 验证比特流文件是否生成
     - name: Verify bitstream
       run: |
         test -f project/thinpad_top.runs/impl_1/*.bit || vivado -mode tcl -source .ci-scripts/bits.tcl project/thinpad_top.xpr
         test -f project/thinpad_top.runs/impl_1/*.bit
 
-    # 保存生成的工件，使用 v3 版本的 upload-artifact
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
       with:
