@@ -1,44 +1,74 @@
-variables:
-  GIT_SUBMODULE_STRATEGY: recursive
+name: Build and Lint
 
-stages:
-  - build
+# 触发事件，选择 push 和 pull request 事件，触发分支为 main 或 master
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
 
-bitstream:
-  stage: build
-  image: nscscc:2019.2-la
-  before_script:
-    - source /opt/Xilinx/Vivado/2019.2/settings64.sh
-    - export PATH=/opt/loongarch32r-linux-gnusf-2022-05-20/bin:${PATH}
-  script:
-    - make -C asm
-    - python3 ./.ci-scripts/run-linter.py project/thinpad_top.xpr 2>linter.log
-    - str="project/thinpad_top.srcs"
-    - diff=""
-    - git config --global --add safe.directory $(pwd)
-    - >
-      if [ "${CI_COMMIT_BEFORE_SHA}" == "0000000000000000000000000000000000000000" ]
-        then vivado -mode tcl -source .ci-scripts/bits.tcl project/thinpad_top.xpr
-      else
-        diff=$(git diff --name-only ${CI_COMMIT_BEFORE_SHA} ${CI_COMMIT_SHA})
-      fi
-    - echo $diff
-    - >
-      if [[ $diff =~ $str ]]
-        then vivado -mode tcl -source .ci-scripts/bits.tcl project/thinpad_top.xpr
-      fi
-    - test -f project/thinpad_top.runs/impl_1/*.bit || vivado -mode tcl -source .ci-scripts/bits.tcl project/thinpad_top.xpr
-    - test -f project/thinpad_top.runs/impl_1/*.bit
-  cache:
-    key : bit
-    paths : 
-      - project/thinpad_top.runs/impl_1/*.bit
+jobs:
+  build:
+    runs-on: ubuntu-latest
 
-  artifacts:
-    name: "$CI_JOB_NAME-$CI_COMMIT_REF_NAME"
-    when: always
-    paths:
-      - asm/*.bin
-      - project/thinpad_top.runs/impl_1/*.bit
-      - project/thinpad_top.runs/*/runme.log
-      - linter.log
+    steps:
+    # 检出代码
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    # 设置 Xilinx Vivado 环境
+    - name: Set up Xilinx Vivado 2019.2
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y vivado
+        source /opt/Xilinx/Vivado/2019.2/settings64.sh
+
+    # 设置 LoongArch 工具链
+    - name: Set up LoongArch toolchain
+      run: |
+        export PATH=/opt/loongarch32r-linux-gnusf-2022-05-20/bin:${PATH}
+
+    # 编译 asm 文件
+    - name: Build asm
+      run: make -C asm
+
+    # 运行 Linter
+    - name: Run linter
+      run: python3 ./.ci-scripts/run-linter.py project/thinpad_top.xpr 2>linter.log
+
+    # 检查提交差异并生成比特流
+    - name: Check diff and generate bitstream if needed
+      run: |
+        str="project/thinpad_top.srcs"
+        diff=""
+        git config --global --add safe.directory $(pwd)
+        if [ "${{ github.event.before }}" == "0000000000000000000000000000000000000000" ]; then
+          vivado -mode tcl -source .ci-scripts/bits.tcl project/thinpad_top.xpr
+        else
+          diff=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
+        fi
+        echo $diff
+        if [[ $diff =~ $str ]]; then
+          vivado -mode tcl -source .ci-scripts/bits.tcl project/thinpad_top.xpr
+        fi
+
+    # 验证比特流文件是否生成
+    - name: Verify bitstream
+      run: |
+        test -f project/thinpad_top.runs/impl_1/*.bit || vivado -mode tcl -source .ci-scripts/bits.tcl project/thinpad_top.xpr
+        test -f project/thinpad_top.runs/impl_1/*.bit
+
+    # 保存生成的工件
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: bitstream-files
+        path: |
+          asm/*.bin
+          project/thinpad_top.runs/impl_1/*.bit
+          project/thinpad_top.runs/*/runme.log
+          linter.log
