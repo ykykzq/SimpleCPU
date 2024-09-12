@@ -1,0 +1,44 @@
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+
+stages:
+  - build
+
+bitstream:
+  stage: build
+  image: nscscc:2019.2-la
+  before_script:
+    - source /opt/Xilinx/Vivado/2019.2/settings64.sh
+    - export PATH=/opt/loongarch32r-linux-gnusf-2022-05-20/bin:${PATH}
+  script:
+    - make -C asm
+    - python3 ./.ci-scripts/run-linter.py project/thinpad_top.xpr 2>linter.log
+    - str="project/thinpad_top.srcs"
+    - diff=""
+    - git config --global --add safe.directory $(pwd)
+    - >
+      if [ "${CI_COMMIT_BEFORE_SHA}" == "0000000000000000000000000000000000000000" ]
+        then vivado -mode tcl -source .ci-scripts/bits.tcl project/thinpad_top.xpr
+      else
+        diff=$(git diff --name-only ${CI_COMMIT_BEFORE_SHA} ${CI_COMMIT_SHA})
+      fi
+    - echo $diff
+    - >
+      if [[ $diff =~ $str ]]
+        then vivado -mode tcl -source .ci-scripts/bits.tcl project/thinpad_top.xpr
+      fi
+    - test -f project/thinpad_top.runs/impl_1/*.bit || vivado -mode tcl -source .ci-scripts/bits.tcl project/thinpad_top.xpr
+    - test -f project/thinpad_top.runs/impl_1/*.bit
+  cache:
+    key : bit
+    paths : 
+      - project/thinpad_top.runs/impl_1/*.bit
+
+  artifacts:
+    name: "$CI_JOB_NAME-$CI_COMMIT_REF_NAME"
+    when: always
+    paths:
+      - asm/*.bin
+      - project/thinpad_top.runs/impl_1/*.bit
+      - project/thinpad_top.runs/*/runme.log
+      - linter.log
