@@ -1,6 +1,5 @@
 name: Build and Lint
 
-# 触发事件，选择 push 和 pull request 事件，触发分支为 main 或 master
 on:
   push:
     branches:
@@ -20,17 +19,22 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    # 设置 Xilinx Vivado 环境
-    - name: Set up Xilinx Vivado 2019.2
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y vivado
-        source /opt/Xilinx/Vivado/2019.2/settings64.sh
-
     # 设置 LoongArch 工具链
     - name: Set up LoongArch toolchain
       run: |
         export PATH=/opt/loongarch32r-linux-gnusf-2022-05-20/bin:${PATH}
+
+    # 安装 Xilinx Vivado
+    - name: Install Xilinx Vivado 2019.2
+      run: |
+        mkdir -p /opt/xilinx
+        wget https://www.xilinx.com/support/download/index.html -O vivado_installer.tar.gz
+        tar -xzvf vivado_installer.tar.gz -C /opt/xilinx
+        /opt/xilinx/vivado/2019.2/installer/xsetup --silent --agree XilinxEULA --noexec
+
+    # 设置 Xilinx Vivado 环境
+    - name: Source Vivado environment
+      run: source /opt/xilinx/vivado/2019.2/settings64.sh
 
     # 编译 asm 文件
     - name: Build asm
