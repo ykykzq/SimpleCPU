@@ -103,3 +103,5 @@ Copyright 1986-2019 Xilinx, Inc. All Rights Reserved.
 // HMemoryUtils.trashcanNow. Engine heap size: 777 MB. GUI used memory: 54 MB. Current time: 9/13/24, 10:58:19 PM CST
 // [Engine Memory]: 777 MB (+4596kb) [00:00:10]
 // Project name: thinpad_top; location: C:/Users/31230/Desktop/SimpleCPU; part: xc7a200tfbg676-2
+dismissDialog("Open Project"); // bB (cr)
+// Tcl Message: update_compile_order -fileset sources_1 

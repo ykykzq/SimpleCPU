@@ -30,11 +30,10 @@ module YK_Core(
     // 流水级控制
 	wire 			IF_allow_in		;
 
-    wire            IPD_allow_in    ;
-    wire            IF_to_IPD_valid ;
+
 
     wire            ID_allow_in     ;
-    wire            IPD_to_ID_valid ;
+    wire            IF_to_ID_valid	;
 
     wire            EXE_allow_in    ;
     wire            ID_to_EXE_valid ;
@@ -46,8 +45,7 @@ module YK_Core(
     wire            MEM_to_WB_valid ;
 
     // 流水级数据交互
-    wire [`IF_TO_IPD_BUS_WD-1:0]    IF_to_IPD_bus   ;
-    wire [`IPD_TO_ID_BUS_WD-1:0]    IPD_to_ID_bus   ;
+    wire [`IF_TO_ID_BUS_WD-1:0]    IF_to_ID_bus   ;
     wire [`ID_TO_EXE_BUS_WD-1:0]    ID_to_EXE_bus   ;
     wire [`EXE_TO_PMEM_BUS_WD-1:0]	EXE_to_PMEM_bus	;
 	wire [`PMEM_TO_MEM_BUS_WD-1:0]	PMEM_to_MEM_bus	;
@@ -55,8 +53,6 @@ module YK_Core(
     wire [`WB_to_ID_bus_WD-1:0]     WB_to_ID_bus    ;
 
     wire [`ID_TO_IF_BUS_WD-1:0]     ID_to_IF_bus    ;
-    wire [`ID_TO_IPD_BUS_WD-1:0]    ID_to_IPD_bus   ;
-	wire [31:0]						IPD_to_BU_bus	;
 
 	wire[`EXE_TO_BY_BUS_WD-1:0]		EXE_to_BY_bus	;
 	wire[`PMEM_TO_BY_BUS_WD-1:0]	PMEM_to_BY_bus	;
@@ -79,7 +75,7 @@ module YK_Core(
 
         //流水线数据传输
         .ID_to_IF_bus       (ID_to_IF_bus),
-        .IF_to_IPD_bus      (IF_to_IPD_bus),
+        .IF_to_ID_bus      	(IF_to_ID_bus),
     
         //连接指令RAM()
         .inst_ram_en        (inst_sram_en),//(读)使能
@@ -90,27 +86,10 @@ module YK_Core(
     
         //流水线控制
 		.IF_allow_in		(IF_allow_in),
-        .IPD_allow_in       (IPD_allow_in),
-        .IF_to_IPD_valid    (IF_to_IPD_valid),
+        .ID_allow_in        (ID_allow_in),
+        .IF_to_ID_valid     (IF_to_ID_valid),
 
         .sel_strcture_hazard(sel_strcture_hazard)
-    );
-
-    IPreD_stage IPreD_stage(
-        .clk                (clk),
-	    .reset              (reset),
-
-        //流水线数据传输
-	    .IF_to_IPD_bus      (IF_to_IPD_bus),
-	    .IPD_to_ID_bus      (IPD_to_ID_bus),
-        .ID_to_IPD_bus      (ID_to_IPD_bus),
-		.IPD_to_BU_bus		(IPD_to_BU_bus),
-	
-	    //流水线控制
-	    .ID_allow_in        (ID_allow_in),
-	    .IF_to_IPD_valid    (IF_to_IPD_valid),
-	    .IPD_allow_in       (IPD_allow_in),
-	    .IPD_to_ID_valid    (IPD_to_ID_valid)
     );
 
     ID_stage ID_stage(
@@ -118,21 +97,17 @@ module YK_Core(
 	    .reset              (reset),
 
 	    //流水线数据传输
-        .IPD_to_ID_bus      (IPD_to_ID_bus),
+        .IF_to_ID_bus       (IF_to_ID_bus),
 	    .ID_to_EXE_bus      (ID_to_EXE_bus),
     
 	    .ID_to_IF_bus       (ID_to_IF_bus),  
-        .ID_to_IPD_bus      (ID_to_IPD_bus),
-    
 	    .WB_to_ID_bus       (WB_to_ID_bus),  
 		.BY_to_ID_bus		(BY_to_ID_bus),
-
-		.IPD_to_BU_bus		(IPD_to_BU_bus),
 
 	    //流水线控制
 		.IF_allow_in		(IF_allow_in),
 	    .EXE_allow_in       (EXE_allow_in),
-	    .IPD_to_ID_valid    (IPD_to_ID_valid),
+	    .IF_to_ID_valid     (IF_to_ID_valid),
 	    .ID_allow_in        (ID_allow_in),
 	    .ID_to_EXE_valid    (ID_to_EXE_valid)
     );

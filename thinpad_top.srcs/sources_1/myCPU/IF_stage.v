@@ -15,7 +15,7 @@ module IF_stage(
 
 	//流水线数据传输
 	input  wire[`ID_TO_IF_BUS_WD-1:0]	ID_to_IF_bus,
-	output wire[`IF_TO_IPD_BUS_WD-1:0]	IF_to_IPD_bus,
+	output wire[`IF_TO_ID_BUS_WD-1:0]	IF_to_ID_bus,
 	
 	//连接指令RAM
 	output wire							inst_ram_en,//(读)使能
@@ -25,8 +25,8 @@ module IF_stage(
 	output wire[31:0]					inst_ram_w_data,//实际上用不到指令RAM的写
     
 	//流水线控制
-	input  wire							IPD_allow_in,
-	output wire							IF_to_IPD_valid,
+	input  wire							ID_allow_in,
+	output wire							IF_to_ID_valid,
 	output wire							IF_allow_in,
 
 	input  wire 						sel_strcture_hazard
@@ -64,9 +64,9 @@ module IF_stage(
 	
 	// 控制流水线行为
 	assign IF_ready_go 		= ~sel_strcture_hazard;
-	assign IF_allow_in 		= (~IF_valid) | (IF_ready_go & IPD_allow_in);
+	assign IF_allow_in 		= (~IF_valid) | (IF_ready_go & ID_allow_in);
 	assign Pre_to_IF_valid	= ~reset;
-	assign IF_to_IPD_valid	= IF_valid & IF_ready_go;
+	assign IF_to_ID_valid	= IF_valid & IF_ready_go;
 	
 	/////////////////////////////////////////////////
 	/// 分支预测
@@ -106,7 +106,7 @@ module IF_stage(
 		PC_fromID		 //32	
 	}=ID_to_IF_bus;
 
-	assign IF_to_IPD_bus={
+	assign IF_to_ID_bus={
 			PC			 	,//32
 			inst_ram_r_data	 //32
 		};
