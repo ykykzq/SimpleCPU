@@ -14,22 +14,6 @@
 
 作品在`MMU`的设计上参考了2022年龙芯杯大赛[作品](https://github.com/xiazhuo/nscc2022_personal)中的`RAM_Serial_ctrl`模块，该作品是一个基于MIPS32的五级流水线CPU，由xiazhuo完成。
 
-## TODO List
-
-- [x] 六级流水线设计，完成20条用户态指令
-- [x] 阻塞(或唤醒)模块设计与实现
-- [x] 旁路模块设计与实现
-- [x] 通过《CPU设计实战》exp7（commit：[v1.0](https://github.com/ykykzq/SimpleCPU/commit/6f57858aa503a204427d251ed48f78b21216acb6)）
-- [x] 通过《CPU设计实战》exp8、9（commit：[v2.0](https://github.com/ykykzq/SimpleCPU/commit/6e12934ad4ada67a1a4f0eae59e8954e9a2666b5)、[v2.1](https://github.com/ykykzq/SimpleCPU/commit/d00fffc3704908f9dc4b94863b6e44d64e6c84ea)）
-- [x] 添加用户态指令，支持40+条
-- [x] 通过《CPU设计实战》exp10（commit：[v3.0](https://github.com/ykykzq/SimpleCPU/commit/69767304f6b3c4f273a12e56c64c6ca434f232fe)）
-- [x] 通过《CPU设计实战》exp11（commit：[v4.0](https://github.com/ykykzq/SimpleCPU/commit/79788504854dc162ad1f232458a28d9f5c64e550)）
-- [x] 根据NSCSCC大赛要求，添加更多指令
-- [x] 根据大赛要求，添加串口通信功能，添加MMU模块
-- [x] 拆分MEM流水级，改成七级流水线（commit：[v5.0](https://github.com/ykykzq/SimpleCPU/commit/8827e840047636707783b38004ab3535a086322e)）
-- [x] 调试使通过三级功能测试与性能测试（commit：[v6.0](https://github.com/ykykzq/SimpleCPU/commit/9279d0921617b95811b0fab053dd8caafe28aa33)）
-- [ ] 补充设计文档、总体架构图等内容
-
 ## 系统结构
 
 系统的总体架构如下所示。详细设计参见[模块设计说明文档](./docs/各模块设计文档.md)。
@@ -90,6 +74,8 @@
 
 在上述过程中，你可以参考本项目的源代码。
 
+如果你不想参考《CPU设计实战》一书，也可以参考雷思磊的《自己动手写CPU》，按照其书中的步骤一步步完成流水线CPU。
+
 至此，你已经完成了NSCSCC的基本要求，现在你可以添加一些进阶内容。
 
 - [ ] 动态分支预测、流水级拆分、i-cache添加、特权态指令、虚拟内存......
@@ -102,6 +88,22 @@
 2. 需要进行的主要任务：**1**.编写一个`MMU`，与之前写好的处理器核（本工程中命名为`YK_Core`）一起，组成`myCPU_top`模块；该`MMU`负责地址映射，并处理串口输入输出，同时检测是否发生`RAM`的结构冒险。**2**.将RAM的处理逻辑改为异步，否则容易出现timing loop问题。
 3. 本工程中`test`目录下的代码**并不是最新代码**，而是在前期使用CPU_CDE环境进行开发与测试时的代码。只能保证通过《CPU设计实战》exp11，其中仍然存在若干没有被检测出的bug，这些bug可以参见`project`目录下后的后续commit。**最新代码**同样在`project`目录下。
 4. 本工程使用了FIFO Generator这一IP核，其配置为：Common Clock Builitin FIFO实现，读模式为First Word Fall Through，对于数据读写端口，宽度为8位（串口宽度），深度为512，其他配置保持默认。
+
+## TODO List
+
+- [x] 六级流水线设计，完成20条用户态指令
+- [x] 阻塞(或唤醒)模块设计与实现
+- [x] 旁路模块设计与实现
+- [x] 通过《CPU设计实战》exp7（commit：[v1.0](https://github.com/ykykzq/SimpleCPU/commit/6f57858aa503a204427d251ed48f78b21216acb6)）
+- [x] 通过《CPU设计实战》exp8、9（commit：[v2.0](https://github.com/ykykzq/SimpleCPU/commit/6e12934ad4ada67a1a4f0eae59e8954e9a2666b5)、[v2.1](https://github.com/ykykzq/SimpleCPU/commit/d00fffc3704908f9dc4b94863b6e44d64e6c84ea)）
+- [x] 添加用户态指令，支持40+条
+- [x] 通过《CPU设计实战》exp10（commit：[v3.0](https://github.com/ykykzq/SimpleCPU/commit/69767304f6b3c4f273a12e56c64c6ca434f232fe)）
+- [x] 通过《CPU设计实战》exp11（commit：[v4.0](https://github.com/ykykzq/SimpleCPU/commit/79788504854dc162ad1f232458a28d9f5c64e550)）
+- [x] 根据NSCSCC大赛要求，添加更多指令
+- [x] 根据大赛要求，添加串口通信功能，添加MMU模块
+- [x] 拆分MEM流水级，改成七级流水线（commit：[v5.0](https://github.com/ykykzq/SimpleCPU/commit/8827e840047636707783b38004ab3535a086322e)）
+- [x] 调试使通过三级功能测试与性能测试（commit：[v6.0](https://github.com/ykykzq/SimpleCPU/commit/9279d0921617b95811b0fab053dd8caafe28aa33)）
+- [ ] 补充设计文档、总体架构图等内容
 
 ## 推荐书籍
 
