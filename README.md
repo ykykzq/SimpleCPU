@@ -8,9 +8,9 @@
 
 > :heavy_exclamation_mark: 流失级划分仅供参考!
 >
-> 分这么多流水级只是作者想写一个超过五级的流水线，本作品中流水级划分并不一定合理，并没有带来多少主频上的收益。
+> 分这么多流水级只是作者想写一个超过五级的流水线，本作品中流水级划分并不一定合理，并不一定带来很多主频上的收益。
 
-工程使用的综合工具为Vivado 2019.2，尽管如此，仍然可以使用低版本Vivado工具，通过新建一个工程并添加Verilog源代码的方式进行综合。
+工程使用的综合工具为Vivado 2019.2，尽管如此，如果读者想使用低版本Vivado工具，仍然可以新建一个工程并直接添加Verilog源代码后进行综合。
 
 作品在`MMU`的设计上参考了2022年龙芯杯大赛[作品](https://github.com/xiazhuo/nscc2022_personal)中的`RAM_Serial_ctrl`模块，该作品是一个基于MIPS32的五级流水线CPU，由xiazhuo完成。
 
@@ -74,7 +74,7 @@
 
 在上述过程中，你可以参考本项目的源代码。
 
-如果你不想参考《CPU设计实战》一书，也可以参考雷思磊的《自己动手写CPU》，按照其书中的步骤一步步完成流水线CPU。
+如果你不想参考《CPU设计实战》一书，也可以参考雷思磊编写的《自己动手写CPU》，按照其书中的步骤一步步完成流水线CPU。
 
 至此，你已经完成了NSCSCC的基本要求，现在你可以添加一些进阶内容。
 
@@ -82,12 +82,12 @@
 
 ## Tips
 
-注意，完成《CPU设计实战》中的相关实验后，CPU核心是无法直接嵌入到NSCSCC提供的模板中的，仍然需要完成一系列工作，这里给出一些提示。
+注意，完成《CPU设计实战》中的相关实验后，CPU核是无法直接嵌入到NSCSCC提供的模板中的，仍然需要完成一系列工作，这里给出一些提示。
 
-1. 在《CPU设计实战》中，`Inst RAM`与`Data RAM`实际上是分开的，不需要考虑结构冒险。然而在NSCSCC中，`Base RAM`与`Ext RAM`均可被读、写、执行，同时两个`RAM`均只有一个读端口。因此在`IF`与`ID`两个流水级在同一拍访问同个RAM时，会发生结构冒险。（参见：[哈佛架构与冯诺依曼架构](https://blog.csdn.net/zhuimeng_ruili/article/details/103485093)）
+1. 在《CPU设计实战》中，`Inst RAM`与`Data RAM`实际上是分开的，不需要考虑结构冒险。然而在NSCSCC中，`Base RAM`与`Ext RAM`均可被读、写、执行，同时两个`RAM`均只有一个读端口。因此`IF`与`ID`两个流水级在同一拍访问同个RAM时，会发生结构冒险。（参见：[哈佛架构与冯诺依曼架构](https://blog.csdn.net/zhuimeng_ruili/article/details/103485093)）
 2. 需要进行的主要任务：**1**.编写一个`MMU`，与之前写好的处理器核（本工程中命名为`YK_Core`）一起，组成`myCPU_top`模块；该`MMU`负责地址映射，并处理串口输入输出，同时检测是否发生`RAM`的结构冒险。**2**.将RAM的处理逻辑改为异步，否则容易出现timing loop问题。
-3. 本工程中`test`目录下的代码**并不是最新代码**，而是在前期使用CPU_CDE环境进行开发与测试时的代码。只能保证通过《CPU设计实战》exp11，其中仍然存在若干没有被检测出的bug，这些bug可以参见`project`目录下后的后续commit。**最新代码**同样在`project`目录下。
-4. 本工程使用了FIFO Generator这一IP核，其配置为：Common Clock Builitin FIFO实现，读模式为First Word Fall Through，对于数据读写端口，宽度为8位（串口宽度），深度为512，其他配置保持默认。
+3. 本工程中`test`目录下的代码**并不是最新代码**，而是在前期使用CPU_CDE环境进行开发与测试时的代码。只能保证通过《CPU设计实战》exp11，其中仍然存在若干没有被检测出的bug，这些bug可以参见`project`目录下的后续commit。**最新代码**在`project`目录下。
+4. 本工程使用了FIFO Generator IP核，其配置为：Common Clock Builitin FIFO实现，读模式为First Word Fall Through，对于数据读写端口，宽度为8位（串口宽度），深度为512，其他配置保持默认。
 
 ## TODO List
 
@@ -102,7 +102,7 @@
 - [x] 根据NSCSCC大赛要求，添加更多指令
 - [x] 根据大赛要求，添加串口通信功能，添加MMU模块
 - [x] 拆分MEM流水级，改成七级流水线（commit：[v5.0](https://github.com/ykykzq/SimpleCPU/commit/8827e840047636707783b38004ab3535a086322e)）
-- [x] 调试使通过三级功能测试与性能测试（commit：[v6.0](https://github.com/ykykzq/SimpleCPU/commit/9279d0921617b95811b0fab053dd8caafe28aa33)）
+- [x] 调试通过三级功能测试与性能测试（commit：[v6.0](https://github.com/ykykzq/SimpleCPU/commit/9279d0921617b95811b0fab053dd8caafe28aa33)）
 - [ ] 补充设计文档、总体架构图等内容
 
 ## 推荐书籍
